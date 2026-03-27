@@ -122,7 +122,36 @@ export function TimerScreen() {
       : currentStation?.name ?? '';
 
   const isWarmup = currentStation?.isWarmup ?? false;
-  const howto = (state.phase === 'work' || state.phase === 'warmup') ? (currentStation?.howto ?? '') : '';
+
+  // During work/warmup: show howto of current station
+  // During pause/roundPause: show next station name as preview
+  let howtoText = '';
+  if (state.phase === 'work' || state.phase === 'warmup') {
+    howtoText = currentStation?.howto ?? '';
+  } else if (state.phase === 'pause' || state.phase === 'roundPause') {
+    // Find next work/warmup station
+    const warmupStations = config.stations.filter((s) => s.isWarmup);
+    const kraftStations = config.stations.filter((s) => !s.isWarmup);
+    const isInWarmup = currentStation?.isWarmup ?? false;
+
+    if (isInWarmup) {
+      const warmupIdx = warmupStations.indexOf(currentStation!);
+      const next = warmupStations[warmupIdx + 1];
+      if (next) {
+        howtoText = `Nächste Übung: ${next.name}`;
+      } else if (kraftStations.length > 0) {
+        howtoText = `Nächste Übung: ${kraftStations[0].name}`;
+      }
+    } else {
+      const kraftIdx = kraftStations.indexOf(currentStation!);
+      const next = kraftStations[kraftIdx + 1];
+      if (next) {
+        howtoText = `Nächste Übung: ${next.name}`;
+      } else if (state.phase === 'roundPause' && kraftStations.length > 0) {
+        howtoText = `Nächste Übung: ${kraftStations[0].name}`;
+      }
+    }
+  }
   const bg = phaseBg[state.phase] ?? 'var(--bg-base)';
 
   const progress = state.phaseDuration > 0
@@ -159,7 +188,7 @@ export function TimerScreen() {
         )}
 
         <div className="timer-howto-area">
-          <HowtoPanel text={howto} />
+          <HowtoPanel text={howtoText} />
         </div>
       </div>
 
