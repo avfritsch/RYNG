@@ -44,7 +44,7 @@ function AppContent() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
       {!isOnline && (
         <div role="alert" aria-live="assertive" style={{
           background: 'var(--color-rest)',
