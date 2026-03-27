@@ -30,6 +30,20 @@ function getAudioCtx(): AudioContext {
   return audioCtx;
 }
 
+/** Must be called from a user gesture (e.g. button click) to unlock audio on iOS */
+export function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') {
+    ctx.resume();
+  }
+  // Play a silent buffer to fully unlock on iOS Safari
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start();
+}
+
 export function beep(freq = 880, duration = 150) {
   try {
     const ctx = getAudioCtx();

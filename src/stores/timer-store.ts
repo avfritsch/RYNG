@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { TimerConfig, TimerState } from '../types/timer.ts';
-import { createTimerEngine, type TimerEngine, type SessionSummary } from '../lib/timer-engine.ts';
+import { createTimerEngine, unlockAudio, type TimerEngine, type SessionSummary } from '../lib/timer-engine.ts';
 
 const initialState: TimerState = {
   phase: 'idle',
@@ -50,6 +50,7 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   },
 
   resume: () => {
+    unlockAudio();
     get().engine?.resume();
   },
 
