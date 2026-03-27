@@ -1,48 +1,34 @@
 import { useState } from 'react';
-import { signInWithMagicLink } from '../../lib/auth.ts';
+import { signIn, signUp } from '../../lib/auth.ts';
 import '../../styles/auth.css';
 
 export function AuthScreen() {
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      await signInWithMagicLink(email);
-      setSent(true);
+      if (isSignUp) {
+        await signUp(email, password);
+        setSuccess('Konto erstellt! Du kannst dich jetzt einloggen.');
+        setIsSignUp(false);
+      } else {
+        await signIn(email, password);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Senden');
+      setError(err instanceof Error ? err.message : 'Fehler bei der Anmeldung');
     } finally {
       setLoading(false);
     }
-  }
-
-  if (sent) {
-    return (
-      <div className="auth-screen">
-        <div className="auth-card">
-          <h1 className="auth-title">Ryng</h1>
-          <div className="auth-success">
-            <p>Magic Link gesendet!</p>
-            <p className="auth-hint">
-              Schau in dein Postfach: <strong>{email}</strong>
-            </p>
-          </div>
-          <button
-            className="auth-link"
-            onClick={() => { setSent(false); setEmail(''); }}
-          >
-            Andere E-Mail verwenden
-          </button>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -63,15 +49,35 @@ export function AuthScreen() {
             autoComplete="email"
             className="auth-input"
           />
+          <label htmlFor="auth-password" className="sr-only">Passwort</label>
+          <input
+            id="auth-password"
+            type="password"
+            placeholder="Passwort"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            autoComplete={isSignUp ? 'new-password' : 'current-password'}
+            className="auth-input"
+          />
           {error && <p className="auth-error" role="alert">{error}</p>}
+          {success && <p className="auth-success-msg">{success}</p>}
           <button
             type="submit"
-            disabled={loading || !email}
+            disabled={loading || !email || !password}
             className="auth-button"
           >
-            {loading ? 'Wird gesendet...' : 'Magic Link senden'}
+            {loading ? 'Laden...' : isSignUp ? 'Registrieren' : 'Anmelden'}
           </button>
         </form>
+
+        <button
+          className="auth-link"
+          onClick={() => { setIsSignUp(!isSignUp); setError(''); setSuccess(''); }}
+        >
+          {isSignUp ? 'Schon ein Konto? Anmelden' : 'Noch kein Konto? Registrieren'}
+        </button>
       </div>
     </div>
   );

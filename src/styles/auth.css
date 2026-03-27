@@ -76,6 +76,11 @@
   font-size: var(--text-base);
 }
 
+.auth-success-msg {
+  color: var(--color-work);
+  font-size: var(--text-base);
+}
+
 .auth-success {
   margin: 24px 0;
 }
