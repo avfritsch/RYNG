@@ -133,9 +133,13 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
       const ks = kraftStations[i];
       const idx = stations.indexOf(ks);
       sequence.push({ stationIndex: idx, station: ks, phase: 'work', duration: ks.workSeconds, round: r });
-      // Pause after each station except the very last station of the very last round
-      const isLastStationLastRound = r === rounds && i === kraftStations.length - 1;
-      if (!isLastStationLastRound && ks.pauseSeconds > 0) {
+      // Skip station pause if: last station of last round, or last station of a round
+      // followed by a round pause (round pause replaces the station pause)
+      const isLastInRound = i === kraftStations.length - 1;
+      const isLastRound = r === rounds;
+      const hasRoundPause = !isLastRound && roundPause > 0;
+      const skipPause = isLastInRound && (isLastRound || hasRoundPause);
+      if (!skipPause && ks.pauseSeconds > 0) {
         sequence.push({ stationIndex: idx, station: ks, phase: 'pause', duration: ks.pauseSeconds, round: r });
       }
     }
