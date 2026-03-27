@@ -3,6 +3,7 @@ import type { StationConfig, TimerConfig } from '../../types/timer.ts';
 import type { Preset } from '../../types/database.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
+import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { useSavePreset, presetToConfig } from '../../hooks/usePresets.ts';
 import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
@@ -39,43 +40,28 @@ export function ConfigScreen() {
   const start = useTimerStore((s) => s.start);
   const timerPhase = useTimerStore((s) => s.state.phase);
   const savePreset = useSavePreset();
-  const { data: mesocycle, isLoading: mesoLoading } = useMesocycle();
+  const { data: mesocycle } = useMesocycle();
 
   const mesoSummary = mesocycle ? getMesocycleSummary(mesocycle) : null;
 
-  // Track whether stations came from a plan (so we can apply mesocycle)
-  const [fromPlan, setFromPlan] = useState(false);
+  const pendingConfig = useNavigationStore((s) => s.pendingConfig);
+  const clearPendingConfig = useNavigationStore((s) => s.clearPendingConfig);
 
-  // Load config from sessionStorage (when coming from PlanDetailScreen)
+  // Load config from navigation store (when coming from PlanDetailScreen, Library, etc.)
   useEffect(() => {
-    const saved = sessionStorage.getItem('ryng_loaded_config');
-    if (saved) {
-      sessionStorage.removeItem('ryng_loaded_config');
-      try {
-        const config: TimerConfig = JSON.parse(saved);
-        setStations(config.stations);
-        setRounds(config.rounds);
-        setRoundPause(config.roundPause);
-        setFromPlan(true);
-      } catch {
-        // ignore invalid data
-      }
-    }
-  }, []);
-
-  // Apply mesocycle progression reactively when data arrives and stations came from a plan
-  useEffect(() => {
-    if (!fromPlan || mesoLoading || !mesocycle) return;
-    setStations((prev) =>
-      prev.map((s) => {
-        const { work, pause } = applyProgression(
-          s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle,
-        );
+    if (!pendingConfig) return;
+    if (mesocycle) {
+      setStations(pendingConfig.stations.map((s) => {
+        const { work, pause } = applyProgression(s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle);
         return { ...s, workSeconds: work, pauseSeconds: pause };
-      }),
-    );
-    setFromPlan(false); // only apply once
-  }, [fromPlan, mesocycle, mesoLoading]);
+      }));
+    } else {
+      setStations(pendingConfig.stations);
+    }
+    setRounds(pendingConfig.rounds);
+    setRoundPause(pendingConfig.roundPause);
+    clearPendingConfig();
+  }, [pendingConfig, mesocycle]);
 
   function applyConfigFromPlan(config: TimerConfig) {
     setRounds(config.rounds);

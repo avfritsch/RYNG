@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlans, useDeletePlan } from '../../hooks/usePlans.ts';
+import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import { ImportModal } from '../ui/ShareModal.tsx';
@@ -14,6 +15,7 @@ export function PlanListScreen() {
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const deletePlan = useDeletePlan();
   const navigate = useNavigate();
+  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
 
   if (isLoading) {
     return <div className="plan-list"><h2 className="plan-list-title">Trainingspläne</h2><SkeletonCard count={4} /></div>;
@@ -111,7 +113,7 @@ export function PlanListScreen() {
       {showImport && (
         <ImportModal
           onImport={(_name: string, config: TimerConfig) => {
-            sessionStorage.setItem('ryng_loaded_config', JSON.stringify(config));
+            setPendingConfig(config);
             navigate('/');
           }}
           onClose={() => setShowImport(false)}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSession, useSessionEntries, useDeleteSession } from '../../hooks/useSessions.ts';
+import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import type { TimerConfig } from '../../types/timer.ts';
 import '../../styles/session-detail.css';
@@ -11,6 +12,7 @@ export function SessionDetailScreen() {
   const { data: session, isLoading } = useSession(sessionId);
   const { data: entries } = useSessionEntries(sessionId);
   const deleteSession = useDeleteSession();
+  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading || !session) {
@@ -60,7 +62,7 @@ export function SessionDetailScreen() {
       roundPause: 90, // default
     };
 
-    sessionStorage.setItem('ryng_loaded_config', JSON.stringify(config));
+    setPendingConfig(config);
     navigate('/');
   }
 
