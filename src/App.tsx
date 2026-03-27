@@ -44,7 +44,7 @@ function AppContent() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div className="app-shell">
       {!isOnline && (
         <div role="alert" aria-live="assertive" style={{
           background: 'var(--color-rest)',
