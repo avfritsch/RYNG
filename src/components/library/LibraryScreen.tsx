@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
+import { SEARCH_DEBOUNCE_MS } from '../../lib/constants.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
 import { useVotes, useToggleVote } from '../../hooks/useVotes.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
@@ -39,7 +40,7 @@ export function LibraryScreen() {
   // Debounce search input
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    searchTimer.current = setTimeout(() => setDebouncedSearch(search), 300);
+    searchTimer.current = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
   }, [search]);
 

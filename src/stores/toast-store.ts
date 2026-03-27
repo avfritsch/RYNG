@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { TOAST_DURATION_MS } from '../lib/constants.ts';
 
 export interface Toast {
   id: string;
@@ -22,7 +23,7 @@ export const useToastStore = create<ToastStore>((set) => ({
     // Auto-dismiss after 3s
     setTimeout(() => {
       set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
-    }, 3000);
+    }, TOAST_DURATION_MS);
   },
 
   dismiss: (id) => {

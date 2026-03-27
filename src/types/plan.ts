@@ -4,6 +4,10 @@ export interface Plan {
   name: string;
   description: string | null;
   is_system: boolean;
+  is_public: boolean;
+  vote_count: number;
+  copy_count: number;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }

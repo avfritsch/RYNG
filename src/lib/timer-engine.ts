@@ -1,4 +1,5 @@
 import type { TimerConfig, TimerState, TimerPhase, StationConfig } from '../types/timer.ts';
+import { RESTART_THRESHOLD_SEC } from './constants.ts';
 
 export type TimerCallback = (state: TimerState) => void;
 
@@ -86,7 +87,6 @@ export async function releaseWakeLock() {
 
 export function createTimerEngine(config: TimerConfig): TimerEngine {
   const { stations, rounds, roundPause } = config;
-  const RESTART_THRESHOLD_SEC = 2;
 
   // Split into warmup + kraft stations
   const warmupStations = stations.filter((s) => s.isWarmup);

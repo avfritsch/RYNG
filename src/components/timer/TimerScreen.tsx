@@ -3,6 +3,7 @@ import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
 import { speakStation, speakPause, speakRoundPause, speakDone } from '../../lib/speech.ts';
 import { onHeartRate, getLastBpm } from '../../lib/heartrate.ts';
+import { RING_VIZ_MAX_STATIONS } from '../../lib/constants.ts';
 import { RingViz } from './RingViz.tsx';
 import { HeartRateDisplay } from './HeartRateDisplay.tsx';
 import { LinearViz } from './LinearViz.tsx';
@@ -130,7 +131,7 @@ export function TimerScreen() {
     : 0;
 
   // Use ring for sets ≤ 12 stations, linear for more
-  const useRing = setStations.length <= 12 && setStations.length > 0;
+  const useRing = setStations.length <= RING_VIZ_MAX_STATIONS && setStations.length > 0;
 
   return (
     <div className="timer-screen" style={{ background: bg }}>
