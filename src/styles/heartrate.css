@@ -1,0 +1,95 @@
+.hr-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  animation: hr-pulse 1s ease-in-out infinite;
+}
+
+.hr-display--low {
+  color: var(--color-info);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.hr-display--moderate {
+  color: var(--color-work);
+  background: rgba(127, 255, 0, 0.12);
+}
+
+.hr-display--high {
+  color: var(--color-rest);
+  background: rgba(255, 59, 59, 0.12);
+}
+
+.hr-display--max {
+  color: var(--color-rest);
+  background: rgba(255, 59, 59, 0.12);
+}
+
+.hr-icon {
+  animation: hr-beat 1s ease-in-out infinite;
+}
+
+@keyframes hr-beat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.2); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(1); }
+}
+
+.hr-bpm {
+  letter-spacing: -1px;
+}
+
+/* Profile connection widget */
+.hr-widget {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.hr-widget-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hr-widget-label {
+  font-size: var(--text-base);
+  font-weight: 500;
+}
+
+.hr-widget-status {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.hr-widget-status--connected {
+  color: var(--color-work);
+}
+
+.hr-connect-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.hr-connect-btn--connect {
+  background: var(--color-info);
+  color: var(--bg-base);
+}
+
+.hr-connect-btn--disconnect {
+  background: rgba(255, 59, 59, 0.12);
+  border: 1px solid var(--color-rest);
+  color: var(--color-rest);
+}

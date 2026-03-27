@@ -1,0 +1,59 @@
+.timer-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.tc-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: opacity var(--duration-normal), transform var(--duration-fast);
+}
+
+.tc-btn:active {
+  transform: scale(0.97);
+}
+
+.tc-btn:focus-visible {
+  outline: 2px solid var(--color-work);
+  outline-offset: 2px;
+}
+
+/* Top row: Zurück / Weiter — 50:50 */
+.tc-btn--nav {
+  flex: 1;
+  padding: 14px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+/* Bottom row: Pause — 80% */
+.tc-btn--primary {
+  flex: 4;
+  padding: 16px;
+  background: var(--color-work);
+  color: var(--bg-base);
+}
+
+/* Bottom row: Stop — 20% */
+.tc-btn--danger {
+  flex: 1;
+  padding: 16px;
+  background: rgba(255, 59, 59, 0.12);
+  border: 1px solid var(--color-rest);
+  color: var(--color-rest);
+}

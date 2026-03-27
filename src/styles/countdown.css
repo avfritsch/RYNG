@@ -1,0 +1,18 @@
+.countdown {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: 7rem;
+  line-height: 1;
+  text-align: center;
+  transition: color var(--duration-slow);
+}
+
+.countdown--blink {
+  animation: countdown-blink 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes countdown-blink {
+  from { opacity: 1; }
+  to { opacity: 0.4; }
+}

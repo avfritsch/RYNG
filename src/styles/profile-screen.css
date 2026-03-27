@@ -1,0 +1,90 @@
+.profile-screen {
+  padding: 20px 16px 100px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.profile-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.025em;
+  margin-bottom: 4px;
+}
+
+.profile-email {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  margin-bottom: 24px;
+}
+
+.profile-section {
+  margin-bottom: 24px;
+}
+
+.profile-section-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.profile-backup-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-backup-btn {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.profile-backup-btn:active:not(:disabled) {
+  border-color: var(--color-work);
+}
+
+.profile-backup-btn:disabled {
+  opacity: 0.5;
+}
+
+.profile-message {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.profile-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-base);
+}
+
+.profile-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-work);
+}
+
+.profile-signout {
+  padding: 12px 24px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-rest);
+  font-weight: 700;
+  font-size: var(--text-base);
+}

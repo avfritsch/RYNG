@@ -1,0 +1,32 @@
+.phase-label {
+  text-align: center;
+}
+
+.phase-badge {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.phase-badge--warmup {
+  background: rgba(255, 230, 0, 0.15);
+  color: var(--color-prepare);
+}
+
+.phase-badge--kraft {
+  background: rgba(127, 255, 0, 0.15);
+  color: var(--color-work);
+}
+
+.phase-station-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.75rem;
+  letter-spacing: 0.03em;
+  margin: 0;
+}

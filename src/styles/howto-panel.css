@@ -1,0 +1,9 @@
+.howto-panel {
+  max-height: 80px;
+  overflow: auto;
+  padding: 8px 16px;
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}

@@ -1,0 +1,85 @@
+.done-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+  padding: 24px;
+}
+
+.done-card {
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+}
+
+.done-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 3.5rem;
+  color: var(--color-work);
+  margin-bottom: 32px;
+  letter-spacing: -0.025em;
+}
+
+.done-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.done-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.done-stat-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.done-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.done-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.done-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  transition: opacity var(--duration-normal);
+}
+
+.done-btn:active {
+  opacity: 0.85;
+}
+
+.done-btn--primary {
+  background: var(--color-work);
+  color: var(--bg-base);
+}
+
+.done-btn--secondary {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}

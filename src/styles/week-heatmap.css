@@ -1,0 +1,40 @@
+.week-heatmap {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 16px;
+}
+
+.heatmap-cell {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.heatmap-cell--active {
+  background: rgba(127, 255, 0, 0.15);
+  border-color: var(--color-work);
+}
+
+.heatmap-cell--today {
+  border-width: 2px;
+}
+
+.heatmap-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.heatmap-count {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-work);
+}

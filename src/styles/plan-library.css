@@ -1,0 +1,73 @@
+.plan-lib {
+  padding: 20px 16px 100px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.plan-lib-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.plan-lib-desc {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.plan-lib-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 0;
+}
+
+.plan-lib-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-lib-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan-lib-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-lib-card-name {
+  font-weight: 700;
+  font-size: var(--text-md);
+  color: var(--text-primary);
+}
+
+.plan-lib-card-desc {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.plan-lib-card-meta {
+  display: flex;
+  gap: 8px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.plan-lib-badge {
+  font-weight: 700;
+  color: var(--color-info);
+}
+
+.plan-lib-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}

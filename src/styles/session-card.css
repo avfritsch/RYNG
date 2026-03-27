@@ -1,0 +1,49 @@
+.session-card {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: border-color var(--duration-normal);
+}
+
+.session-card:active {
+  border-color: var(--color-work);
+}
+
+.session-card-date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-card-day {
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+
+.session-card-time {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.session-card-stats {
+  display: flex;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.session-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.session-card-stat strong {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}

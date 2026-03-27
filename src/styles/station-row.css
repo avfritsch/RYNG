@@ -1,0 +1,109 @@
+.station-row {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.station-row--warmup {
+  border-color: var(--color-prepare);
+  border-style: dashed;
+}
+
+.station-row-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.station-row-index {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.station-row-name {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-default);
+  border-radius: 0;
+  padding: 4px 0;
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.station-row-name:focus {
+  border-color: var(--color-work);
+  outline: none;
+}
+
+.station-row-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.station-row-remove:active {
+  color: var(--color-rest);
+}
+
+.station-row-times {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.station-row-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.station-row-time input[type="number"] {
+  width: 52px;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.station-row-unit {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.station-row-warmup-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-base);
+  color: var(--color-prepare);
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.station-row-warmup-toggle input[type="checkbox"] {
+  accent-color: var(--color-prepare);
+}

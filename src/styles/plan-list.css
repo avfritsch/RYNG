@@ -1,0 +1,122 @@
+.plan-list {
+  padding: 20px 16px 100px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.plan-list-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.025em;
+  margin-bottom: 20px;
+}
+
+.plan-list-loading {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.plan-section {
+  margin-bottom: 24px;
+}
+
+.plan-section-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.plan-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-card-wrapper {
+  position: relative;
+}
+
+.plan-card {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-card:active {
+  border-color: var(--color-work);
+}
+
+.plan-card-name {
+  font-weight: 600;
+  font-size: var(--text-md);
+}
+
+.plan-card-desc {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.plan-card-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.plan-card-badge--system {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--color-info);
+}
+
+.plan-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan-card-delete:active {
+  color: var(--color-rest);
+}
+
+.plan-empty {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  padding: 12px 0;
+}
+
+.plan-add-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  font-weight: 500;
+}
+
+.plan-add-btn:active {
+  border-color: var(--color-work);
+  color: var(--color-work);
+}

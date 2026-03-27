@@ -1,0 +1,76 @@
+/* Page transition: fade + slight slide up */
+main > * {
+  animation: page-enter 0.2s ease-out;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Timer overlay enter */
+.timer-screen {
+  animation: overlay-enter 0.3s ease-out;
+}
+
+@keyframes overlay-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Done screen enter */
+.done-screen {
+  animation: done-enter 0.4s ease-out;
+}
+
+@keyframes done-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.done-title {
+  animation: done-title-enter 0.5s ease-out 0.1s both;
+}
+
+@keyframes done-title-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Bottom nav item tap feedback */
+.bottom-nav-item:active {
+  transform: scale(0.9);
+  transition: transform 0.1s;
+}
+
+/* Card press effect */
+.plan-card:active,
+.session-card:active,
+.preset-chip:active {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}

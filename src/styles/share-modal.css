@@ -1,0 +1,120 @@
+.share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.share-modal {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.share-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.share-header h3 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.share-close {
+  color: var(--text-secondary);
+}
+
+.share-name {
+  font-weight: 700;
+  font-size: var(--text-md);
+  margin-bottom: 4px;
+}
+
+.share-info {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.share-qr {
+  display: block;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 16px;
+  border-radius: var(--radius-md);
+}
+
+.share-hint {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.share-code-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.share-code {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-copy-btn {
+  padding: 8px 12px;
+  background: var(--color-work);
+  color: var(--bg-base);
+  border-radius: var(--radius-sm);
+}
+
+.share-import-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-family: monospace;
+  resize: none;
+  margin-bottom: 8px;
+}
+
+.share-error {
+  font-size: var(--text-base);
+  color: var(--color-rest);
+  margin-bottom: 8px;
+}
+
+.share-import-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--color-work);
+  color: var(--bg-base);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--text-md);
+}
+
+.share-import-btn:disabled {
+  opacity: 0.5;
+}

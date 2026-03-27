@@ -1,0 +1,25 @@
+.streak-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.streak-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.streak-value--active {
+  color: var(--color-work);
+}
+
+.streak-value--zero {
+  color: var(--text-secondary);
+}
+
+.streak-label {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}

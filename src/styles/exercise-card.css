@@ -1,0 +1,82 @@
+.exercise-card {
+  overflow: hidden;
+}
+
+.exercise-card--warmup {
+  border-color: var(--color-prepare);
+  border-style: dashed;
+}
+
+.exercise-card-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.exercise-card-index {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.exercise-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exercise-card-name {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.exercise-card-times {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.exercise-card-muscle {
+  color: var(--color-info);
+}
+
+.exercise-card-chevron {
+  font-size: var(--text-md);
+  color: var(--text-secondary);
+  transition: transform var(--duration-normal);
+}
+
+.exercise-card-chevron--open {
+  transform: rotate(180deg);
+}
+
+.exercise-card-body {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--border-default);
+  padding-top: 10px;
+  margin-top: 0;
+}
+
+.exercise-card-detail {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.exercise-card-howto {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
