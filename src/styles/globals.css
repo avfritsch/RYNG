@@ -91,10 +91,24 @@ body {
 .app-shell {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
   height: 100%;
-  padding-top: env(safe-area-inset-top, 0px);
   background: var(--bg-base);
+}
+
+.safe-area-top-spacer {
+  flex-shrink: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg-base);
+}
+
+.safe-area-top-cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg-base);
+  z-index: 1000;
 }
 
 a {

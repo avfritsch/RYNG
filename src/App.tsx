@@ -45,6 +45,8 @@ function AppContent() {
 
   return (
     <div className="app-shell">
+      <div className="safe-area-top-cover" />
+      <div className="safe-area-top-spacer" />
       {!isOnline && (
         <div role="alert" aria-live="assertive" style={{
           background: 'var(--color-rest)',
