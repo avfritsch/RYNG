@@ -22,11 +22,11 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <div className="confirm-overlay" onClick={onCancel}>
-      <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="confirm-modal" role="alertdialog" aria-labelledby="confirm-title" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-icon-wrap">
           <Icon name={danger ? 'alert-triangle' : 'info'} size={24} />
         </div>
-        <h3 className="confirm-title">{title}</h3>
+        <h3 id="confirm-title" className="confirm-title">{title}</h3>
         <p className="confirm-message">{message}</p>
         <div className="confirm-actions">
           <button className="confirm-btn confirm-btn--cancel" onClick={onCancel}>

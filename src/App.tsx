@@ -60,16 +60,16 @@ function AppContent() {
       )}
       <main style={{ flex: 1, overflow: 'auto' }}>
         <Routes>
-          <Route path="/" element={<ConfigScreen />} />
-          <Route path="/plans" element={<PlanListScreen />} />
-          <Route path="/plans/new" element={<PlanEditorScreen />} />
-          <Route path="/plans/:planId" element={<PlanDetailScreen />} />
-          <Route path="/plans/:planId/edit" element={<PlanEditorScreen />} />
-          <Route path="/history" element={<HistoryListScreen />} />
-          <Route path="/history/:sessionId" element={<SessionDetailScreen />} />
-          <Route path="/library" element={<LibraryScreen />} />
-          <Route path="/library/plans" element={<PlanLibraryScreen />} />
-          <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/" element={<ErrorBoundary><ConfigScreen /></ErrorBoundary>} />
+          <Route path="/plans" element={<ErrorBoundary><PlanListScreen /></ErrorBoundary>} />
+          <Route path="/plans/new" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
+          <Route path="/plans/:planId" element={<ErrorBoundary><PlanDetailScreen /></ErrorBoundary>} />
+          <Route path="/plans/:planId/edit" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
+          <Route path="/history" element={<ErrorBoundary><HistoryListScreen /></ErrorBoundary>} />
+          <Route path="/history/:sessionId" element={<ErrorBoundary><SessionDetailScreen /></ErrorBoundary>} />
+          <Route path="/library" element={<ErrorBoundary><LibraryScreen /></ErrorBoundary>} />
+          <Route path="/library/plans" element={<ErrorBoundary><PlanLibraryScreen /></ErrorBoundary>} />
+          <Route path="/profile" element={<ErrorBoundary><ProfileScreen /></ErrorBoundary>} />
         </Routes>
       </main>
       <BottomNav />

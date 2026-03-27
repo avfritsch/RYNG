@@ -110,7 +110,7 @@ export const RingViz = memo(function RingViz({
 
   return (
     <div className="ring-viz-container">
-      <svg viewBox="0 0 200 200" className="ring-viz-svg">
+      <svg viewBox="0 0 200 200" className="ring-viz-svg" role="img" aria-label="Timer-Fortschritt">
         {/* Background track */}
         <circle
           cx={CX}

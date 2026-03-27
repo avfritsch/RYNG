@@ -42,8 +42,8 @@ export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp'>
       timestamp: Date.now(),
     };
     await db.put(STORE_NAME, entry);
-  } catch {
-    // IndexedDB not available
+  } catch (e) {
+    console.warn('IDB cache error:', e);
   }
 }
 
@@ -63,13 +63,14 @@ export async function flush(): Promise<number> {
         await executeMutation(mutation);
         await db.delete(STORE_NAME, mutation.id);
         flushed++;
-      } catch {
+      } catch (e) {
+        console.warn('IDB cache error:', e);
         // Stop on first failure — remaining mutations stay queued
         break;
       }
     }
-  } catch {
-    // IndexedDB not available
+  } catch (e) {
+    console.warn('IDB cache error:', e);
   }
   return flushed;
 }
@@ -113,7 +114,8 @@ export async function pendingCount(): Promise<number> {
   try {
     const db = await getDB();
     return await db.count(STORE_NAME);
-  } catch {
+  } catch (e) {
+    console.warn('IDB cache error:', e);
     return 0;
   }
 }
