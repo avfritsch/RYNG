@@ -7,6 +7,7 @@ import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { useSavePreset, presetToConfig } from '../../hooks/usePresets.ts';
 import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
+import { unlockAudio } from '../../lib/timer-engine.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
 import { PresetBar } from './PresetBar.tsx';
@@ -130,6 +131,7 @@ export function ConfigScreen() {
 
   function handleStart() {
     if (stations.length === 0) return;
+    unlockAudio();
     const config: TimerConfig = { stations, rounds, roundPause };
     loadConfig(config);
     startSession();

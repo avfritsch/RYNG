@@ -31,6 +31,20 @@ function getAudioCtx(): AudioContext {
   return audioCtx;
 }
 
+/** Must be called from a user gesture (e.g. button click) to unlock audio on iOS */
+export function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') {
+    ctx.resume();
+  }
+  // Play a silent buffer to fully unlock on iOS Safari
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start();
+}
+
 export function beep(freq = 880, duration = 150) {
   try {
     const ctx = getAudioCtx();
@@ -119,9 +133,13 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
       const ks = kraftStations[i];
       const idx = stations.indexOf(ks);
       sequence.push({ stationIndex: idx, station: ks, phase: 'work', duration: ks.workSeconds, round: r });
-      // Pause after each station except the very last station of the very last round
-      const isLastStationLastRound = r === rounds && i === kraftStations.length - 1;
-      if (!isLastStationLastRound && ks.pauseSeconds > 0) {
+      // Skip station pause if: last station of last round, or last station of a round
+      // followed by a round pause (round pause replaces the station pause)
+      const isLastInRound = i === kraftStations.length - 1;
+      const isLastRound = r === rounds;
+      const hasRoundPause = !isLastRound && roundPause > 0;
+      const skipPause = isLastInRound && (isLastRound || hasRoundPause);
+      if (!skipPause && ks.pauseSeconds > 0) {
         sequence.push({ stationIndex: idx, station: ks, phase: 'pause', duration: ks.pauseSeconds, round: r });
       }
     }
