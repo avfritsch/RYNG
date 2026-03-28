@@ -112,7 +112,7 @@ export function TrainingCalendar({ sessions, onDayClick }: TrainingCalendarProps
       </div>
 
       {/* Day labels */}
-      <div className="cal-grid">
+      <div className="cal-grid" role="grid" aria-label="Trainingskalender">
         {DAY_LABELS.map((l) => (
           <div key={l} className="cal-day-label">{l}</div>
         ))}

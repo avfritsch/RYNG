@@ -37,8 +37,8 @@ export async function cacheSet(store: StoreName, key: string, value: unknown) {
   try {
     const db = await getDB();
     await db.put(store, value, key);
-  } catch {
-    // IndexedDB not available (e.g. private browsing)
+  } catch (e) {
+    console.warn('IDB cache error:', e);
   }
 }
 
@@ -49,7 +49,8 @@ export async function cacheGet<T>(store: StoreName, key: string): Promise<T | un
   try {
     const db = await getDB();
     return await db.get(store, key) as T | undefined;
-  } catch {
+  } catch (e) {
+    console.warn('IDB cache error:', e);
     return undefined;
   }
 }
@@ -61,8 +62,8 @@ export async function cacheDel(store: StoreName, key: string) {
   try {
     const db = await getDB();
     await db.delete(store, key);
-  } catch {
-    // Ignore
+  } catch (e) {
+    console.warn('IDB cache error:', e);
   }
 }
 
@@ -73,7 +74,7 @@ export async function cacheClear(store: StoreName) {
   try {
     const db = await getDB();
     await db.clear(store);
-  } catch {
-    // Ignore
+  } catch (e) {
+    console.warn('IDB cache error:', e);
   }
 }

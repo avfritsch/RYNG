@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef, memo, useCallback } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
+import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
 import { useVotes, useToggleVote } from '../../hooks/useVotes.ts';
+import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
 import type { TimerConfig } from '../../types/timer.ts';
@@ -16,14 +18,7 @@ const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio
 
 export function LibraryScreen() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<ExerciseCategory[]>([]);
-  const [equipmentSel, setEquipmentSel] = useState<string[]>([]);
-  const [muscleGroups, setMuscleGroups] = useState<string[]>([]);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [catOpen, setCatOpen] = useState(true);
-  const [mgOpen, setMgOpen] = useState(false);
-  const [eqOpen, setEqOpen] = useState(false);
+  const filters = useLibraryFilters();
   const [selected, setSelected] = useState<LibraryExercise | null>(null);
   const { data: favorites } = useFavorites();
   const toggleFavorite = useToggleFavorite();
@@ -33,26 +28,10 @@ export function LibraryScreen() {
   const [showCreate, setShowCreate] = useState(false);
   const [deleteExercise, setDeleteExercise] = useState<LibraryExercise | null>(null);
   const deleteLibExercise = useDeleteLibraryExercise();
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [showOwnOnly, setShowOwnOnly] = useState(false);
+  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
+  const setPendingExercise = useNavigationStore((s) => s.setPendingExercise);
 
-  // Debounce search input
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    searchTimer.current = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
-  }, [search]);
-
-  const { data: exercises, isLoading } = useExerciseLibrary({
-    categories: categories.length > 0 ? categories : undefined,
-    equipment: equipmentSel.length > 0 ? equipmentSel : undefined,
-    muscleGroups: muscleGroups.length > 0 ? muscleGroups : undefined,
-    search: debouncedSearch || undefined,
-  });
-
-  function toggleFilter<T>(arr: T[], val: T, setter: (v: T[]) => void) {
-    setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
-  }
+  const { data: exercises, isLoading } = useExerciseLibrary(filters.queryFilters);
 
   function handleQuickStart(ex: LibraryExercise) {
     const config: TimerConfig = {
@@ -66,7 +45,7 @@ export function LibraryScreen() {
       rounds: 3,
       roundPause: 90,
     };
-    sessionStorage.setItem('ryng_loaded_config', JSON.stringify(config));
+    setPendingConfig(config);
     navigate('/');
   }
 
@@ -93,22 +72,22 @@ export function LibraryScreen() {
   }, []);
 
   function handleAddToPlan(ex: LibraryExercise) {
-    sessionStorage.setItem('ryng_add_exercise', JSON.stringify({
+    setPendingExercise({
       name: ex.name,
       detail: ex.detail,
       muscle_group: ex.muscle_group,
       howto: ex.howto,
       category: ex.category,
       library_exercise_id: ex.id,
-    }));
+    });
     navigate('/plans');
   }
 
   let filteredExercises = exercises;
-  if (showFavoritesOnly && favorites) {
+  if (filters.showFavoritesOnly && favorites) {
     filteredExercises = filteredExercises?.filter((ex) => favorites.has(ex.id));
   }
-  if (showOwnOnly) {
+  if (filters.showOwnOnly) {
     filteredExercises = filteredExercises?.filter((ex) => ex.created_by !== null);
   }
 
@@ -126,11 +105,11 @@ export function LibraryScreen() {
         <input
           className="library-search-input"
           placeholder="Übung suchen..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={filters.search}
+          onChange={(e) => filters.setSearch(e.target.value)}
         />
-        {search && (
-          <button className="library-search-clear" onClick={() => setSearch('')}>
+        {filters.search && (
+          <button className="library-search-clear" onClick={() => filters.setSearch('')}>
             <Icon name="x-close" size={14} />
           </button>
         )}
@@ -138,14 +117,14 @@ export function LibraryScreen() {
 
       <div className="library-fav-toggle">
         <button
-          className={`library-chip ${showFavoritesOnly ? 'library-chip--active' : ''}`}
-          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          className={`library-chip ${filters.showFavoritesOnly ? 'library-chip--active' : ''}`}
+          onClick={() => filters.setShowFavoritesOnly(!filters.showFavoritesOnly)}
         >
           <Icon name="heart" size={14} /> Favoriten
         </button>
         <button
-          className={`library-chip ${showOwnOnly ? 'library-chip--active' : ''}`}
-          onClick={() => setShowOwnOnly(!showOwnOnly)}
+          className={`library-chip ${filters.showOwnOnly ? 'library-chip--active' : ''}`}
+          onClick={() => filters.setShowOwnOnly(!filters.showOwnOnly)}
         >
           <Icon name="user" size={14} /> Eigene
         </button>
@@ -155,54 +134,54 @@ export function LibraryScreen() {
       </div>
 
       <div className="library-filters">
-        <button className="library-filter-header" onClick={() => setCatOpen(!catOpen)}>
+        <button className="library-filter-header" onClick={() => filters.setCatOpen(!filters.catOpen)}>
           <span>Kategorie</span>
-          {categories.length > 0 && <span className="library-filter-tag">{categories.length} aktiv</span>}
-          <Icon name={catOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+          {filters.categories.length > 0 && <span className="library-filter-tag">{filters.categories.length} aktiv</span>}
+          <Icon name={filters.catOpen ? 'chevron-up' : 'chevron-down'} size={16} />
         </button>
-        {catOpen && (
+        {filters.catOpen && (
           <div className="library-chip-wrap">
-            {categories.length > 0 && (
-              <button className="library-chip library-chip--reset" onClick={() => setCategories([])}>Zurücksetzen</button>
+            {filters.categories.length > 0 && (
+              <button className="library-chip library-chip--reset" onClick={() => filters.setCategories([])}>Zurücksetzen</button>
             )}
             {allCategories.map((cat) => (
-              <button key={cat} className={`library-chip ${categories.includes(cat) ? 'library-chip--active' : ''}`} onClick={() => toggleFilter(categories, cat, setCategories)}>
+              <button key={cat} className={`library-chip ${filters.categories.includes(cat) ? 'library-chip--active' : ''}`} onClick={() => filters.toggleFilter(filters.categories, cat, filters.setCategories)}>
                 {CATEGORY_LABELS[cat]}
               </button>
             ))}
           </div>
         )}
 
-        <button className="library-filter-header" onClick={() => setMgOpen(!mgOpen)}>
+        <button className="library-filter-header" onClick={() => filters.setMgOpen(!filters.mgOpen)}>
           <span>Muskelgruppe</span>
-          {muscleGroups.length > 0 && <span className="library-filter-tag">{muscleGroups.length} aktiv</span>}
-          <Icon name={mgOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+          {filters.muscleGroups.length > 0 && <span className="library-filter-tag">{filters.muscleGroups.length} aktiv</span>}
+          <Icon name={filters.mgOpen ? 'chevron-up' : 'chevron-down'} size={16} />
         </button>
-        {mgOpen && (
+        {filters.mgOpen && (
           <div className="library-chip-wrap">
-            {muscleGroups.length > 0 && (
-              <button className="library-chip library-chip--reset" onClick={() => setMuscleGroups([])}>Zurücksetzen</button>
+            {filters.muscleGroups.length > 0 && (
+              <button className="library-chip library-chip--reset" onClick={() => filters.setMuscleGroups([])}>Zurücksetzen</button>
             )}
             {MUSCLE_GROUP_OPTIONS.map((mg) => (
-              <button key={mg} className={`library-chip ${muscleGroups.includes(mg) ? 'library-chip--active' : ''}`} onClick={() => toggleFilter(muscleGroups, mg, setMuscleGroups)}>
+              <button key={mg} className={`library-chip ${filters.muscleGroups.includes(mg) ? 'library-chip--active' : ''}`} onClick={() => filters.toggleFilter(filters.muscleGroups, mg, filters.setMuscleGroups)}>
                 {mg}
               </button>
             ))}
           </div>
         )}
 
-        <button className="library-filter-header" onClick={() => setEqOpen(!eqOpen)}>
+        <button className="library-filter-header" onClick={() => filters.setEqOpen(!filters.eqOpen)}>
           <span>Equipment</span>
-          {equipmentSel.length > 0 && <span className="library-filter-tag">{equipmentSel.length} aktiv</span>}
-          <Icon name={eqOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+          {filters.equipmentSel.length > 0 && <span className="library-filter-tag">{filters.equipmentSel.length} aktiv</span>}
+          <Icon name={filters.eqOpen ? 'chevron-up' : 'chevron-down'} size={16} />
         </button>
-        {eqOpen && (
+        {filters.eqOpen && (
           <div className="library-chip-wrap">
-            {equipmentSel.length > 0 && (
-              <button className="library-chip library-chip--reset" onClick={() => setEquipmentSel([])}>Zurücksetzen</button>
+            {filters.equipmentSel.length > 0 && (
+              <button className="library-chip library-chip--reset" onClick={() => filters.setEquipmentSel([])}>Zurücksetzen</button>
             )}
             {EQUIPMENT_OPTIONS.map((eq) => (
-              <button key={eq} className={`library-chip ${equipmentSel.includes(eq) ? 'library-chip--active' : ''}`} onClick={() => toggleFilter(equipmentSel, eq, setEquipmentSel)}>
+              <button key={eq} className={`library-chip ${filters.equipmentSel.includes(eq) ? 'library-chip--active' : ''}`} onClick={() => filters.toggleFilter(filters.equipmentSel, eq, filters.setEquipmentSel)}>
                 {eq}
               </button>
             ))}

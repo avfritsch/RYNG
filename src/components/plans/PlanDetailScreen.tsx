@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlans, usePlanDays, usePlanExercises } from '../../hooks/usePlans.ts';
 import { usePublishPlan } from '../../hooks/usePlanLibrary.ts';
+import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { ExerciseCard } from './ExerciseCard.tsx';
 import { ShareModal } from '../ui/ShareModal.tsx';
 import { Icon } from '../ui/Icon.tsx';
@@ -17,6 +18,7 @@ export function PlanDetailScreen() {
   const [showShare, setShowShare] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const publishPlan = usePublishPlan();
+  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
 
   const plan = plans?.find((p) => p.id === planId);
   const selectedDay = days?.[selectedDayIndex];
@@ -44,8 +46,7 @@ export function PlanDetailScreen() {
       roundPause: selectedDay.round_pause,
     };
 
-    // Store in sessionStorage for ConfigScreen to pick up
-    sessionStorage.setItem('ryng_loaded_config', JSON.stringify(config));
+    setPendingConfig(config);
     navigate('/');
   }
 
@@ -140,10 +141,10 @@ export function PlanDetailScreen() {
                   {!plan.is_system && (
                     <button
                       className="plan-share-btn"
-                      onClick={() => publishPlan.mutate({ planId: plan.id, isPublic: !(plan as any).is_public })}
+                      onClick={() => publishPlan.mutate({ planId: plan.id, isPublic: !plan.is_public })}
                     >
-                      <Icon name={(plan as any).is_public ? 'eye-off' : 'eye'} size={16} />
-                      {(plan as any).is_public ? 'PRIVAT' : 'VERÖFFENTLICHEN'}
+                      <Icon name={plan.is_public ? 'eye-off' : 'eye'} size={16} />
+                      {plan.is_public ? 'PRIVAT' : 'VERÖFFENTLICHEN'}
                     </button>
                   )}
                 </div>

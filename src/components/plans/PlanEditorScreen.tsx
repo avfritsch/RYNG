@@ -11,6 +11,9 @@ import {
 import { DebouncedInput } from '../ui/DebouncedInput.tsx';
 import { Icon } from '../ui/Icon.tsx';
 import { ExerciseSortable } from './ExerciseSortable.tsx';
+import { PlanForm } from './PlanForm.tsx';
+import { DayTabs } from './DayTabs.tsx';
+import { DayEditor } from './DayEditor.tsx';
 import type { Plan, PlanDay, PlanExercise } from '../../types/plan.ts';
 import { LibraryPicker } from './LibraryPicker.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
@@ -237,82 +240,32 @@ export function PlanEditorScreen() {
         <h2 className="plan-editor-title">Plan bearbeiten</h2>
       </div>
 
-      <div className="plan-editor-form">
-        <input
-          className="plan-editor-input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={handleUpdatePlan}
-          placeholder="Plan-Name"
-        />
-        <textarea
-          className="plan-editor-textarea"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          onBlur={handleUpdatePlan}
-          placeholder="Beschreibung"
-          rows={2}
-        />
-      </div>
+      <PlanForm
+        name={name}
+        description={description}
+        onNameChange={setName}
+        onDescriptionChange={setDescription}
+        onSave={handleUpdatePlan}
+      />
 
       {/* Day Tabs */}
-      <div className="plan-editor-day-tabs">
-        {days?.map((day, i) => (
-          <button
-            key={day.id}
-            className={`plan-day-tab ${i === selectedDayIndex ? 'plan-day-tab--active' : ''}`}
-            onClick={() => setSelectedDayIndex(i)}
-          >
-            {day.label}
-          </button>
-        ))}
-        <button className="plan-day-tab plan-day-tab--add" onClick={handleAddDay}>
-          +
-        </button>
-      </div>
+      {days && (
+        <DayTabs
+          days={days}
+          selectedIndex={selectedDayIndex}
+          onSelect={setSelectedDayIndex}
+          onAdd={handleAddDay}
+        />
+      )}
 
       {selectedDay && (
         <>
-          <div className="plan-editor-day-config">
-            <label className="plan-editor-field">
-              <span>Label</span>
-              <DebouncedInput
-                value={selectedDay.label}
-                onCommit={(v) => handleUpdateDay('label', v)}
-              />
-            </label>
-            <label className="plan-editor-field">
-              <span>Fokus</span>
-              <DebouncedInput
-                value={selectedDay.focus ?? ''}
-                onCommit={(v) => handleUpdateDay('focus', v)}
-                placeholder="z.B. Push"
-              />
-            </label>
-            <label className="plan-editor-field">
-              <span>Runden</span>
-              <DebouncedInput
-                type="number"
-                min={1}
-                max={20}
-                value={selectedDay.rounds}
-                onCommit={(v) => handleUpdateDay('rounds', Number(v))}
-              />
-            </label>
-            <label className="plan-editor-field">
-              <span>Rundenpause (s)</span>
-              <DebouncedInput
-                type="number"
-                min={0}
-                max={300}
-                value={selectedDay.round_pause}
-                onCommit={(v) => handleUpdateDay('round_pause', Number(v))}
-              />
-            </label>
-            <button className="plan-editor-delete-day" onClick={handleDeleteDay}>
-              Tag löschen
-            </button>
-          </div>
+          <DayEditor
+            day={selectedDay}
+            planId={plan.id}
+            onUpdateDay={handleUpdateDay}
+            onDeleteDay={handleDeleteDay}
+          />
 
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             {/* Warmup Exercises */}
