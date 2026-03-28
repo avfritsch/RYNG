@@ -5,36 +5,129 @@ export interface TrainingWarning {
   message: string;
 }
 
-// Muscle group detection from station names
-const MUSCLE_PATTERNS: Record<string, RegExp> = {
-  brust: /brust|bench|push.?up|liegestütz|bankdrück|dips|decline|diamond/i,
-  rücken: /rücken|row|rudern|klimmzug|pulldown|pull.?up|lat|reverse fly|face pull|body saw/i,
-  schultern: /schulter|shoulder|press|seitheben|pike|military|deltoid/i,
-  bizeps: /bizeps|curl|bicep/i,
-  trizeps: /trizeps|tricep|pushdown|skull|french/i,
-  core: /core|plank|crunch|russian|dead.?bug|pallof|hollow|woodchop|holzhacker|mountain/i,
-  beine: /bein|squat|kniebeug|lunge|ausfallschritt|deadlift|kreuzheben|split|bulgarian|wadenheb|calf|swing|leg|glute|bridge|wall.?sit|sumo|jump/i,
-  cardio: /cardio|laufband|rudererg|fahrrad|seilspring|jumping|burpee|high.?knee|box.?jump|skater/i,
+// ── Muscle → Region mapping ──
+
+type Region = 'push' | 'pull' | 'core' | 'beine';
+
+const MUSCLE_TO_REGION: Record<string, Region[]> = {
+  brust:           ['push'],
+  schultern:       ['push'],
+  trizeps:         ['push'],
+  latissimus:      ['pull'],
+  'oberer rücken': ['pull'],
+  'hint. schulter':['pull'],
+  bizeps:          ['pull'],
+  core:            ['core'],
+  hüfte:           ['core', 'beine'],
+  'unterer rücken':['core'],
+  quadrizeps:      ['beine'],
+  hamstrings:      ['beine'],
+  gesäß:           ['beine'],
+  waden:           ['beine'],
+  adduktoren:      ['beine'],
+  // "ganzkörper" covers all regions
+  ganzkörper:      ['push', 'pull', 'core', 'beine'],
 };
 
-function detectMuscleGroups(name: string): string[] {
-  const groups: string[] = [];
-  for (const [group, pattern] of Object.entries(MUSCLE_PATTERNS)) {
-    if (pattern.test(name)) groups.push(group);
+const REGION_LABELS: Record<Region, string> = {
+  push: 'Push (Brust/Schultern/Trizeps)',
+  pull: 'Pull (Rücken/Bizeps)',
+  core: 'Core (Rumpf/Hüfte)',
+  beine: 'Beine',
+};
+
+// ── Exercise name → specific muscles ──
+
+const MUSCLE_PATTERNS: [RegExp, string[]][] = [
+  // Push muscles
+  [/bankdrück|bench|brust/i,                                     ['brust']],
+  [/push.?up|liegestütz/i,                                       ['brust', 'schultern', 'trizeps']],
+  [/schulterdrück|shoulder.?press|military|pike/i,               ['schultern']],
+  [/seitheben|lateral/i,                                          ['schultern']],
+  [/schulterkreis|arm.?circle|scap/i,                            ['schultern']],
+  [/dips/i,                                                       ['brust', 'trizeps']],
+  [/trizeps|pushdown|diamond|french|skull/i,                     ['trizeps']],
+  [/decline/i,                                                    ['brust']],
+  [/pallof/i,                                                     ['core']],
+  [/thruster/i,                                                   ['schultern', 'quadrizeps']],
+
+  // Pull muscles
+  [/klimmzug|pulldown|pull.?up|lat\b/i,                         ['latissimus']],
+  [/row|rudern/i,                                                 ['oberer rücken']],
+  [/face.?pull|reverse.?fly/i,                                   ['hint. schulter']],
+  [/curl|bizeps|bicep|hammer/i,                                  ['bizeps']],
+  [/pull.?apart/i,                                                ['oberer rücken', 'hint. schulter']],
+  [/body.?saw/i,                                                  ['core']],
+  [/superman|snow.?angel/i,                                      ['unterer rücken']],
+
+  // Core
+  [/plank|crunch|russian|dead.?bug|hollow|mountain|woodchop|holzhacker/i, ['core']],
+  [/cat.?cow|thoracic/i,                                         ['core', 'unterer rücken']],
+
+  // Beine
+  [/squat|kniebeug|goblet/i,                                     ['quadrizeps', 'gesäß']],
+  [/lunge|ausfallschritt/i,                                      ['quadrizeps', 'gesäß']],
+  [/deadlift|kreuzheben/i,                                       ['hamstrings', 'gesäß', 'unterer rücken']],
+  [/bulgarian|split/i,                                            ['quadrizeps', 'gesäß']],
+  [/leg.?curl|beinbeug/i,                                        ['hamstrings']],
+  [/wadenheb|calf/i,                                              ['waden']],
+  [/glute.?bridge|hip.?thrust/i,                                 ['gesäß']],
+  [/wall.?sit/i,                                                  ['quadrizeps']],
+  [/sumo/i,                                                       ['adduktoren', 'quadrizeps']],
+  [/swing|kettlebell/i,                                           ['gesäß', 'hamstrings']],
+  [/leg.?swing/i,                                                 ['hüfte']],
+  [/crab.?walk/i,                                                 ['gesäß', 'hüfte']],
+  [/sprunggelenk|ankle/i,                                        ['waden']],
+  [/jump|box|skater/i,                                            ['quadrizeps', 'waden']],
+  [/high.?knee/i,                                                 ['hüfte', 'quadrizeps']],
+
+  // Ganzkörper
+  [/burpee|inchworm/i,                                            ['ganzkörper']],
+  [/renegade/i,                                                   ['brust', 'oberer rücken', 'core']],
+  [/world.?s?.?greatest/i,                                       ['hüfte', 'schultern', 'core']],
+
+  // Stretching / Mobility (map to the muscle they target)
+  [/hip.?90|hip.?stretch|pigeon|hüft/i,                         ['hüfte']],
+  [/foam.?roll/i,                                                 ['oberer rücken']],
+  [/hamstring.?stretch/i,                                         ['hamstrings']],
+  [/shoulder.?dislocate|band.?dislocate/i,                       ['schultern']],
+  [/wrist|handgelenk/i,                                           []],  // no region
+
+  // Cardio — no muscle regions (general warm-up only)
+  [/laufband|rudererg|crosstrainer|fahrrad|seilspring|jumping.?jack|cardio/i, []],
+];
+
+function detectMuscles(name: string): string[] {
+  const muscles = new Set<string>();
+  for (const [pattern, groups] of MUSCLE_PATTERNS) {
+    if (pattern.test(name)) {
+      groups.forEach((g) => muscles.add(g));
+    }
   }
-  return groups;
+  return [...muscles];
 }
 
-// Push/Pull classification
-const PUSH_PATTERN = /push.?up|liegestütz|bankdrück|bench|dips|press|schulterdrück|pike|decline|diamond|trizeps|pushdown|thruster/i;
-const PULL_PATTERN = /row|rudern|klimmzug|pulldown|pull.?up|curl|bizeps|face.?pull|reverse.?fly|body.?saw/i;
+function musclesToRegions(muscles: string[]): Set<Region> {
+  const regions = new Set<Region>();
+  for (const muscle of muscles) {
+    const mapped = MUSCLE_TO_REGION[muscle];
+    if (mapped) mapped.forEach((r) => regions.add(r));
+  }
+  return regions;
+}
 
-function getMovementType(name: string): 'push' | 'pull' | 'legs' | 'other' {
-  if (PUSH_PATTERN.test(name)) return 'push';
-  if (PULL_PATTERN.test(name)) return 'pull';
-  if (MUSCLE_PATTERNS.beine.test(name)) return 'legs';
+// ── Push/Pull for consecutive exercise check ──
+
+function getMovementType(name: string): 'push' | 'pull' | 'legs' | 'core' | 'other' {
+  const regions = musclesToRegions(detectMuscles(name));
+  if (regions.has('push') && !regions.has('pull') && !regions.has('beine')) return 'push';
+  if (regions.has('pull') && !regions.has('push') && !regions.has('beine')) return 'pull';
+  if (regions.has('beine') && !regions.has('push') && !regions.has('pull')) return 'legs';
+  if (regions.has('core') && regions.size === 1) return 'core';
   return 'other';
 }
+
+// ── Analysis ──
 
 export function analyzeTraining(stations: StationConfig[]): TrainingWarning[] {
   const warnings: TrainingWarning[] = [];
@@ -43,46 +136,51 @@ export function analyzeTraining(stations: StationConfig[]): TrainingWarning[] {
 
   if (kraftStations.length === 0) return warnings;
 
-  // Rule 1: Check for consecutive same muscle group
+  // Rule 1: Consecutive same region (except core which is OK to repeat)
   for (let i = 1; i < kraftStations.length; i++) {
-    const prevGroups = detectMuscleGroups(kraftStations[i - 1].name);
-    const currGroups = detectMuscleGroups(kraftStations[i].name);
-    const overlap = prevGroups.filter((g) => currGroups.includes(g) && g !== 'cardio');
-    if (overlap.length > 0 && overlap[0] !== 'core') {
-      warnings.push({
-        type: 'warning',
-        message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" trainieren beide ${overlap[0]} — besser abwechseln für mehr Erholung.`,
-      });
+    const prevRegions = musclesToRegions(detectMuscles(kraftStations[i - 1].name));
+    const currRegions = musclesToRegions(detectMuscles(kraftStations[i].name));
+    for (const region of prevRegions) {
+      if (region !== 'core' && currRegions.has(region)) {
+        warnings.push({
+          type: 'warning',
+          message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" belasten beide ${REGION_LABELS[region]} — besser abwechseln.`,
+        });
+        break; // one warning per pair
+      }
     }
   }
 
-  // Rule 2: Check for consecutive push or pull
+  // Rule 2: Consecutive push or pull
   for (let i = 1; i < kraftStations.length; i++) {
     const prevType = getMovementType(kraftStations[i - 1].name);
     const currType = getMovementType(kraftStations[i].name);
     if (prevType === currType && (prevType === 'push' || prevType === 'pull')) {
       warnings.push({
         type: 'info',
-        message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" sind beide ${prevType === 'push' ? 'Drück' : 'Zug'}-Übungen — Push/Pull abwechseln verbessert die Leistung.`,
+        message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" sind beide ${prevType === 'push' ? 'Drück' : 'Zug'}-Übungen — abwechseln verbessert die Leistung.`,
       });
     }
   }
 
-  // Rule 3: Check warmup matches strength muscle groups
+  // Rule 3: Warmup coverage at region level
   if (warmupStations.length > 0 && kraftStations.length > 0) {
-    const kraftMuscles = new Set(kraftStations.flatMap((s) => detectMuscleGroups(s.name)));
-    const warmupMuscles = new Set(warmupStations.flatMap((s) => detectMuscleGroups(s.name)));
+    const kraftRegions = new Set<Region>();
+    for (const s of kraftStations) {
+      musclesToRegions(detectMuscles(s.name)).forEach((r) => kraftRegions.add(r));
+    }
 
-    // Remove generic groups
-    kraftMuscles.delete('cardio');
-    warmupMuscles.delete('cardio');
+    const warmupRegions = new Set<Region>();
+    for (const s of warmupStations) {
+      musclesToRegions(detectMuscles(s.name)).forEach((r) => warmupRegions.add(r));
+    }
 
-    const uncovered = [...kraftMuscles].filter((m) => !warmupMuscles.has(m));
-    if (uncovered.length > 0 && kraftMuscles.size > 0) {
-      const missing = uncovered.map((m) => m.charAt(0).toUpperCase() + m.slice(1)).join(', ');
+    const uncovered = [...kraftRegions].filter((r) => !warmupRegions.has(r));
+    if (uncovered.length > 0) {
+      const labels = uncovered.map((r) => REGION_LABELS[r]).join(', ');
       warnings.push({
         type: 'info',
-        message: `Warmup deckt nicht alle Kraftübungs-Muskelgruppen ab. Nicht aufgewärmt: ${missing}.`,
+        message: `Warmup deckt nicht alle Bereiche ab. Nicht aufgewärmt: ${labels}.`,
       });
     }
   }
