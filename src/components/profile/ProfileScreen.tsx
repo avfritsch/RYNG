@@ -7,6 +7,7 @@ import {
   getSpotifyClientId, setSpotifyClientId,
   isSpotifyConnected, startSpotifyAuth, disconnectSpotify,
 } from '../../lib/spotify.ts';
+import { getTheme, setTheme, type Theme } from '../../lib/theme.ts';
 import { toast } from '../../stores/toast-store.ts';
 import { useAuth } from '../../hooks/useAuth.ts';
 import { MesocycleWidget } from './MesocycleWidget.tsx';
@@ -16,6 +17,7 @@ import '../../styles/profile-screen.css';
 export function ProfileScreen() {
   const { user } = useAuth();
   const [showEditor, setShowEditor] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(getTheme());
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
   const hr = useHeartRate();
   const [spotifyId, setSpotifyId] = useState(getSpotifyClientId());
@@ -65,6 +67,23 @@ export function ProfileScreen() {
       ) : (
         <MesocycleWidget onEdit={() => setShowEditor(true)} />
       )}
+
+      <div className="profile-section">
+        <h3 className="profile-section-title">Darstellung</h3>
+        <label className="profile-toggle">
+          <span>Light Mode</span>
+          <input
+            type="checkbox"
+            checked={currentTheme === 'light'}
+            onChange={(e) => {
+              const t = e.target.checked ? 'light' : 'dark';
+              setCurrentTheme(t);
+              setTheme(t);
+              toast.info(t === 'light' ? 'Light Mode aktiviert' : 'Dark Mode aktiviert');
+            }}
+          />
+        </label>
+      </div>
 
       {isSpeechAvailable() && (
         <div className="profile-section">

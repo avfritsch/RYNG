@@ -66,6 +66,38 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme="light"] {
+  --bg-base: #F5F5F5;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #EEEEEE;
+  --bg-hover: #E0E0E0;
+
+  --border-default: #D0D0D0;
+  --border-hover: #B0B0B0;
+
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+  --text-disabled: #BBBBBB;
+
+  --color-work: #2E8B00;
+  --color-rest: #CC2222;
+  --color-prepare: #B8A000;
+  --color-info: #2563EB;
+
+  --color-work-bg: #2E8B0018;
+  --color-rest-bg: #CC222218;
+  --color-prepare-bg: #B8A00018;
+  --color-info-bg: #2563EB18;
+
+  --bg-phase-work: #E8F5E0;
+  --bg-phase-pause: #FDE8E8;
+  --bg-phase-round: #E8E8FD;
+  --bg-phase-warmup: #FDF8E0;
+
+  color-scheme: light;
+}
+
 *,
 *::before,
 *::after {
