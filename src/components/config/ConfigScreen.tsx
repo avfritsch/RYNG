@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import type { StationConfig, TimerConfig } from '../../types/timer.ts';
 import type { Preset } from '../../types/database.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
@@ -8,9 +10,12 @@ import { useSavePreset, presetToConfig } from '../../hooks/usePresets.ts';
 import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
 import { unlockAudio } from '../../lib/timer-engine.ts';
+import { analyzeTraining } from '../../lib/training-rules.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
 import { PresetBar } from './PresetBar.tsx';
+import { AiPlannerModal } from './AiPlannerModal.tsx';
+import type { GeneratedPlan } from '../../lib/ai-planner.ts';
 import '../../styles/config-screen.css';
 
 const defaultStation = (index: number): StationConfig => ({
@@ -30,12 +35,23 @@ const defaultStations: StationConfig[] = [
   { name: 'Ausfallschritte', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: '' },
 ];
 
+let nextId = 1;
+function generateId() {
+  return `station-${nextId++}`;
+}
+
+function createIds(count: number): string[] {
+  return Array.from({ length: count }, () => generateId());
+}
+
 export function ConfigScreen() {
   const [rounds, setRounds] = useState(3);
   const [roundPause, setRoundPause] = useState(90);
   const [stations, setStations] = useState<StationConfig[]>(defaultStations);
+  const [stationIds, setStationIds] = useState<string[]>(() => createIds(defaultStations.length));
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState('');
+  const [showAiPlanner, setShowAiPlanner] = useState(false);
 
   const loadConfig = useTimerStore((s) => s.loadConfig);
   const start = useTimerStore((s) => s.start);
@@ -78,10 +94,19 @@ export function ConfigScreen() {
     } else {
       setStations(config.stations);
     }
+    setStationIds(createIds(config.stations.length));
   }
 
   function handlePresetSelect(preset: Preset) {
     applyConfigFromPlan(presetToConfig(preset));
+  }
+
+  function handleAiPlan(plan: GeneratedPlan) {
+    setStations(plan.stations);
+    setStationIds(createIds(plan.stations.length));
+    setRounds(plan.rounds);
+    setRoundPause(plan.roundPause);
+    setShowAiPlanner(false);
   }
 
   function handleSavePreset() {
@@ -101,10 +126,29 @@ export function ConfigScreen() {
 
   function removeStation(index: number) {
     setStations((prev) => prev.filter((_, i) => i !== index));
+    setStationIds((prev) => prev.filter((_, i) => i !== index));
   }
 
   function addStation() {
     setStations((prev) => [...prev, defaultStation(prev.length)]);
+    setStationIds((prev) => [...prev, generateId()]);
+  }
+
+  // Drag & Drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = stationIds.indexOf(String(active.id));
+    const newIndex = stationIds.indexOf(String(over.id));
+
+    setStations((prev) => arrayMove(prev, oldIndex, newIndex));
+    setStationIds((prev) => arrayMove(prev, oldIndex, newIndex));
   }
 
   function getEstimatedDuration(): string {
@@ -142,6 +186,7 @@ export function ConfigScreen() {
 
   const warmupCount = stations.filter((s) => s.isWarmup).length;
   const kraftCount = stations.filter((s) => !s.isWarmup).length;
+  const trainingWarnings = analyzeTraining(stations);
 
   return (
     <div className="config-screen">
@@ -155,6 +200,10 @@ export function ConfigScreen() {
       )}
 
       <PresetBar onSelect={handlePresetSelect} />
+
+      <button className="config-ai-btn" onClick={() => setShowAiPlanner(true)}>
+        Plan mit KI erstellen
+      </button>
 
       <div className="config-section">
         <Stepper label="Runden" value={rounds} min={1} max={20} onChange={setRounds} />
@@ -170,21 +219,36 @@ export function ConfigScreen() {
           </span>
         </div>
 
-        <div className="config-stations">
-          {stations.map((station, i) => (
-            <StationRow
-              key={i}
-              index={i}
-              station={station}
-              onChange={(s) => updateStation(i, s)}
-              onRemove={() => removeStation(i)}
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={stationIds} strategy={verticalListSortingStrategy}>
+            <div className="config-stations">
+              {stations.map((station, i) => (
+                <StationRow
+                  key={stationIds[i]}
+                  id={stationIds[i]}
+                  index={i}
+                  station={station}
+                  onChange={(s) => updateStation(i, s)}
+                  onRemove={() => removeStation(i)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         <button className="config-add-btn" onClick={addStation}>
           + Station hinzufügen
         </button>
+
+        {trainingWarnings.length > 0 && (
+          <div className="config-warnings">
+            {trainingWarnings.map((w, i) => (
+              <div key={i} className={`config-warning config-warning--${w.type}`}>
+                {w.message}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Save as Preset */}
@@ -234,6 +298,10 @@ export function ConfigScreen() {
           STARTEN
         </button>
       </div>
+
+      {showAiPlanner && (
+        <AiPlannerModal onApply={handleAiPlan} onClose={() => setShowAiPlanner(false)} />
+      )}
     </div>
   );
 }

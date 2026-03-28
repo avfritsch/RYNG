@@ -1,18 +1,49 @@
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { StationConfig } from '../../types/timer.ts';
 import { Icon } from '../ui/Icon.tsx';
 import '../../styles/station-row.css';
 
 interface StationRowProps {
+  id: string;
   index: number;
   station: StationConfig;
   onChange: (station: StationConfig) => void;
   onRemove: () => void;
 }
 
-export function StationRow({ index, station, onChange, onRemove }: StationRowProps) {
+export function StationRow({ id, index, station, onChange, onRemove }: StationRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
   return (
-    <div className={`card station-row ${station.isWarmup ? 'station-row--warmup' : ''}`}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`card station-row ${station.isWarmup ? 'station-row--warmup' : ''}`}
+    >
       <div className="station-row-header">
+        <button
+          className="station-row-drag"
+          {...attributes}
+          {...listeners}
+          aria-label="Station verschieben"
+        >
+          <Icon name="grip-vertical" size={16} />
+        </button>
         <span className="station-row-index">{index + 1}</span>
         <input
           className="station-row-name"
