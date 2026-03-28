@@ -52,3 +52,49 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
     roundPause: Number(data.roundPause) || 90,
   };
 }
+
+/** Save a generated plan to the database as a user plan with one day and all exercises. */
+export async function saveGeneratedPlan(plan: GeneratedPlan): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  // 1. Create plan
+  const { data: planRow, error: planErr } = await supabase
+    .from('plans')
+    .insert({ name: plan.name, description: plan.description, user_id: user.id, is_system: false })
+    .select()
+    .single();
+  if (planErr) throw planErr;
+
+  // 2. Create single day
+  const { data: dayRow, error: dayErr } = await supabase
+    .from('plan_days')
+    .insert({
+      plan_id: planRow.id,
+      label: 'Tag 1',
+      focus: plan.name,
+      sort_order: 0,
+      rounds: plan.rounds,
+      round_pause: plan.roundPause,
+      warmup_pause: 10,
+    })
+    .select()
+    .single();
+  if (dayErr) throw dayErr;
+
+  // 3. Create exercises
+  const exercises = plan.stations.map((s, i) => ({
+    day_id: dayRow.id,
+    name: s.name,
+    howto: s.howto || null,
+    is_warmup: s.isWarmup,
+    work_seconds: s.workSeconds,
+    pause_seconds: s.pauseSeconds,
+    sort_order: i,
+  }));
+
+  const { error: exErr } = await supabase.from('plan_exercises').insert(exercises);
+  if (exErr) throw exErr;
+
+  return planRow.id;
+}

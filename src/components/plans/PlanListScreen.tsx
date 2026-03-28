@@ -7,7 +7,8 @@ import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import { ImportModal } from '../ui/ShareModal.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { AiPlannerModal } from '../config/AiPlannerModal.tsx';
-import type { GeneratedPlan } from '../../lib/ai-planner.ts';
+import { saveGeneratedPlan } from '../../lib/ai-planner.ts';
+import { toast } from '../../stores/toast-store.ts';
 import type { TimerConfig } from '../../types/timer.ts';
 import '../../styles/plan-list.css';
 
@@ -131,15 +132,15 @@ export function PlanListScreen() {
 
       {showAiPlanner && (
         <AiPlannerModal
-          onApply={(plan: GeneratedPlan) => {
-            const config: TimerConfig = {
-              stations: plan.stations,
-              rounds: plan.rounds,
-              roundPause: plan.roundPause,
-            };
-            setPendingConfig(config);
-            setShowAiPlanner(false);
-            navigate('/');
+          onApply={async (plan) => {
+            try {
+              const planId = await saveGeneratedPlan(plan);
+              setShowAiPlanner(false);
+              toast.success('Plan gespeichert');
+              navigate(`/plans/${planId}`);
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : 'Fehler beim Speichern');
+            }
           }}
           onClose={() => setShowAiPlanner(false)}
         />
