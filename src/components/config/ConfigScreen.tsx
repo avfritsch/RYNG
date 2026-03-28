@@ -9,6 +9,7 @@ import { useSavePreset, presetToConfig } from '../../hooks/usePresets.ts';
 import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
 import { unlockAudio } from '../../lib/timer-engine.ts';
+import { analyzeTraining } from '../../lib/training-rules.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
 import { PresetBar } from './PresetBar.tsx';
@@ -189,6 +190,7 @@ export function ConfigScreen() {
 
   const warmupCount = stations.filter((s) => s.isWarmup).length;
   const kraftCount = stations.filter((s) => !s.isWarmup).length;
+  const trainingWarnings = analyzeTraining(stations);
 
   return (
     <div className="config-screen">
@@ -237,6 +239,16 @@ export function ConfigScreen() {
         <button className="config-add-btn" onClick={addStation}>
           + Station hinzufügen
         </button>
+
+        {trainingWarnings.length > 0 && (
+          <div className="config-warnings">
+            {trainingWarnings.map((w, i) => (
+              <div key={i} className={`config-warning config-warning--${w.type}`}>
+                {w.message}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Save as Preset */}
