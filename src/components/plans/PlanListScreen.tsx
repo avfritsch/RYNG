@@ -6,12 +6,15 @@ import { Icon } from '../ui/Icon.tsx';
 import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import { ImportModal } from '../ui/ShareModal.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
+import { AiPlannerModal } from '../config/AiPlannerModal.tsx';
+import type { GeneratedPlan } from '../../lib/ai-planner.ts';
 import type { TimerConfig } from '../../types/timer.ts';
 import '../../styles/plan-list.css';
 
 export function PlanListScreen() {
   const { data: plans, isLoading, error } = usePlans();
   const [showImport, setShowImport] = useState(false);
+  const [showAiPlanner, setShowAiPlanner] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const deletePlan = useDeletePlan();
   const navigate = useNavigate();
@@ -94,9 +97,15 @@ export function PlanListScreen() {
             style={{ flex: 1, marginTop: 0 }}
             onClick={() => setShowImport(true)}
           >
-            <Icon name="download" size={14} /> Import via Code
+            <Icon name="download" size={14} /> Import
           </button>
         </div>
+        <button
+          className="plan-ai-btn"
+          onClick={() => setShowAiPlanner(true)}
+        >
+          Plan mit KI erstellen
+        </button>
       </section>
 
       {planToDelete && (
@@ -117,6 +126,22 @@ export function PlanListScreen() {
             navigate('/');
           }}
           onClose={() => setShowImport(false)}
+        />
+      )}
+
+      {showAiPlanner && (
+        <AiPlannerModal
+          onApply={(plan: GeneratedPlan) => {
+            const config: TimerConfig = {
+              stations: plan.stations,
+              rounds: plan.rounds,
+              roundPause: plan.roundPause,
+            };
+            setPendingConfig(config);
+            setShowAiPlanner(false);
+            navigate('/');
+          }}
+          onClose={() => setShowAiPlanner(false)}
         />
       )}
     </div>

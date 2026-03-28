@@ -14,8 +14,6 @@ import { analyzeTraining } from '../../lib/training-rules.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
 import { PresetBar } from './PresetBar.tsx';
-import { AiPlannerModal } from './AiPlannerModal.tsx';
-import type { GeneratedPlan } from '../../lib/ai-planner.ts';
 import '../../styles/config-screen.css';
 
 const defaultStation = (index: number): StationConfig => ({
@@ -51,7 +49,6 @@ export function ConfigScreen() {
   const [stationIds, setStationIds] = useState<string[]>(() => createIds(defaultStations.length));
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState('');
-  const [showAiPlanner, setShowAiPlanner] = useState(false);
 
   const loadConfig = useTimerStore((s) => s.loadConfig);
   const start = useTimerStore((s) => s.start);
@@ -99,14 +96,6 @@ export function ConfigScreen() {
 
   function handlePresetSelect(preset: Preset) {
     applyConfigFromPlan(presetToConfig(preset));
-  }
-
-  function handleAiPlan(plan: GeneratedPlan) {
-    setStations(plan.stations);
-    setStationIds(createIds(plan.stations.length));
-    setRounds(plan.rounds);
-    setRoundPause(plan.roundPause);
-    setShowAiPlanner(false);
   }
 
   function handleSavePreset() {
@@ -200,10 +189,6 @@ export function ConfigScreen() {
       )}
 
       <PresetBar onSelect={handlePresetSelect} />
-
-      <button className="config-ai-btn" onClick={() => setShowAiPlanner(true)}>
-        Plan mit KI erstellen
-      </button>
 
       <div className="config-section">
         <Stepper label="Runden" value={rounds} min={1} max={20} onChange={setRounds} />
@@ -299,9 +284,6 @@ export function ConfigScreen() {
         </button>
       </div>
 
-      {showAiPlanner && (
-        <AiPlannerModal onApply={handleAiPlan} onClose={() => setShowAiPlanner(false)} />
-      )}
     </div>
   );
 }
