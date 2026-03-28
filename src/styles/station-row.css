@@ -16,6 +16,24 @@
   gap: 8px;
 }
 
+.station-row-drag {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.station-row-drag:active {
+  cursor: grabbing;
+  color: var(--text-secondary);
+}
+
 .station-row-index {
   width: 24px;
   height: 24px;

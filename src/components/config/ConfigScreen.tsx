@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import type { StationConfig, TimerConfig } from '../../types/timer.ts';
 import type { Preset } from '../../types/database.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
@@ -29,10 +31,20 @@ const defaultStations: StationConfig[] = [
   { name: 'Ausfallschritte', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: '' },
 ];
 
+let nextId = 1;
+function generateId() {
+  return `station-${nextId++}`;
+}
+
+function createIds(count: number): string[] {
+  return Array.from({ length: count }, () => generateId());
+}
+
 export function ConfigScreen() {
   const [rounds, setRounds] = useState(3);
   const [roundPause, setRoundPause] = useState(90);
   const [stations, setStations] = useState<StationConfig[]>(defaultStations);
+  const [stationIds, setStationIds] = useState<string[]>(() => createIds(defaultStations.length));
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState('');
 
@@ -55,6 +67,7 @@ export function ConfigScreen() {
       try {
         const config: TimerConfig = JSON.parse(saved);
         setStations(config.stations);
+        setStationIds(createIds(config.stations.length));
         setRounds(config.rounds);
         setRoundPause(config.roundPause);
         setFromPlan(true);
@@ -92,6 +105,7 @@ export function ConfigScreen() {
     } else {
       setStations(config.stations);
     }
+    setStationIds(createIds(config.stations.length));
   }
 
   function handlePresetSelect(preset: Preset) {
@@ -115,10 +129,29 @@ export function ConfigScreen() {
 
   function removeStation(index: number) {
     setStations((prev) => prev.filter((_, i) => i !== index));
+    setStationIds((prev) => prev.filter((_, i) => i !== index));
   }
 
   function addStation() {
     setStations((prev) => [...prev, defaultStation(prev.length)]);
+    setStationIds((prev) => [...prev, generateId()]);
+  }
+
+  // Drag & Drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = stationIds.indexOf(String(active.id));
+    const newIndex = stationIds.indexOf(String(over.id));
+
+    setStations((prev) => arrayMove(prev, oldIndex, newIndex));
+    setStationIds((prev) => arrayMove(prev, oldIndex, newIndex));
   }
 
   function getEstimatedDuration(): string {
@@ -184,17 +217,22 @@ export function ConfigScreen() {
           </span>
         </div>
 
-        <div className="config-stations">
-          {stations.map((station, i) => (
-            <StationRow
-              key={i}
-              index={i}
-              station={station}
-              onChange={(s) => updateStation(i, s)}
-              onRemove={() => removeStation(i)}
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={stationIds} strategy={verticalListSortingStrategy}>
+            <div className="config-stations">
+              {stations.map((station, i) => (
+                <StationRow
+                  key={stationIds[i]}
+                  id={stationIds[i]}
+                  index={i}
+                  station={station}
+                  onChange={(s) => updateStation(i, s)}
+                  onRemove={() => removeStation(i)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         <button className="config-add-btn" onClick={addStation}>
           + Station hinzufügen
