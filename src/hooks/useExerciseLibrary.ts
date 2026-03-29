@@ -35,7 +35,9 @@ export function useExerciseLibrary(filters: LibraryFilters = {}) {
       }
 
       if (filters.search) {
-        query = query.textSearch('fts', filters.search, { type: 'websearch', config: 'german' });
+        // Use ilike for substring matching (supports partial words like "arm cir")
+        // FTS only matches full word stems which breaks mid-word search
+        query = query.ilike('name', `%${filters.search}%`);
       }
 
       const { data, error } = await query;
