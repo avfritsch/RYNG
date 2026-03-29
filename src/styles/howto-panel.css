@@ -1,14 +1,7 @@
 .howto-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  max-height: 180px;
+  max-height: 80px;
   overflow: auto;
   padding: 8px 16px;
-}
-
-.howto-text {
   font-size: var(--text-base);
   color: var(--text-secondary);
   text-align: center;

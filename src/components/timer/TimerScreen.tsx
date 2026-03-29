@@ -189,7 +189,7 @@ export function TimerScreen() {
         )}
 
         <div className="timer-howto-area">
-          <HowtoPanel text={howtoText} exerciseName={currentStation?.name} />
+          <HowtoPanel text={howtoText} />
         </div>
       </div>
 
