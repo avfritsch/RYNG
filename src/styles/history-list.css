@@ -19,19 +19,22 @@
 }
 
 .history-filter {
-  padding: 6px 14px;
-  border-radius: var(--radius-lg);
-  font-size: var(--text-base);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
   font-weight: 500;
-  background: var(--bg-surface);
+  background: transparent;
   border: 1px solid var(--border-default);
   color: var(--text-secondary);
-  transition: border-color var(--duration-normal), color var(--duration-normal);
+  transition: border-color var(--duration-normal), color var(--duration-normal), background var(--duration-normal);
 }
 
 .history-filter--active {
   border-color: var(--color-work);
   color: var(--color-work);
+  background: rgba(127, 255, 0, 0.1);
+  font-weight: 600;
 }
 
 .history-sessions {

@@ -123,9 +123,7 @@
 }
 
 .edit-public-toggle input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-work);
+  /* Uses global custom checkbox styles */
 }
 
 .edit-actions {

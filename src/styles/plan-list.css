@@ -108,18 +108,20 @@
 
 .plan-add-btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px 24px;
   margin-top: 10px;
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-md);
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-family: var(--font-body);
   font-size: var(--text-base);
   font-weight: 500;
+  transition: border-color var(--duration-normal), color var(--duration-normal);
 }
 
 .plan-add-btn:active {
-  border-color: var(--color-work);
-  color: var(--color-work);
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .plan-ai-btn {

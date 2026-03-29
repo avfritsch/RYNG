@@ -122,6 +122,7 @@
   cursor: pointer;
 }
 
-.station-row-warmup-toggle input[type="checkbox"] {
-  accent-color: var(--color-prepare);
+.station-row-warmup-toggle input[type="checkbox"]:checked {
+  background: var(--color-prepare);
+  border-color: var(--color-prepare);
 }

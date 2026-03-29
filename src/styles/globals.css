@@ -186,6 +186,38 @@ button, [role="button"] {
   user-select: none;
 }
 
+/* Custom checkbox */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--border-default);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--duration-normal), border-color var(--duration-normal);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--color-work);
+  border-color: var(--color-work);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid var(--bg-base);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
 @media (hover: hover) {
   button:hover:not(:disabled),
   a:hover {

@@ -66,11 +66,12 @@
 }
 
 .ai-planner-chip {
-  padding: 6px 12px;
+  padding: 6px 16px;
   border-radius: 20px;
-  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
   font-weight: 500;
-  background: var(--bg-elevated);
+  background: transparent;
   border: 1px solid var(--border-default);
   color: var(--text-secondary);
   transition: all 0.15s;
@@ -79,7 +80,8 @@
 .ai-planner-chip--active {
   border-color: var(--color-work);
   color: var(--color-work);
-  background: var(--color-work-bg);
+  background: rgba(127, 255, 0, 0.1);
+  font-weight: 600;
 }
 
 .ai-planner-row {
