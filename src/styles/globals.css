@@ -37,7 +37,7 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  --text-xs: 0.6875rem;
+  --text-xs: 0.75rem;
   --text-sm: 0.75rem;
   --text-base: 0.875rem;
   --text-md: 1rem;
@@ -80,15 +80,15 @@
   --text-muted: #767676;
   --text-disabled: #999999;
 
-  --color-work: #2E8B00;
-  --color-rest: #CC2222;
-  --color-prepare: #B8A000;
+  --color-work: #3DA600;
+  --color-rest: #DC2626;
+  --color-prepare: #CA8A04;
   --color-info: #2563EB;
 
-  --color-work-bg: #2E8B0018;
-  --color-rest-bg: #CC222218;
-  --color-prepare-bg: #B8A00018;
-  --color-info-bg: #2563EB18;
+  --color-work-bg: #3DA60015;
+  --color-rest-bg: #DC262615;
+  --color-prepare-bg: #CA8A0415;
+  --color-info-bg: #2563EB15;
 
   --bg-phase-work: #E8F5E0;
   --bg-phase-pause: #FDE8E8;
@@ -279,6 +279,7 @@ button, [role="button"] {
 
 .skeleton-card {
   height: 72px;
+  min-height: 72px;
   border: 1px solid var(--border-default);
 }
 

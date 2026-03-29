@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
+import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { StaleWhileRevalidate, NetworkFirst, NetworkOnly } from 'workbox-strategies';
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -22,3 +22,25 @@ registerRoute(
     networkTimeoutSeconds: 3,
   }),
 );
+
+// Offline fallback for navigation requests
+const navigationHandler = new NetworkOnly();
+const navigationRoute = new NavigationRoute(navigationHandler, {
+  // Use offline.html as fallback when network fails and no cache exists
+});
+
+navigationRoute.setCatchHandler(async () => {
+  const cache = await caches.open('offline-fallback');
+  const cached = await cache.match('/offline.html');
+  if (cached) return cached;
+  return Response.error();
+});
+
+registerRoute(navigationRoute);
+
+// Pre-cache offline.html on install
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('offline-fallback').then((cache) => cache.add('/offline.html')),
+  );
+});

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ryng — Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0A0A0A;
+      color: #AAAAAA;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      text-align: center;
+    }
+    .container { max-width: 320px; }
+    .icon { font-size: 3rem; margin-bottom: 16px; }
+    h1 { color: #FFFFFF; font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; }
+    p { font-size: 0.875rem; line-height: 1.5; margin-bottom: 24px; }
+    button {
+      padding: 12px 24px;
+      background: #7FFF00;
+      color: #0A0A0A;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:active { opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>Keine Verbindung</h1>
+    <p>Ryng benötigt beim ersten Start eine Internetverbindung. Bitte prüfe deine Verbindung und versuche es erneut.</p>
+    <button onclick="location.reload()">Erneut versuchen</button>
+  </div>
+</body>
+</html>
