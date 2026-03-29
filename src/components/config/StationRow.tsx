@@ -50,6 +50,7 @@ export function StationRow({ id, index, station, onChange, onRemove }: StationRo
           value={station.name}
           onChange={(e) => onChange({ ...station, name: e.target.value })}
           placeholder="Stationsname"
+          aria-label={`Station ${index + 1} Name`}
         />
         <button className="station-row-remove" onClick={onRemove} title="Entfernen">
           <Icon name="x-close" size={16} />

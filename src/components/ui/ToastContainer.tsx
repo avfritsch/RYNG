@@ -20,6 +20,14 @@ export function ToastContainer() {
         <div key={t.id} className={`toast toast--${t.type}`}>
           <Icon name={typeIcon[t.type]} size={18} />
           <span className="toast-message">{t.message}</span>
+          {t.onUndo && (
+            <button
+              className="toast-undo"
+              onClick={() => { t.onUndo!(); dismiss(t.id); }}
+            >
+              Rückgängig
+            </button>
+          )}
           <button
             className="toast-dismiss"
             onClick={() => dismiss(t.id)}

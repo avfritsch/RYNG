@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { encodeWorkout, decodeWorkout, generateQRCode } from '../../lib/share.ts';
 import { toast } from '../../stores/toast-store.ts';
+import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import { Icon } from './Icon.tsx';
 import type { TimerConfig } from '../../types/timer.ts';
 import '../../styles/share-modal.css';
@@ -12,6 +13,7 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ name, config, onClose }: ShareModalProps) {
+  const trapRef = useFocusTrap<HTMLDivElement>();
   const [qrUrl, setQrUrl] = useState('');
   const encoded = encodeWorkout(name, config);
 
@@ -30,7 +32,7 @@ export function ShareModal({ name, config, onClose }: ShareModalProps) {
 
   return (
     <div className="share-overlay" onClick={onClose}>
-      <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} className="share-modal" role="dialog" aria-modal="true" aria-label="Workout teilen" onClick={(e) => e.stopPropagation()}>
         <div className="share-header">
           <h3>Workout teilen</h3>
           <button className="share-close" onClick={onClose} aria-label="Schließen">
@@ -55,6 +57,7 @@ export function ShareModal({ name, config, onClose }: ShareModalProps) {
             value={encoded}
             readOnly
             onClick={(e) => (e.target as HTMLInputElement).select()}
+            aria-label="Sharing-Code"
           />
           <button className="share-copy-btn" onClick={handleCopy} aria-label="Kopieren">
             <Icon name="copy" size={18} />
@@ -73,6 +76,7 @@ interface ImportModalProps {
 }
 
 export function ImportModal({ onImport, onClose }: ImportModalProps) {
+  const trapRef = useFocusTrap<HTMLDivElement>();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
 
@@ -90,7 +94,7 @@ export function ImportModal({ onImport, onClose }: ImportModalProps) {
 
   return (
     <div className="share-overlay" onClick={onClose}>
-      <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} className="share-modal" role="dialog" aria-modal="true" aria-label="Workout importieren" onClick={(e) => e.stopPropagation()}>
         <div className="share-header">
           <h3>Workout importieren</h3>
           <button className="share-close" onClick={onClose} aria-label="Schließen">
@@ -106,6 +110,7 @@ export function ImportModal({ onImport, onClose }: ImportModalProps) {
           onChange={(e) => setCode(e.target.value)}
           placeholder="Code hier einfügen..."
           rows={4}
+          aria-label="Import-Code"
         />
 
         {error && <p className="share-error" role="alert">{error}</p>}

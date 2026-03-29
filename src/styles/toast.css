@@ -58,6 +58,22 @@
   color: var(--text-primary);
 }
 
+.toast-undo {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-work);
+  border: 1px solid var(--color-work);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.toast-undo:active {
+  opacity: 0.7;
+}
+
 .toast-dismiss {
   flex-shrink: 0;
   width: 24px;

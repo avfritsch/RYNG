@@ -1,4 +1,5 @@
 import { Icon } from './Icon.tsx';
+import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import '../../styles/confirm-modal.css';
 
 interface ConfirmModalProps {
@@ -20,9 +21,10 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const trapRef = useFocusTrap<HTMLDivElement>();
   return (
     <div className="confirm-overlay" onClick={onCancel}>
-      <div className="confirm-modal" role="alertdialog" aria-labelledby="confirm-title" onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} className="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-icon-wrap">
           <Icon name={danger ? 'alert-triangle' : 'info'} size={24} />
         </div>

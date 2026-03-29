@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600;700;800;900&family=Saira:wght@400;500;600;700&display=swap');
+/* Fonts loaded via <link> in index.html for non-blocking loading */
 
 :root {
   --bg-base: #0A0A0A;
@@ -77,8 +77,8 @@
 
   --text-primary: #111111;
   --text-secondary: #555555;
-  --text-muted: #999999;
-  --text-disabled: #BBBBBB;
+  --text-muted: #767676;
+  --text-disabled: #999999;
 
   --color-work: #2E8B00;
   --color-rest: #CC2222;

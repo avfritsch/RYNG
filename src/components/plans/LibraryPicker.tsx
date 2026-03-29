@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useExerciseLibrary, useCopyToplan } from '../../hooks/useExerciseLibrary.ts';
 import { CATEGORY_LABELS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import { Icon } from '../ui/Icon.tsx';
+import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import '../../styles/library-picker.css';
 
 interface LibraryPickerProps {
@@ -12,6 +13,7 @@ interface LibraryPickerProps {
 }
 
 export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: LibraryPickerProps) {
+  const trapRef = useFocusTrap<HTMLDivElement>();
   const [category, setCategory] = useState<ExerciseCategory | ''>('');
   const [search, setSearch] = useState('');
   const { data: exercises, isLoading } = useExerciseLibrary({
@@ -34,7 +36,7 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
 
   return (
     <div className="picker-overlay" onClick={onClose}>
-      <div className="picker-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} className="picker-modal" role="dialog" aria-modal="true" aria-label="Übung aus Bibliothek hinzufügen" onClick={(e) => e.stopPropagation()}>
         <div className="picker-header">
           <h3>Übung aus Bibliothek</h3>
           <button className="picker-close" onClick={onClose} aria-label="Schließen">
@@ -49,6 +51,7 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
             placeholder="Suchen..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="Übung suchen"
             autoFocus
           />
         </div>

@@ -107,6 +107,7 @@ export function LibraryScreen() {
           placeholder="Übung suchen..."
           value={filters.search}
           onChange={(e) => filters.setSearch(e.target.value)}
+          aria-label="Übung suchen"
         />
         {filters.search && (
           <button className="library-search-clear" onClick={() => filters.setSearch('')}>

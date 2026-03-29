@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from './hooks/useAuth.ts';
@@ -7,16 +8,18 @@ import { BottomNav } from './components/ui/BottomNav.tsx';
 import { ConfigScreen } from './components/config/ConfigScreen.tsx';
 import { DoneScreen } from './components/config/DoneScreen.tsx';
 import { TimerScreen } from './components/timer/TimerScreen.tsx';
-import { PlanListScreen } from './components/plans/PlanListScreen.tsx';
-import { PlanDetailScreen } from './components/plans/PlanDetailScreen.tsx';
-import { PlanEditorScreen } from './components/plans/PlanEditorScreen.tsx';
-import { HistoryListScreen } from './components/history/HistoryListScreen.tsx';
-import { SessionDetailScreen } from './components/history/SessionDetailScreen.tsx';
-import { ProfileScreen } from './components/profile/ProfileScreen.tsx';
-import { LibraryScreen } from './components/library/LibraryScreen.tsx';
-import { PlanLibraryScreen } from './components/library/PlanLibraryScreen.tsx';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx';
 import { ToastContainer } from './components/ui/ToastContainer.tsx';
+
+// Lazy-loaded routes (not needed on initial load)
+const PlanListScreen = lazy(() => import('./components/plans/PlanListScreen.tsx').then(m => ({ default: m.PlanListScreen })));
+const PlanDetailScreen = lazy(() => import('./components/plans/PlanDetailScreen.tsx').then(m => ({ default: m.PlanDetailScreen })));
+const PlanEditorScreen = lazy(() => import('./components/plans/PlanEditorScreen.tsx').then(m => ({ default: m.PlanEditorScreen })));
+const HistoryListScreen = lazy(() => import('./components/history/HistoryListScreen.tsx').then(m => ({ default: m.HistoryListScreen })));
+const SessionDetailScreen = lazy(() => import('./components/history/SessionDetailScreen.tsx').then(m => ({ default: m.SessionDetailScreen })));
+const ProfileScreen = lazy(() => import('./components/profile/ProfileScreen.tsx').then(m => ({ default: m.ProfileScreen })));
+const LibraryScreen = lazy(() => import('./components/library/LibraryScreen.tsx').then(m => ({ default: m.LibraryScreen })));
+const PlanLibraryScreen = lazy(() => import('./components/library/PlanLibraryScreen.tsx').then(m => ({ default: m.PlanLibraryScreen })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +29,10 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function LazyFallback() {
+  return <div className="loading-center"><div className="spinner" /></div>;
+}
 
 function AppContent() {
   const { session, loading } = useAuth();
@@ -61,18 +68,20 @@ function AppContent() {
         </div>
       )}
       <main style={{ flex: 1, overflow: 'auto' }}>
-        <Routes>
-          <Route path="/" element={<ErrorBoundary><ConfigScreen /></ErrorBoundary>} />
-          <Route path="/plans" element={<ErrorBoundary><PlanListScreen /></ErrorBoundary>} />
-          <Route path="/plans/new" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
-          <Route path="/plans/:planId" element={<ErrorBoundary><PlanDetailScreen /></ErrorBoundary>} />
-          <Route path="/plans/:planId/edit" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
-          <Route path="/history" element={<ErrorBoundary><HistoryListScreen /></ErrorBoundary>} />
-          <Route path="/history/:sessionId" element={<ErrorBoundary><SessionDetailScreen /></ErrorBoundary>} />
-          <Route path="/library" element={<ErrorBoundary><LibraryScreen /></ErrorBoundary>} />
-          <Route path="/library/plans" element={<ErrorBoundary><PlanLibraryScreen /></ErrorBoundary>} />
-          <Route path="/profile" element={<ErrorBoundary><ProfileScreen /></ErrorBoundary>} />
-        </Routes>
+        <Suspense fallback={<LazyFallback />}>
+          <Routes>
+            <Route path="/" element={<ErrorBoundary><ConfigScreen /></ErrorBoundary>} />
+            <Route path="/plans" element={<ErrorBoundary><PlanListScreen /></ErrorBoundary>} />
+            <Route path="/plans/new" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
+            <Route path="/plans/:planId" element={<ErrorBoundary><PlanDetailScreen /></ErrorBoundary>} />
+            <Route path="/plans/:planId/edit" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
+            <Route path="/history" element={<ErrorBoundary><HistoryListScreen /></ErrorBoundary>} />
+            <Route path="/history/:sessionId" element={<ErrorBoundary><SessionDetailScreen /></ErrorBoundary>} />
+            <Route path="/library" element={<ErrorBoundary><LibraryScreen /></ErrorBoundary>} />
+            <Route path="/library/plans" element={<ErrorBoundary><PlanLibraryScreen /></ErrorBoundary>} />
+            <Route path="/profile" element={<ErrorBoundary><ProfileScreen /></ErrorBoundary>} />
+          </Routes>
+        </Suspense>
       </main>
       <BottomNav />
 

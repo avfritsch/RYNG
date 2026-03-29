@@ -11,6 +11,7 @@ import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
 import { unlockAudio } from '../../lib/timer-engine.ts';
 import { analyzeTraining } from '../../lib/training-rules.ts';
+import { toast } from '../../stores/toast-store.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
 import { PresetBar } from './PresetBar.tsx';
@@ -114,8 +115,14 @@ export function ConfigScreen() {
   }
 
   function removeStation(index: number) {
+    const removedStation = stations[index];
+    const removedId = stationIds[index];
     setStations((prev) => prev.filter((_, i) => i !== index));
     setStationIds((prev) => prev.filter((_, i) => i !== index));
+    toast.undo(`"${removedStation.name}" entfernt`, () => {
+      setStations((prev) => { const next = [...prev]; next.splice(index, 0, removedStation); return next; });
+      setStationIds((prev) => { const next = [...prev]; next.splice(index, 0, removedId); return next; });
+    });
   }
 
   function addStation() {

@@ -3,6 +3,7 @@ import { useUpdateLibraryExercise, useCreateLibraryExercise } from '../../hooks/
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
 import { Icon } from '../ui/Icon.tsx';
+import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import { toast } from '../../stores/toast-store.ts';
 import '../../styles/exercise-edit-modal.css';
 
@@ -15,6 +16,7 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
   const isCreate = !exercise;
   const isSystem = exercise?.created_by === null;
 
+  const trapRef = useFocusTrap<HTMLDivElement>();
   const [name, setName] = useState(exercise?.name ?? '');
   const [detail, setDetail] = useState(exercise?.detail ?? '');
   const [muscleGroup, setMuscleGroup] = useState(exercise?.muscle_group ?? '');
@@ -63,7 +65,7 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
 
   return (
     <div className="edit-overlay" onClick={onClose}>
-      <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} className="edit-modal" role="dialog" aria-modal="true" aria-label={exercise ? 'Übung bearbeiten' : 'Neue Übung'} onClick={(e) => e.stopPropagation()}>
         <div className="edit-header">
           <h3>{title}</h3>
           <button className="edit-close" onClick={onClose} aria-label="Schließen">

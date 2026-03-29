@@ -17,8 +17,8 @@
 }
 
 .station-row-drag {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,8 +66,8 @@
 }
 
 .station-row-remove {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   font-size: var(--text-lg);
   color: var(--text-secondary);
