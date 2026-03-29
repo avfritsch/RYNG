@@ -4,6 +4,7 @@ import { supabase } from './supabase.ts';
 const DB_NAME = 'ryng_offline_queue';
 const STORE_NAME = 'mutations';
 const DB_VERSION = 1;
+const MAX_RETRIES = 3;
 
 const ALLOWED_TABLES = ['plans', 'plan_days', 'plan_exercises', 'presets', 'sessions', 'session_entries', 'mesocycle_config'] as const;
 
@@ -14,6 +15,7 @@ export interface QueuedMutation {
   data: Record<string, unknown>;
   match?: Record<string, unknown>;
   timestamp: number;
+  retries?: number;
 }
 
 function getDB() {
@@ -29,7 +31,7 @@ function getDB() {
 /**
  * Enqueue a mutation for later execution.
  */
-export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp'>) {
+export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp' | 'retries'>) {
   if (!ALLOWED_TABLES.includes(mutation.table as typeof ALLOWED_TABLES[number])) {
     console.error(`Offline queue: invalid table "${mutation.table}"`);
     return;
@@ -40,15 +42,17 @@ export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp'>
       ...mutation,
       id: crypto.randomUUID(),
       timestamp: Date.now(),
+      retries: 0,
     };
     await db.put(STORE_NAME, entry);
   } catch (e) {
-    console.warn('IDB cache error:', e);
+    console.warn('Offline queue enqueue error:', e);
   }
 }
 
 /**
  * Flush all queued mutations to Supabase.
+ * Skips permanently failed mutations instead of blocking the entire queue.
  */
 export async function flush(): Promise<number> {
   let flushed = 0;
@@ -64,13 +68,21 @@ export async function flush(): Promise<number> {
         await db.delete(STORE_NAME, mutation.id);
         flushed++;
       } catch (e) {
-        console.warn('IDB cache error:', e);
-        // Stop on first failure — remaining mutations stay queued
-        break;
+        const retries = (mutation.retries ?? 0) + 1;
+        if (retries >= MAX_RETRIES) {
+          // Permanently failed — discard to avoid blocking the queue
+          console.warn(`Offline queue: discarding mutation after ${MAX_RETRIES} retries:`, mutation.table, mutation.operation, e);
+          await db.delete(STORE_NAME, mutation.id);
+        } else {
+          // Increment retry count and continue with next mutation
+          await db.put(STORE_NAME, { ...mutation, retries });
+          console.warn(`Offline queue: retry ${retries}/${MAX_RETRIES} for`, mutation.table, mutation.operation);
+        }
+        // Continue processing remaining mutations instead of stopping
       }
     }
   } catch (e) {
-    console.warn('IDB cache error:', e);
+    console.warn('Offline queue flush error:', e);
   }
   return flushed;
 }
@@ -78,7 +90,7 @@ export async function flush(): Promise<number> {
 async function executeMutation(m: QueuedMutation) {
   switch (m.operation) {
     case 'insert': {
-      const { error } = await supabase.from(m.table).insert(m.data);
+      const { error } = await supabase.from(m.table).upsert(m.data);
       if (error) throw error;
       break;
     }
@@ -115,7 +127,7 @@ export async function pendingCount(): Promise<number> {
     const db = await getDB();
     return await db.count(STORE_NAME);
   } catch (e) {
-    console.warn('IDB cache error:', e);
+    console.warn('Offline queue count error:', e);
     return 0;
   }
 }

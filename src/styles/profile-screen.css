@@ -80,11 +80,24 @@
 }
 
 .profile-signout {
+  width: 100%;
   padding: 12px 24px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  color: var(--color-rest);
+  color: var(--text-secondary);
   font-weight: 700;
   font-size: var(--text-base);
+}
+
+.profile-delete-account {
+  width: 100%;
+  padding: 12px 24px;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid var(--color-rest);
+  border-radius: var(--radius-md);
+  color: var(--color-rest);
+  font-weight: 600;
+  font-size: var(--text-sm);
 }

@@ -97,9 +97,15 @@
   margin-top: 8px;
 }
 
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 .auth-link {
   color: var(--text-secondary);
   font-size: var(--text-base);
   text-decoration: underline;
-  margin-top: 16px;
 }

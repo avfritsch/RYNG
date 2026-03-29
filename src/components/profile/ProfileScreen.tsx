@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { signOut } from '../../lib/auth.ts';
+import { signOut, deleteAccount } from '../../lib/auth.ts';
 import { exportBackup, downloadBackup, importBackup } from '../../lib/backup.ts';
 import { isSpeechAvailable, isSpeechEnabled, setSpeechEnabled } from '../../lib/speech.ts';
 import { useHeartRate } from '../../hooks/useHeartRate.ts';
@@ -12,6 +12,7 @@ import { toast } from '../../stores/toast-store.ts';
 import { useAuth } from '../../hooks/useAuth.ts';
 import { MesocycleWidget } from './MesocycleWidget.tsx';
 import { MesocycleEditor } from './MesocycleEditor.tsx';
+import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import '../../styles/profile-screen.css';
 
 export function ProfileScreen() {
@@ -19,6 +20,7 @@ export function ProfileScreen() {
   const [showEditor, setShowEditor] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<Theme>(getTheme());
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const hr = useHeartRate();
   const [spotifyId, setSpotifyId] = useState(getSpotifyClientId());
   const [spotifyConnected, setSpotifyConnected] = useState(isSpotifyConnected());
@@ -197,6 +199,31 @@ export function ProfileScreen() {
       <button className="profile-signout" onClick={() => signOut()}>
         Abmelden
       </button>
+
+      <button
+        className="profile-delete-account"
+        onClick={() => setShowDeleteConfirm(true)}
+      >
+        Konto löschen
+      </button>
+
+      {showDeleteConfirm && (
+        <ConfirmModal
+          title="Konto löschen"
+          message="Dein Konto und alle Daten (Pläne, Sessions, Übungen) werden unwiderruflich gelöscht."
+          confirmLabel="Endgültig löschen"
+          danger
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={async () => {
+            try {
+              await deleteAccount();
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : 'Fehler beim Löschen');
+              setShowDeleteConfirm(false);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

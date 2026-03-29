@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
+import { checkRateLimit } from '../lib/rate-limit.ts';
 import type { LibraryExercise, ExerciseCategory } from '../types/exercise-library.ts';
 
 interface LibraryFilters {
@@ -60,6 +61,7 @@ export function useCreateLibraryExercise() {
       tags?: string[];
       is_public?: boolean;
     }) => {
+      checkRateLimit('create-exercise', 5, 60_000);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 

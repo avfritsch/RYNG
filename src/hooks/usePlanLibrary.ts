@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
+import { checkRateLimit } from '../lib/rate-limit.ts';
 import type { Plan } from '../types/plan.ts';
 
 export function usePublicPlans() {
@@ -40,6 +41,7 @@ export function useTogglePlanVote() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ planId, hasVoted }: { planId: string; hasVoted: boolean }) => {
+      checkRateLimit('plan-vote', 20, 60_000);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       if (hasVoted) {

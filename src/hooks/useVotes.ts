@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
+import { checkRateLimit } from '../lib/rate-limit.ts';
 
 export function useVotes() {
   return useQuery({
@@ -22,6 +23,7 @@ export function useToggleVote() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ exerciseId, hasVoted }: { exerciseId: string; hasVoted: boolean }) => {
+      checkRateLimit('vote', 20, 60_000);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
