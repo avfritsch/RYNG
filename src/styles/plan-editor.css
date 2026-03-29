@@ -25,8 +25,8 @@
 .plan-editor-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .plan-editor-input {

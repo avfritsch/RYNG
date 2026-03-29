@@ -9,7 +9,7 @@
   font-weight: 800;
   font-size: var(--text-xl);
   letter-spacing: -0.025em;
-  margin-bottom: 12px;
+  margin-bottom: 32px;
 }
 
 .history-filters {
@@ -37,7 +37,7 @@
 .history-sessions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .history-empty {
