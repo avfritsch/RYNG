@@ -34,8 +34,9 @@
   --font-body: 'Saira', sans-serif;
 
   --radius-sm: 8px;
-  --radius-md: 12px;
+  --radius-md: 16px;
   --radius-lg: 16px;
+  --radius-nested: 12px;
 
   --text-xs: 0.75rem;
   --text-sm: 0.75rem;
@@ -235,7 +236,14 @@ button, [role="button"] {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  padding: 12px 16px;
+  padding: 20px;
+}
+
+.card-nested {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-nested);
+  padding: 16px;
 }
 
 .card--interactive {
@@ -255,6 +263,7 @@ button, [role="button"] {
 .skeleton {
   background: var(--bg-surface);
   border-radius: var(--radius-md);
+
   position: relative;
   overflow: hidden;
 }

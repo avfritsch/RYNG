@@ -14,7 +14,7 @@
   max-height: 80vh;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   display: flex;
   flex-direction: column;
 }

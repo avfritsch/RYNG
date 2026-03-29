@@ -20,7 +20,7 @@
   max-width: 320px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 24px;
   text-align: center;
   animation: confirm-scale-in 0.2s ease-out;

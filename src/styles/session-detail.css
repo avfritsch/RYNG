@@ -39,7 +39,7 @@
   justify-content: center;
   gap: 32px;
   margin-bottom: 24px;
-  padding: 16px;
+  padding: 20px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
