@@ -77,8 +77,9 @@
 }
 
 .plan-card-badge--system {
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--color-info);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-hover);
+  color: var(--text-muted);
 }
 
 .plan-card-delete {
@@ -125,10 +126,10 @@
   width: 100%;
   padding: 12px;
   margin-top: 8px;
-  background: var(--color-info-bg);
-  border: 1px solid var(--color-info);
+  background: transparent;
+  border: 1px solid var(--color-work);
   border-radius: var(--radius-md);
-  color: var(--color-info);
+  color: var(--color-work);
   font-size: var(--text-base);
   font-weight: 600;
 }

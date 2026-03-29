@@ -20,7 +20,7 @@
 }
 
 .config-meso-deload {
-  color: var(--color-info);
+  color: var(--text-secondary);
 }
 
 .config-title {
@@ -115,9 +115,9 @@
 }
 
 .config-warning--info {
-  background: var(--color-info-bg);
-  color: var(--color-info);
-  border: 1px solid var(--color-info);
+  background: rgba(170, 170, 170, 0.08);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
 }
 
 .config-footer {

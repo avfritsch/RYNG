@@ -47,8 +47,8 @@
 }
 
 .toast--info {
-  border-color: var(--color-info);
-  color: var(--color-info);
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .toast-message {

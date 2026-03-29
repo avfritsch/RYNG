@@ -28,7 +28,7 @@
 .plan-lib-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .plan-lib-card {
@@ -63,7 +63,7 @@
 
 .plan-lib-badge {
   font-weight: 700;
-  color: var(--color-info);
+  color: var(--text-muted);
 }
 
 .plan-lib-card-actions {

@@ -209,8 +209,8 @@
 
 .library-card-cat--stretch,
 .library-card-cat--mobility {
-  background: var(--color-info-bg);
-  color: var(--color-info);
+  background: rgba(170, 170, 170, 0.12);
+  color: var(--text-secondary);
 }
 
 /* Row 2: badge + inline icon buttons */
@@ -292,7 +292,7 @@
 }
 
 .library-card-muscle {
-  color: var(--color-info);
+  color: var(--color-work);
 }
 
 /* Expanded area */

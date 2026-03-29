@@ -99,11 +99,11 @@
 }
 
 .edit-system-hint {
-  margin: 0 16px 4px;
+  margin: 0 20px 4px;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
-  background: var(--color-info-bg);
-  color: var(--color-info);
+  background: rgba(170, 170, 170, 0.08);
+  color: var(--text-secondary);
   font-size: var(--text-xs);
 }
 
