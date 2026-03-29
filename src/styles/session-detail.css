@@ -55,14 +55,18 @@
 .session-detail-stat-value {
   font-family: var(--font-display);
   font-size: var(--text-xl);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
 }
 
 .session-detail-stat-label {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .session-round {
