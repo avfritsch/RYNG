@@ -8,7 +8,7 @@ import { toast } from '../../stores/toast-store.ts';
 import '../../styles/exercise-edit-modal.css';
 
 interface ExerciseEditModalProps {
-  exercise?: LibraryExercise | null; // null = create mode
+  exercise?: LibraryExercise | null;
   onClose: () => void;
 }
 
@@ -18,8 +18,7 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
 
   const trapRef = useFocusTrap<HTMLDivElement>();
   const [name, setName] = useState(exercise?.name ?? '');
-  const [detail, setDetail] = useState(exercise?.detail ?? '');
-  const [muscleGroup, setMuscleGroup] = useState(exercise?.muscle_group ?? '');
+  const [muscleGroups, setMuscleGroups] = useState<string[]>(exercise?.muscle_groups ?? []);
   const [category, setCategory] = useState<ExerciseCategory>(exercise?.category ?? 'strength');
   const [howto, setHowto] = useState(exercise?.howto ?? '');
   const [equipment, setEquipment] = useState<string[]>(exercise?.equipment ?? []);
@@ -32,8 +31,7 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
     setError('');
     const data = {
       name,
-      detail: detail || undefined,
-      muscle_group: muscleGroup || undefined,
+      muscle_groups: muscleGroups,
       category,
       howto: howto || undefined,
       equipment,
@@ -59,13 +57,17 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
     setEquipment((prev) => prev.includes(eq) ? prev.filter((e) => e !== eq) : [...prev, eq]);
   }
 
+  function toggleMuscleGroup(mg: string) {
+    setMuscleGroups((prev) => prev.includes(mg) ? prev.filter((m) => m !== mg) : [...prev, mg]);
+  }
+
   const title = isCreate ? 'Neue Übung' : isSystem ? 'Übung kopieren' : 'Übung bearbeiten';
   const saveLabel = isCreate ? 'Erstellen' : isSystem ? 'Als Kopie speichern' : 'Speichern';
   const isPending = updateExercise.isPending || createExercise.isPending;
 
   return (
     <div className="edit-overlay" onClick={onClose}>
-      <div ref={trapRef} className="edit-modal" role="dialog" aria-modal="true" aria-label={exercise ? 'Übung bearbeiten' : 'Neue Übung'} onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} className="edit-modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="edit-header">
           <h3>{title}</h3>
           <button className="edit-close" onClick={onClose} aria-label="Schließen">
@@ -86,11 +88,6 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
           </label>
 
           <label className="edit-field">
-            <span>Beschreibung</span>
-            <input value={detail} onChange={(e) => setDetail(e.target.value)} placeholder="Kurzbeschreibung" />
-          </label>
-
-          <label className="edit-field">
             <span>Kategorie</span>
             <select value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)}>
               {(Object.entries(CATEGORY_LABELS) as [ExerciseCategory, string][]).map(([key, label]) => (
@@ -99,15 +96,21 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
             </select>
           </label>
 
-          <label className="edit-field">
-            <span>Muskelgruppe</span>
-            <select value={muscleGroup} onChange={(e) => setMuscleGroup(e.target.value)}>
-              <option value="">Keine</option>
+          <div className="edit-field">
+            <span>Muskelgruppen</span>
+            <div className="edit-equipment-chips">
               {MUSCLE_GROUP_OPTIONS.map((mg) => (
-                <option key={mg} value={mg}>{mg}</option>
+                <button
+                  key={mg}
+                  type="button"
+                  className={`edit-eq-chip ${muscleGroups.includes(mg) ? 'edit-eq-chip--active' : ''}`}
+                  onClick={() => toggleMuscleGroup(mg)}
+                >
+                  {mg}
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </div>
 
           <div className="edit-field">
             <span>Equipment</span>

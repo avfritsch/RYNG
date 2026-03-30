@@ -10,7 +10,7 @@ interface QuickLibraryPickerProps {
   onClose: () => void;
 }
 
-const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio', 'stretch', 'mobility'];
+const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio', 'stretch'];
 
 export function QuickLibraryPicker({ onAdd, onClose }: QuickLibraryPickerProps) {
   const trapRef = useFocusTrap<HTMLDivElement>();
@@ -33,7 +33,7 @@ export function QuickLibraryPicker({ onAdd, onClose }: QuickLibraryPickerProps) 
   }
 
   function handleSelect(ex: NonNullable<typeof exercises>[number]) {
-    const isWarmup = ex.category === 'warmup' || ex.category === 'stretch' || ex.category === 'mobility';
+    const isWarmup = ex.category === 'warmup' || ex.category === 'stretch';
     onAdd({
       name: ex.name,
       howto: ex.howto,
@@ -132,7 +132,7 @@ export function QuickLibraryPicker({ onAdd, onClose }: QuickLibraryPickerProps) 
                 <div className="picker-item-info">
                   <span className="picker-item-name">{ex.name}</span>
                   <span className="picker-item-meta">
-                    {ex.muscle_group && <span>{ex.muscle_group}</span>}
+                    {ex.muscle_groups?.length > 0 && <span>{ex.muscle_groups.join(', ')}</span>}
                     {ex.equipment.length > 0 && <span> · {ex.equipment.join(', ')}</span>}
                   </span>
                 </div>

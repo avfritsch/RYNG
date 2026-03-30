@@ -19,7 +19,7 @@ export function ExerciseCard({ exercise, index }: ExerciseCardProps) {
           <span className="exercise-card-name">{exercise.name}</span>
           <span className="exercise-card-times">
             {exercise.work_seconds}s / {exercise.pause_seconds}s
-            {exercise.muscle_group && <span className="exercise-card-muscle"> · {exercise.muscle_group}</span>}
+            {exercise.muscle_groups?.length > 0 && <span className="exercise-card-muscle"> · {exercise.muscle_groups.join(', ')}</span>}
           </span>
         </div>
         <span className={`exercise-card-chevron ${open ? 'exercise-card-chevron--open' : ''}`}>
@@ -28,10 +28,10 @@ export function ExerciseCard({ exercise, index }: ExerciseCardProps) {
       </button>
       {open && (
         <div className="exercise-card-body" id={`exercise-body-${exercise.id}`}>
-          {exercise.detail && <p className="exercise-card-detail">{exercise.detail}</p>}
-          {exercise.howto && <p className="exercise-card-howto">{exercise.howto}</p>}
-          {!exercise.detail && !exercise.howto && (
-            <p className="exercise-card-detail">Keine Details verfügbar.</p>
+          {exercise.howto ? (
+            <p className="exercise-card-howto">{exercise.howto}</p>
+          ) : (
+            <p className="exercise-card-howto" style={{ color: 'var(--text-muted)' }}>Keine Details verfügbar.</p>
           )}
         </div>
       )}

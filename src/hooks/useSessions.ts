@@ -104,6 +104,12 @@ export function useSaveSession() {
         if (entriesError) throw entriesError;
       }
 
+      // Increment usage count for all exercises performed (best-effort)
+      const exerciseNames = [...new Set(payload.entries.map((e) => e.station_name))];
+      if (exerciseNames.length > 0) {
+        supabase.rpc('increment_exercise_usage_by_names', { exercise_names: exerciseNames });
+      }
+
       return sessionData as Session;
     },
     onSuccess: () => {

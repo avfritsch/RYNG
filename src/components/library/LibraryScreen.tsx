@@ -15,7 +15,7 @@ import { Icon } from '../ui/Icon.tsx';
 import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import '../../styles/library.css';
 
-const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio', 'stretch', 'mobility'];
+const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio', 'stretch'];
 
 type LibraryTab = 'exercises' | 'plans';
 
@@ -56,7 +56,7 @@ export function LibraryScreen() {
         workSeconds: 45,
         pauseSeconds: 30,
         isWarmup: ex.category === 'warmup',
-        howto: ex.detail ?? '',
+        howto: ex.howto ?? '',
       }],
       rounds: 3,
       roundPause: 90,
@@ -384,7 +384,7 @@ const LibraryCard = memo(function LibraryCard({
       </div>
       <div className="library-card-row2">
         <span className="library-card-meta">
-          {ex.muscle_group && <span className="library-card-muscle">{ex.muscle_group}</span>}
+          {ex.muscle_groups?.length > 0 && <span className="library-card-muscle">{ex.muscle_groups.join(', ')}</span>}
           {ex.equipment.length > 0 && <span className="library-card-equipment">{ex.equipment.join(', ')}</span>}
           {(ex.usage_count ?? 0) > 0 && <span className="library-card-usage">{ex.usage_count}×</span>}
         </span>
@@ -408,7 +408,7 @@ const LibraryCard = memo(function LibraryCard({
 
       {isSelected && (
         <div className="library-card-expanded" onClick={(e) => e.stopPropagation()}>
-          {ex.detail && <p className="library-card-detail">{ex.detail}</p>}
+          {/* detail merged into howto */}
           {ex.howto && <p className="library-card-howto">{ex.howto}</p>}
           <div className="library-card-actions">
             <button className="library-action-btn library-action-btn--primary" onClick={() => onQuickStart(ex)}>

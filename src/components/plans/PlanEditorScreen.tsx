@@ -157,7 +157,7 @@ export function PlanEditorScreen() {
     });
   }
 
-  async function handleUpdateExercise(id: string, field: keyof Pick<PlanExercise, 'name' | 'detail' | 'muscle_group' | 'work_seconds' | 'pause_seconds'>, value: string | number | boolean) {
+  async function handleUpdateExercise(id: string, field: keyof Pick<PlanExercise, 'name' | 'muscle_groups' | 'work_seconds' | 'pause_seconds'>, value: unknown) {
     if (!selectedDay) return;
     await updateExercise.mutateAsync({ id, day_id: selectedDay.id, [field]: value });
   }
@@ -334,11 +334,11 @@ export function PlanEditorScreen() {
   );
 }
 
-type ExerciseField = keyof Pick<PlanExercise, 'name' | 'detail' | 'muscle_group' | 'work_seconds' | 'pause_seconds'>;
+type ExerciseField = keyof Pick<PlanExercise, 'name' | 'muscle_groups' | 'work_seconds' | 'pause_seconds'>;
 
 function ExerciseFields({ ex, onUpdate, onDelete }: {
   ex: PlanExercise;
-  onUpdate: (id: string, field: ExerciseField, value: string | number | boolean) => void;
+  onUpdate: (id: string, field: ExerciseField, value: unknown) => void;
   onDelete: (id: string) => void;
 }) {
   return (
@@ -360,8 +360,8 @@ function ExerciseFields({ ex, onUpdate, onDelete }: {
         </label>
         <DebouncedInput
           className="plan-editor-ex-detail"
-          value={ex.muscle_group ?? ''}
-          onCommit={(v) => onUpdate(ex.id, 'muscle_group', v)}
+          value={ex.muscle_groups?.join(', ') ?? ''}
+          onCommit={(v) => onUpdate(ex.id, 'muscle_groups', v ? v.split(',').map(s => s.trim()) : [])}
           placeholder="Muskel"
         />
       </div>

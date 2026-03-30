@@ -108,8 +108,7 @@ export function useCopyPlan() {
             await supabase.from('plan_exercises').insert({
               day_id: newDay.id,
               name: ex.name,
-              detail: ex.detail,
-              muscle_group: ex.muscle_group,
+              muscle_groups: ex.muscle_groups,
               howto: ex.howto,
               animation_key: ex.animation_key,
               is_warmup: ex.is_warmup,

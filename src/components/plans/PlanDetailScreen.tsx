@@ -45,7 +45,7 @@ export function PlanDetailScreen() {
       workSeconds: ex.work_seconds,
       pauseSeconds: ex.pause_seconds,
       isWarmup: ex.is_warmup,
-      howto: ex.howto ?? ex.detail ?? '',
+      howto: ex.howto ?? '',
     }));
 
     const config: TimerConfig = {
@@ -176,7 +176,7 @@ export function PlanDetailScreen() {
               workSeconds: ex.work_seconds,
               pauseSeconds: ex.pause_seconds,
               isWarmup: ex.is_warmup,
-              howto: ex.detail ?? '',
+              howto: ex.howto ?? '',
             })),
           }}
           onClose={() => setShowShare(false)}

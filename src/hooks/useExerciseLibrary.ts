@@ -14,7 +14,7 @@ interface LibraryFilters {
 export function useExerciseLibrary(filters: LibraryFilters = {}) {
   return useQuery({
     queryKey: ['exercise_library', filters],
-    staleTime: 1000 * 60 * 5, // 5 min cache
+    staleTime: 1000 * 60 * 5,
     queryFn: async (): Promise<LibraryExercise[]> => {
       let query = supabase
         .from('exercise_library')
@@ -27,17 +27,14 @@ export function useExerciseLibrary(filters: LibraryFilters = {}) {
       }
 
       if (filters.equipment && filters.equipment.length > 0) {
-        // overlaps: matches if array has ANY of the given values
         query = query.overlaps('equipment', filters.equipment);
       }
 
       if (filters.muscleGroups && filters.muscleGroups.length > 0) {
-        query = query.in('muscle_group', filters.muscleGroups);
+        query = query.overlaps('muscle_groups', filters.muscleGroups);
       }
 
       if (filters.search) {
-        // Use ilike for substring matching (supports partial words like "arm cir")
-        // FTS only matches full word stems which breaks mid-word search
         query = query.ilike('name', `%${filters.search}%`);
       }
 
@@ -53,12 +50,10 @@ export function useCreateLibraryExercise() {
   return useMutation({
     mutationFn: async (exercise: {
       name: string;
-      detail?: string;
-      muscle_group?: string;
+      muscle_groups?: string[];
       category: ExerciseCategory;
       howto?: string;
       equipment?: string[];
-      tags?: string[];
       is_public?: boolean;
     }) => {
       checkRateLimit('create-exercise', 5, 60_000);
@@ -133,8 +128,7 @@ export function useCopyToplan() {
         .insert({
           day_id: dayId,
           name: exercise.name,
-          detail: exercise.detail,
-          muscle_group: exercise.muscle_group,
+          muscle_groups: exercise.muscle_groups,
           howto: exercise.howto,
           is_warmup: isWarmup,
           work_seconds: workSeconds,
@@ -145,9 +139,6 @@ export function useCopyToplan() {
         .select()
         .single();
       if (error) throw error;
-
-      // Increment usage count (best-effort)
-      supabase.rpc('increment_usage_count', { exercise_id: exercise.id });
 
       return data;
     },

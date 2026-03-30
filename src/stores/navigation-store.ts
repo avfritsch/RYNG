@@ -3,8 +3,7 @@ import type { TimerConfig } from '../types/timer.ts';
 
 interface PendingExercise {
   name: string;
-  detail: string | null;
-  muscle_group: string | null;
+  muscle_groups: string[];
   howto: string | null;
   category: string;
   library_exercise_id: string;

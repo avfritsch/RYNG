@@ -175,7 +175,7 @@ export function useDeletePlanDay() {
 export function useCreatePlanExercise() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (exercise: { day_id: string; name: string; detail?: string; muscle_group?: string; howto?: string; is_warmup?: boolean; work_seconds: number; pause_seconds: number; sort_order: number }) => {
+    mutationFn: async (exercise: { day_id: string; name: string; muscle_groups?: string[]; howto?: string; is_warmup?: boolean; work_seconds: number; pause_seconds: number; sort_order: number }) => {
       const { data, error } = await supabase
         .from('plan_exercises')
         .insert(exercise)

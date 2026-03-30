@@ -28,8 +28,7 @@ export interface PlanExercise {
   id: string;
   day_id: string;
   name: string;
-  detail: string | null;
-  muscle_group: string | null;
+  muscle_groups: string[];
   howto: string | null;
   animation_key: string | null;
   is_warmup: boolean;

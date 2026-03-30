@@ -90,7 +90,7 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
                 <div className="picker-item-info">
                   <span className="picker-item-name">{ex.name}</span>
                   <span className="picker-item-meta">
-                    {ex.muscle_group && `${ex.muscle_group} · `}
+                    {ex.muscle_groups?.length > 0 && `${ex.muscle_groups.join(', ')} · `}
                     {ex.equipment.join(', ')}
                   </span>
                 </div>
