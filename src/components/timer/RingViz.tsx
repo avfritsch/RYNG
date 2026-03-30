@@ -61,12 +61,14 @@ export const RingViz = memo(function RingViz({
   progress,
   countdown,
 }: RingVizProps) {
+  const isRoundPause = phase === 'roundPause';
+
   const segments = useMemo(() => {
     const segs: Omit<Segment, 'startDeg' | 'endDeg'>[] = [];
     for (let i = 0; i < stations.length; i++) {
       const s = stations[i];
       segs.push({
-        type: s.isWarmup ? 'warmup' : 'work',
+        type: isRoundPause ? 'warmup' : (s.isWarmup ? 'warmup' : 'work'),
         duration: s.workSeconds,
         stationIndex: i,
       });
@@ -92,7 +94,7 @@ export const RingViz = memo(function RingViz({
       angle = end + GAP_DEG;
       return { ...seg, startDeg: start, endDeg: end } as Segment;
     });
-  }, [stations]);
+  }, [stations, isRoundPause]);
 
   const activeIdx = useMemo(() => {
     const stIdx = activeStation - 1;

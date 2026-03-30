@@ -39,12 +39,12 @@
   padding: 16px 16px;
   font-size: 14px;
   background: #1A1A1A;
-  border: 1px solid #2A2A2A;
-  color: #666666;
+  border: 1.5px solid #3A3A3A;
+  color: #888888;
 }
 
 .tc-btn--back:active {
-  border-color: #3A3A3A;
+  border-color: #666666;
   color: #AAAAAA;
 }
 
@@ -54,8 +54,8 @@
   padding: 16px 24px;
   font-size: 14px;
   background: #1A1A1A;
-  border: 1px solid #3A3A3A;
-  color: #AAAAAA;
+  border: 1.5px solid #555555;
+  color: #CCCCCC;
 }
 
 .tc-btn--forward:active {
@@ -81,7 +81,7 @@
 .tc-btn--stop {
   flex: 1;
   padding: 18px 16px;
-  font-size: 13px;
+  font-size: 14px;
   background: transparent;
   border: 1.5px solid #FF3B3B;
   color: #FF3B3B;

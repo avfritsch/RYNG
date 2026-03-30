@@ -26,12 +26,12 @@ const defaultStation = (index: number): StationConfig => ({
 });
 
 const defaultStations: StationConfig[] = [
-  { name: 'Jumping Jacks', workSeconds: 30, pauseSeconds: 10, isWarmup: true, howto: '' },
-  { name: 'Arm Circles', workSeconds: 30, pauseSeconds: 10, isWarmup: true, howto: '' },
-  { name: 'Liegestütze', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: '' },
-  { name: 'Kniebeugen', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: '' },
-  { name: 'Plank', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: '' },
-  { name: 'Ausfallschritte', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: '' },
+  { name: 'Jumping Jacks', workSeconds: 30, pauseSeconds: 10, isWarmup: true, howto: 'Aufrecht stehen, Arme seitlich. Gleichzeitig Arme über Kopf klatschen und Beine spreizen. Zurück in Ausgangsposition.' },
+  { name: 'Arm Circles', workSeconds: 30, pauseSeconds: 10, isWarmup: true, howto: 'Arme gestreckt auf Schulterhöhe. Kleine Kreise vorwärts, dann rückwärts. Amplitude langsam vergrößern.' },
+  { name: 'Liegestütze', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Hände schulterbreit, Körper gerade. Brust bis fast zum Boden senken. Explosiv hochdrücken. Core anspannen.' },
+  { name: 'Kniebeugen', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Füße schulterbreit, Zehenspitzen leicht nach außen. Tief senken, mindestens parallel. Brust hoch, Rücken gerade.' },
+  { name: 'Plank', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Unterarmstütz, Körper bildet gerade Linie. Core maximal anspannen, Gesäß aktiv. Nicht durchhängen.' },
+  { name: 'Ausfallschritte', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Großer Schritt nach vorn, hinteres Knie fast zum Boden. Oberkörper aufrecht. Seiten abwechseln.' },
 ];
 
 let nextId = 1;

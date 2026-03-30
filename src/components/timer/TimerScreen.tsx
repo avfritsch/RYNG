@@ -178,7 +178,7 @@ export function TimerScreen() {
           <RingViz
             stations={[{ name: 'Rundenpause', workSeconds: state.phaseDuration, pauseSeconds: 0, isWarmup: false, howto: '' }]}
             activeStation={1}
-            phase="warmup"
+            phase="roundPause"
             progress={progress}
             countdown={state.currentSec}
           />
