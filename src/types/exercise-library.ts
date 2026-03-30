@@ -42,6 +42,7 @@ export interface LibraryExercise {
   id: string;
   created_by: string | null;
   name: string;
+  speech_name: string | null;
   muscle_groups: string[];
   category: ExerciseCategory;
   howto: string | null;

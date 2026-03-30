@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
 import { useSaveSession } from '../../hooks/useSessions.ts';
 import { toast } from '../../stores/toast-store.ts';
 import { useNavigate } from 'react-router-dom';
+import { Confetti } from '../ui/Confetti.tsx';
 import '../../styles/done-screen.css';
 
 const MIN_DURATION_SEC = 60;
@@ -19,6 +20,7 @@ export function DoneScreen() {
   const saveSession = useSaveSession();
   const navigate = useNavigate();
   const skippedRef = useRef(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // Auto-save session when done (skip if < 60s)
   useEffect(() => {
@@ -56,6 +58,7 @@ export function DoneScreen() {
     }
 
     saveSession.mutate(sessionPayload);
+    setShowConfetti(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSummary, state.phase, config, sessionEntries, sessionStartedAt]);
 
@@ -86,8 +89,9 @@ export function DoneScreen() {
 
   return (
     <div className="done-screen">
+      <Confetti active={showConfetti} />
       <div className="done-card">
-        <h1 className="done-title">Fertig!</h1>
+        <h1 className="done-title">Training abgeschlossen!</h1>
 
         <div className="done-stats">
           <div className="done-stat">

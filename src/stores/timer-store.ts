@@ -37,7 +37,17 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
 
   loadConfig: (config) => {
     const engine = createTimerEngine(config);
-    engine.onTick((timerState) => set({ state: timerState }));
+    engine.onTick((timerState) => {
+      // When workout completes normally, also set lastSummary
+      if (timerState.phase === 'done') {
+        const summary = engine.getCompletionSummary();
+        if (summary) {
+          set({ state: timerState, lastSummary: summary });
+          return;
+        }
+      }
+      set({ state: timerState });
+    });
     set({ config, engine, lastSummary: null });
   },
 

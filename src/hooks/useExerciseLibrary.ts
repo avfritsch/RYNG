@@ -128,6 +128,7 @@ export function useCopyToplan() {
         .insert({
           day_id: dayId,
           name: exercise.name,
+          speech_name: exercise.speech_name,
           muscle_groups: exercise.muscle_groups,
           howto: exercise.howto,
           is_warmup: isWarmup,

@@ -18,6 +18,7 @@ export interface TimerEngine {
   stop: () => SessionSummary;
   onTick: (fn: TimerCallback) => void;
   getState: () => TimerState;
+  getCompletionSummary: () => SessionSummary | null;
 }
 
 // --- Audio ---
@@ -48,6 +49,10 @@ export function unlockAudio() {
 export function beep(freq = 880, duration = 150) {
   try {
     const ctx = getAudioCtx();
+    // Resume context if suspended (e.g. after app switch / pause)
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -173,6 +178,12 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
     listeners.forEach((fn) => fn(snapshot));
   }
 
+  let completionSummary: SessionSummary | null = null;
+
+  function getCompletionSummary(): SessionSummary | null {
+    return completionSummary;
+  }
+
   function applySequenceEntry() {
     if (seqIndex >= sequence.length) {
       state.phase = 'done';
@@ -180,6 +191,13 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
       state.isPaused = false;
       clearTimer();
       releaseWakeLock();
+      // Build summary for normal completion
+      const totalSeconds = Math.round((Date.now() - startTime) / 1000);
+      const stationsDone = new Set(
+        sequence.filter((e) => e.phase === 'work' || e.phase === 'warmup').map((e) => e.stationIndex),
+      ).size;
+      const roundsDone = sequence.length > 0 ? sequence[sequence.length - 1].round : 0;
+      completionSummary = { totalSeconds, stationsDone, roundsDone };
       beepDone();
       emit();
       return;
@@ -311,5 +329,5 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
     return { ...state };
   }
 
-  return { start, pause, resume, skipForward, skipBack, stop, onTick, getState };
+  return { start, pause, resume, skipForward, skipBack, stop, onTick, getState, getCompletionSummary };
 }

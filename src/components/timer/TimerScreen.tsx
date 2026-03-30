@@ -75,9 +75,20 @@ export function TimerScreen() {
 
     const station = config.stations[state.station - 1];
     if (state.phase === 'work' || state.phase === 'warmup') {
-      if (station) speakStation(station.name, state.phaseDuration);
+      if (station) speakStation(station.name, state.phaseDuration, station.speechName);
     } else if (state.phase === 'pause') {
-      speakPause(state.phaseDuration);
+      // Find next exercise for speech announcement
+      const warmups = config.stations.filter((s) => s.isWarmup);
+      const krafts = config.stations.filter((s) => !s.isWarmup);
+      let nextSt: typeof station | undefined;
+      if (station?.isWarmup) {
+        const idx = warmups.indexOf(station);
+        nextSt = warmups[idx + 1] ?? krafts[0];
+      } else if (station) {
+        const idx = krafts.indexOf(station);
+        nextSt = krafts[idx + 1] ?? (state.round < config.rounds ? krafts[0] : undefined);
+      }
+      speakPause(state.phaseDuration, nextSt?.name, nextSt?.speechName);
     } else if (state.phase === 'roundPause') {
       speakRoundPause(state.round, config.rounds, state.phaseDuration);
     } else if (state.phase === 'done') {

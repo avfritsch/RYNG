@@ -72,12 +72,16 @@ export function speak(text: string, options?: { rate?: number; pitch?: number })
 }
 
 // Short, punchy announcements — less text = less robotic
-export function speakStation(name: string, _seconds: number) {
-  speak(name);
+export function speakStation(name: string, _seconds: number, speechName?: string) {
+  speak(speechName || name);
 }
 
-export function speakPause(seconds: number) {
-  speak(`Pause, ${seconds} Sekunden`, { rate: 0.95 });
+export function speakPause(seconds: number, nextExerciseName?: string, nextSpeechName?: string) {
+  const parts = [`Pause, ${seconds} Sekunden`];
+  if (nextExerciseName) {
+    parts.push(`nächste Übung: ${nextSpeechName || nextExerciseName}`);
+  }
+  speak(parts.join('. '), { rate: 0.95 });
 }
 
 export function speakRoundPause(round: number, totalRounds: number, _seconds: number) {
@@ -85,5 +89,5 @@ export function speakRoundPause(round: number, totalRounds: number, _seconds: nu
 }
 
 export function speakDone() {
-  speak('Fertig!', { rate: 0.9, pitch: 1.1 });
+  speak('Training erfolgreich abgeschlossen!', { rate: 0.9, pitch: 1.1 });
 }

@@ -78,6 +78,7 @@ export function LibraryScreen() {
     const config: TimerConfig = {
       stations: [{
         name: ex.name,
+        speechName: ex.speech_name ?? undefined,
         workSeconds: 45,
         pauseSeconds: 30,
         isWarmup: ex.category === 'warmup',

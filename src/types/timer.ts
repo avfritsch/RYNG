@@ -1,5 +1,6 @@
 export interface StationConfig {
   name: string;
+  speechName?: string;
   muscleGroups?: string[];
   workSeconds: number;
   pauseSeconds: number;

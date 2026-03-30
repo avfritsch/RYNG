@@ -42,6 +42,7 @@ export function PlanDetailScreen() {
 
     const stations: StationConfig[] = exercises.map((ex: PlanExercise) => ({
       name: ex.name,
+      speechName: ex.speech_name ?? undefined,
       workSeconds: ex.work_seconds,
       pauseSeconds: ex.pause_seconds,
       isWarmup: ex.is_warmup,
@@ -173,6 +174,7 @@ export function PlanDetailScreen() {
             roundPause: selectedDay.round_pause,
             stations: exercises.map((ex: PlanExercise) => ({
               name: ex.name,
+              speechName: ex.speech_name ?? undefined,
               workSeconds: ex.work_seconds,
               pauseSeconds: ex.pause_seconds,
               isWarmup: ex.is_warmup,

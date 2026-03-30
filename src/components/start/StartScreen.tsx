@@ -37,6 +37,7 @@ export function StartScreen() {
 
     const stations: StationConfig[] = exercises.map((e: PlanExercise) => ({
       name: e.name,
+      speechName: e.speech_name ?? undefined,
       workSeconds: e.work_seconds,
       pauseSeconds: e.pause_seconds,
       isWarmup: e.is_warmup,
