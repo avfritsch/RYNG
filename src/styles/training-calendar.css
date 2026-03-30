@@ -2,20 +2,20 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  padding: 20px;
-  margin-bottom: 16px;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
 .cal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .cal-nav {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +28,7 @@
 }
 
 .cal-title {
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -36,25 +36,25 @@
 .cal-stats {
   display: flex;
   justify-content: center;
-  gap: 16px;
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin-bottom: 12px;
+  gap: 12px;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 1px;
 }
 
 .cal-day-label {
   text-align: center;
-  font-size: var(--text-xs);
+  font-size: 0.625rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-transform: uppercase;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
 }
 
 .cal-cell {
@@ -63,8 +63,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  border-radius: var(--radius-sm);
+  gap: 1px;
+  border-radius: 6px;
   position: relative;
 }
 
@@ -73,7 +73,7 @@
 }
 
 .cal-cell--today {
-  border: 2px solid var(--color-work);
+  border: 1.5px solid var(--color-work);
 }
 
 .cal-cell--active {
@@ -85,7 +85,7 @@
 }
 
 .cal-day-num {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 500;
   line-height: 1;
 }
@@ -97,20 +97,19 @@
 
 .cal-dots {
   display: flex;
-  gap: 2px;
+  gap: 1px;
 }
 
 .cal-dot {
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
   background: var(--color-work);
 }
 
-/* Smaller screens: tighter cells */
 @media (max-width: 360px) {
   .cal {
-    padding: 12px;
+    padding: 8px;
   }
 
   .cal-day-num {

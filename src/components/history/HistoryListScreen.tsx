@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessions, type SessionFilter } from '../../hooks/useSessions.ts';
 import { SessionCard } from './SessionCard.tsx';
@@ -16,19 +16,20 @@ const filters: { value: SessionFilter; label: string }[] = [
 
 export function HistoryListScreen() {
   const [filter, setFilter] = useState<SessionFilter>('all');
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const { data: sessions, isLoading, error } = useSessions(filter);
   const { data: allSessions } = useSessions('all');
   const navigate = useNavigate();
 
   function handleDayClick(dateKey: string) {
-    // Find first session on that day and navigate to it
-    const daySession = allSessions?.find((s) =>
-      s.started_at.startsWith(dateKey),
-    );
-    if (daySession) {
-      navigate(`/history/${daySession.id}`);
-    }
+    setSelectedDay((prev) => prev === dateKey ? null : dateKey);
   }
+
+  const displaySessions = useMemo(() => {
+    if (!sessions) return [];
+    if (!selectedDay) return sessions;
+    return sessions.filter((s) => s.started_at.startsWith(selectedDay));
+  }, [sessions, selectedDay]);
 
   return (
     <div className="history-list">
@@ -40,11 +41,19 @@ export function HistoryListScreen() {
       <StatsPanel sessions={allSessions ?? []} />
 
       <div className="history-filters">
+        {selectedDay && (
+          <button
+            className="history-filter history-filter--active"
+            onClick={() => setSelectedDay(null)}
+          >
+            {new Date(selectedDay).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })} ✕
+          </button>
+        )}
         {filters.map((f) => (
           <button
             key={f.value}
-            className={`history-filter ${filter === f.value ? 'history-filter--active' : ''}`}
-            onClick={() => setFilter(f.value)}
+            className={`history-filter ${!selectedDay && filter === f.value ? 'history-filter--active' : ''}`}
+            onClick={() => { setFilter(f.value); setSelectedDay(null); }}
           >
             {f.label}
           </button>
@@ -61,14 +70,14 @@ export function HistoryListScreen() {
         </p>
       )}
 
-      {!isLoading && sessions && sessions.length === 0 && (
+      {!isLoading && displaySessions.length === 0 && (
         <p className="history-empty">
-          Noch keine Sessions aufgezeichnet. Starte dein erstes Workout!
+          {selectedDay ? 'Keine Trainings an diesem Tag.' : 'Noch keine Sessions aufgezeichnet. Starte dein erstes Workout!'}
         </p>
       )}
 
       <div className="history-sessions">
-        {sessions?.map((session) => (
+        {displaySessions.map((session) => (
           <SessionCard
             key={session.id}
             session={session}
