@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import type { StationConfig, TimerConfig } from '../../types/timer.ts';
@@ -11,6 +12,7 @@ import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
 import { unlockAudio } from '../../lib/timer-engine.ts';
 import { analyzeTraining } from '../../lib/training-rules.ts';
+import { saveGeneratedPlan } from '../../lib/ai-planner.ts';
 import { toast } from '../../stores/toast-store.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
@@ -44,6 +46,7 @@ function createIds(count: number): string[] {
 }
 
 export function ConfigScreen() {
+  const navigate = useNavigate();
   const [rounds, setRounds] = useState(3);
   const [roundPause, setRoundPause] = useState(90);
   const [stations, setStations] = useState<StationConfig[]>(defaultStations);
@@ -169,13 +172,45 @@ export function ConfigScreen() {
 
   const startSession = useSessionStore((s) => s.start);
 
-  function handleStart() {
+  async function handleSaveAndStart() {
     if (stations.length === 0) return;
+    // Save as plan
+    try {
+      const name = stations.filter(s => !s.isWarmup).map(s => s.name).slice(0, 3).join(', ') || 'Training';
+      await saveGeneratedPlan({
+        name,
+        description: `${stations.length} Übungen · ${rounds} Runden`,
+        stations,
+        rounds,
+        roundPause,
+      });
+    } catch {
+      // Save failed — still start the timer
+    }
+
+    // Start timer
     unlockAudio();
     const config: TimerConfig = { stations, rounds, roundPause };
     loadConfig(config);
     startSession();
     start();
+  }
+
+  function handleSaveOnly() {
+    if (stations.length === 0) return;
+    const name = stations.filter(s => !s.isWarmup).map(s => s.name).slice(0, 3).join(', ') || 'Training';
+    saveGeneratedPlan({
+      name,
+      description: `${stations.length} Übungen · ${rounds} Runden`,
+      stations,
+      rounds,
+      roundPause,
+    }).then(() => {
+      toast.success('Training gespeichert');
+      navigate('/plans');
+    }).catch(() => {
+      toast.error('Fehler beim Speichern');
+    });
   }
 
   if (timerPhase !== 'idle' && timerPhase !== 'done') return null;
@@ -186,7 +221,7 @@ export function ConfigScreen() {
 
   return (
     <div className="config-screen">
-      <h2 className="config-title">Timer konfigurieren</h2>
+      <h2 className="config-title">Neues Training</h2>
 
       {mesoSummary && (
         <div className="config-meso-badge">
@@ -204,7 +239,7 @@ export function ConfigScreen() {
 
       <div className="config-section">
         <div className="config-section-header">
-          <h3>Stationen</h3>
+          <h3>Übungen</h3>
           <span className="config-station-count">
             {warmupCount > 0 && <span className="config-badge config-badge--warmup">{warmupCount} Warmup</span>}
             <span className="config-badge config-badge--kraft">{kraftCount} Kraft</span>
@@ -229,7 +264,7 @@ export function ConfigScreen() {
         </DndContext>
 
         <button className="config-add-btn" onClick={addStation}>
-          + Station hinzufügen
+          + Übung hinzufügen
         </button>
 
         {trainingWarnings.length > 0 && (
@@ -285,10 +320,17 @@ export function ConfigScreen() {
         </div>
         <button
           className="config-start-btn"
-          onClick={handleStart}
+          onClick={handleSaveAndStart}
           disabled={stations.length === 0}
         >
-          STARTEN
+          SPEICHERN & STARTEN
+        </button>
+        <button
+          className="config-save-only-btn"
+          onClick={handleSaveOnly}
+          disabled={stations.length === 0}
+        >
+          Nur speichern
         </button>
       </div>
 

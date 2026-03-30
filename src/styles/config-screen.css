@@ -171,6 +171,26 @@
   opacity: 0.4;
 }
 
+.config-save-only-btn {
+  width: 100%;
+  max-width: 480px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.config-save-only-btn:active:not(:disabled) {
+  border-color: var(--text-secondary);
+}
+
+.config-save-only-btn:disabled {
+  opacity: 0.4;
+}
+
 .config-save-preset-btn {
   width: 100%;
   padding: 10px;

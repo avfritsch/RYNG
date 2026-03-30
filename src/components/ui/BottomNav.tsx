@@ -3,7 +3,7 @@ import { Icon } from './Icon.tsx';
 import '../../styles/bottom-nav.css';
 
 const tabs = [
-  { to: '/', label: 'Timer', icon: 'timer' },
+  { to: '/', label: 'Start', icon: 'play' },
   { to: '/plans', label: 'Pläne', icon: 'clipboard-list' },
   { to: '/library', label: 'Bibliothek', icon: 'dumbbell' },
   { to: '/history', label: 'Verlauf', icon: 'bar-chart' },

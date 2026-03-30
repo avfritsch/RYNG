@@ -87,17 +87,26 @@ export function PlanListScreen() {
             ))}
           </div>
         )}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className="plan-add-btn"
+              style={{ flex: 1, marginTop: 0 }}
+              onClick={() => navigate('/plans/quick')}
+            >
+              + Neues Training
+            </button>
+            <button
+              className="plan-add-btn"
+              style={{ flex: 1, marginTop: 0 }}
+              onClick={() => navigate('/plans/new')}
+            >
+              + Neuer Plan
+            </button>
+          </div>
           <button
             className="plan-add-btn"
-            style={{ flex: 1, marginTop: 0 }}
-            onClick={() => navigate('/plans/new')}
-          >
-            + Neuer Plan
-          </button>
-          <button
-            className="plan-add-btn"
-            style={{ flex: 1, marginTop: 0 }}
+            style={{ marginTop: 0 }}
             onClick={() => setShowImport(true)}
           >
             <Icon name="download" size={14} /> Import

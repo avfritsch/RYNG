@@ -5,7 +5,7 @@ import { useAuth } from './hooks/useAuth.ts';
 import { useOffline } from './hooks/useOffline.ts';
 import { AuthScreen } from './components/auth/AuthScreen.tsx';
 import { BottomNav } from './components/ui/BottomNav.tsx';
-import { ConfigScreen } from './components/config/ConfigScreen.tsx';
+import { StartScreen } from './components/start/StartScreen.tsx';
 import { DoneScreen } from './components/config/DoneScreen.tsx';
 import { TimerScreen } from './components/timer/TimerScreen.tsx';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx';
@@ -15,6 +15,7 @@ import { ToastContainer } from './components/ui/ToastContainer.tsx';
 const PlanListScreen = lazy(() => import('./components/plans/PlanListScreen.tsx').then(m => ({ default: m.PlanListScreen })));
 const PlanDetailScreen = lazy(() => import('./components/plans/PlanDetailScreen.tsx').then(m => ({ default: m.PlanDetailScreen })));
 const PlanEditorScreen = lazy(() => import('./components/plans/PlanEditorScreen.tsx').then(m => ({ default: m.PlanEditorScreen })));
+const ConfigScreen = lazy(() => import('./components/config/ConfigScreen.tsx').then(m => ({ default: m.ConfigScreen })));
 const HistoryListScreen = lazy(() => import('./components/history/HistoryListScreen.tsx').then(m => ({ default: m.HistoryListScreen })));
 const SessionDetailScreen = lazy(() => import('./components/history/SessionDetailScreen.tsx').then(m => ({ default: m.SessionDetailScreen })));
 const ProfileScreen = lazy(() => import('./components/profile/ProfileScreen.tsx').then(m => ({ default: m.ProfileScreen })));
@@ -70,9 +71,10 @@ function AppContent() {
       <main style={{ flex: 1, overflow: 'auto' }}>
         <Suspense fallback={<LazyFallback />}>
           <Routes>
-            <Route path="/" element={<ErrorBoundary><ConfigScreen /></ErrorBoundary>} />
+            <Route path="/" element={<ErrorBoundary><StartScreen /></ErrorBoundary>} />
             <Route path="/plans" element={<ErrorBoundary><PlanListScreen /></ErrorBoundary>} />
             <Route path="/plans/new" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
+            <Route path="/plans/quick" element={<ErrorBoundary><ConfigScreen /></ErrorBoundary>} />
             <Route path="/plans/:planId" element={<ErrorBoundary><PlanDetailScreen /></ErrorBoundary>} />
             <Route path="/plans/:planId/edit" element={<ErrorBoundary><PlanEditorScreen /></ErrorBoundary>} />
             <Route path="/history" element={<ErrorBoundary><HistoryListScreen /></ErrorBoundary>} />
