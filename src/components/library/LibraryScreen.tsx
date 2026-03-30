@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, memo, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
 import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
@@ -39,9 +39,6 @@ export function LibraryScreen() {
   const { data: publicPlans, isLoading: plansLoading } = usePublicPlans();
   const copyPlan = useCopyPlan();
 
-  // Alphabet nav
-  const letterRefs = useRef<Map<string, HTMLElement>>(new Map());
-  const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const filteredPlans = useMemo(() => {
@@ -155,43 +152,6 @@ export function LibraryScreen() {
   }
 
   // Alphabet nav letters
-  const alphaLetters = useMemo(() => {
-    if (!filteredExercises) return [];
-    const letters = new Set<string>();
-    for (const ex of filteredExercises) {
-      const first = ex.name.charAt(0).toUpperCase();
-      if (first) letters.add(first);
-    }
-    return [...letters].sort();
-  }, [filteredExercises]);
-
-  const showAlphaNav = (filteredExercises?.length ?? 0) > 15;
-
-  function scrollToLetter(letter: string) {
-    const el = letterRefs.current.get(letter);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // Track active letter on scroll
-  useEffect(() => {
-    if (!showAlphaNav) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const letter = (entry.target as HTMLElement).dataset.letter;
-            if (letter) setActiveLetter(letter);
-          }
-        }
-      },
-      { threshold: 0.1, rootMargin: '-80px 0px -80% 0px' },
-    );
-    for (const [, el] of letterRefs.current) {
-      observer.observe(el);
-    }
-    return () => observer.disconnect();
-  }, [showAlphaNav, filteredExercises]);
-
   // Result count text
   const resultCountText = useMemo(() => {
     const count = filteredExercises?.length ?? 0;
@@ -207,12 +167,6 @@ export function LibraryScreen() {
   const filterCountEq = filters.equipmentSel.length;
 
   const myPlans = userPlans?.filter((p) => !p.is_system) ?? [];
-
-  // Ref callback for letter anchors
-  const setLetterRef = useCallback((letter: string, el: HTMLElement | null) => {
-    if (el) letterRefs.current.set(letter, el);
-    else letterRefs.current.delete(letter);
-  }, []);
 
   // Render grouped list
   function renderGroupedList() {
@@ -234,7 +188,6 @@ export function LibraryScreen() {
             <Icon name={isCollapsed ? 'chevron-right' : 'chevron-down'} size={14} />
           </button>
           {!isCollapsed && items.map((ex) => {
-            const firstChar = ex.name.charAt(0).toUpperCase();
             return (
               <LibraryCard
                 key={ex.id}
@@ -247,8 +200,6 @@ export function LibraryScreen() {
                 onQuickStart={handleQuickStart}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                letterRef={(el) => setLetterRef(firstChar, el)}
-                letterKey={firstChar}
               />
             );
           })}
@@ -261,9 +212,7 @@ export function LibraryScreen() {
   // Render flat list
   function renderFlatList() {
     if (!filteredExercises) return null;
-    return filteredExercises.map((ex) => {
-      const firstChar = ex.name.charAt(0).toUpperCase();
-      return (
+    return filteredExercises.map((ex) => (
         <LibraryCard
           key={ex.id}
           exercise={ex}
@@ -275,11 +224,8 @@ export function LibraryScreen() {
           onQuickStart={handleQuickStart}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          letterRef={(el) => setLetterRef(firstChar, el)}
-          letterKey={firstChar}
         />
-      );
-    });
+    ));
   }
 
   return (
@@ -457,20 +403,6 @@ export function LibraryScreen() {
             </div>
           )}
 
-          {/* Alphabet quick-nav */}
-          {showAlphaNav && (
-            <div className="library-alpha-nav">
-              {alphaLetters.map((letter) => (
-                <button
-                  key={letter}
-                  className={`library-alpha-letter ${activeLetter === letter ? 'library-alpha-letter--active' : ''}`}
-                  onClick={() => scrollToLetter(letter)}
-                >
-                  {letter}
-                </button>
-              ))}
-            </div>
-          )}
 
           {deleteExercise && (
             <ConfirmModal
@@ -570,8 +502,6 @@ const LibraryCard = memo(function LibraryCard({
   onQuickStart,
   onEdit,
   onDelete,
-  letterRef,
-  letterKey,
 }: {
   exercise: LibraryExercise;
   isFav: boolean;
@@ -582,8 +512,6 @@ const LibraryCard = memo(function LibraryCard({
   onQuickStart: (ex: LibraryExercise) => void;
   onEdit: (ex: LibraryExercise) => void;
   onDelete: (ex: LibraryExercise) => void;
-  letterRef?: (el: HTMLElement | null) => void;
-  letterKey?: string;
 }) {
   const metaParts: string[] = [];
   if (ex.muscle_groups?.length > 0) metaParts.push(ex.muscle_groups.join(', '));
@@ -593,8 +521,6 @@ const LibraryCard = memo(function LibraryCard({
     <div
       className={`library-row ${isSelected ? 'library-row--selected' : ''}`}
       onClick={() => onSelect(ex)}
-      ref={letterRef}
-      data-letter={letterKey}
     >
       <div className="library-row-line1">
         <span className="library-row-name">{ex.name}</span>
