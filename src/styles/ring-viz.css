@@ -12,7 +12,12 @@
 }
 
 .ring-viz-progress {
-  transition: stroke-dashoffset 0.9s linear, opacity 0.3s ease;
+  transition: stroke-dashoffset 0.9s linear;
+}
+
+.ring-viz-dot {
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.6));
+  transition: cx 0.9s linear, cy 0.9s linear;
 }
 
 .ring-viz-center {
@@ -25,9 +30,9 @@
 
 .ring-viz-countdown {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(4rem, 18vw, 8rem);
+  font-size: clamp(5rem, 22vw, 7rem);
   line-height: 1;
   letter-spacing: -2px;
   transition: color var(--duration-slow);

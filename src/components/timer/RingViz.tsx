@@ -3,15 +3,10 @@ import type { StationConfig } from '../../types/timer.ts';
 import '../../styles/ring-viz.css';
 
 interface RingVizProps {
-  /** Stations in the current set (warmup OR kraft stations) */
   stations: StationConfig[];
-  /** 1-based index within the set */
   activeStation: number;
-  /** Current phase */
   phase: string;
-  /** 0–1 progress through the current phase */
   progress: number;
-  /** Countdown seconds to display in center */
   countdown: number;
 }
 
@@ -21,12 +16,22 @@ const R = 82;
 const STROKE = 14;
 const GAP_DEG = 3;
 
-const PHASE_COLORS: Record<string, string> = {
-  work: 'var(--color-work)',
-  warmup: 'var(--color-prepare)',
-  pause: 'var(--color-rest)',
-  roundPause: 'var(--color-info)',
+// Full-saturation colors for active segments
+const SEGMENT_COLORS: Record<string, string> = {
+  work: '#7FFF00',
+  warmup: '#FFE600',
+  pause: '#FF3B3B',
 };
+
+// Dimmed colors for completed segments (35% opacity equivalent)
+const SEGMENT_COLORS_DONE: Record<string, string> = {
+  work: '#2D5A00',
+  warmup: '#5A5100',
+  pause: '#5A1515',
+};
+
+// Not-yet-reached segments
+const SEGMENT_COLOR_FUTURE = '#2A2A2A';
 
 function arcPath(startDeg: number, endDeg: number): string {
   const sr = (startDeg * Math.PI) / 180;
@@ -35,13 +40,18 @@ function arcPath(startDeg: number, endDeg: number): string {
   return `M ${CX + R * Math.cos(sr)} ${CY + R * Math.sin(sr)} A ${R} ${R} 0 ${large} 1 ${CX + R * Math.cos(er)} ${CY + R * Math.sin(er)}`;
 }
 
+/** Get the (x,y) point at a given degree on the ring */
+function pointOnRing(deg: number): [number, number] {
+  const rad = (deg * Math.PI) / 180;
+  return [CX + R * Math.cos(rad), CY + R * Math.sin(rad)];
+}
+
 interface Segment {
   type: 'work' | 'warmup' | 'pause';
   duration: number;
-  stationIndex: number; // 0-based within set
+  stationIndex: number;
   startDeg: number;
   endDeg: number;
-  color: string;
 }
 
 export const RingViz = memo(function RingViz({
@@ -51,7 +61,6 @@ export const RingViz = memo(function RingViz({
   progress,
   countdown,
 }: RingVizProps) {
-  // Build segments for this set
   const segments = useMemo(() => {
     const segs: Omit<Segment, 'startDeg' | 'endDeg'>[] = [];
     for (let i = 0; i < stations.length; i++) {
@@ -60,15 +69,12 @@ export const RingViz = memo(function RingViz({
         type: s.isWarmup ? 'warmup' : 'work',
         duration: s.workSeconds,
         stationIndex: i,
-        color: s.isWarmup ? PHASE_COLORS.warmup : PHASE_COLORS.work,
       });
-      // Pause after each station except the last
       if (i < stations.length - 1 && s.pauseSeconds > 0) {
         segs.push({
           type: 'pause',
           duration: s.pauseSeconds,
           stationIndex: i,
-          color: PHASE_COLORS.pause,
         });
       }
     }
@@ -77,7 +83,7 @@ export const RingViz = memo(function RingViz({
     if (totalDur === 0) return [];
 
     const totalDeg = 360 - segs.length * GAP_DEG;
-    let angle = -90; // start at top
+    let angle = -90;
 
     return segs.map((seg) => {
       const segDeg = Math.max(1, (seg.duration / totalDur) * totalDeg);
@@ -88,25 +94,34 @@ export const RingViz = memo(function RingViz({
     });
   }, [stations]);
 
-  // Determine active segment index
   const activeIdx = useMemo(() => {
-    const stIdx = activeStation - 1; // 0-based
+    const stIdx = activeStation - 1;
     if (phase === 'work' || phase === 'warmup') {
       return segments.findIndex((s) => s.stationIndex === stIdx && s.type !== 'pause');
     }
     if (phase === 'pause') {
       return segments.findIndex((s) => s.stationIndex === stIdx && s.type === 'pause');
     }
-    return -1; // roundPause — no active segment
+    return -1;
   }, [segments, activeStation, phase]);
 
+  // Countdown color: no more blue
   const countdownColor = phase === 'roundPause'
-    ? PHASE_COLORS.roundPause
+    ? '#FFE600'
     : activeIdx >= 0
-      ? segments[activeIdx]?.color ?? PHASE_COLORS.work
-      : PHASE_COLORS.work;
+      ? SEGMENT_COLORS[segments[activeIdx]?.type] ?? '#7FFF00'
+      : '#7FFF00';
 
   const blink = countdown <= 3 && countdown > 0;
+
+  // Progress dot position
+  const progressDot = useMemo(() => {
+    if (activeIdx < 0 || progress <= 0) return null;
+    const seg = segments[activeIdx];
+    const deg = seg.startDeg + (seg.endDeg - seg.startDeg) * progress;
+    const [x, y] = pointOnRing(deg);
+    return { x, y };
+  }, [activeIdx, segments, progress]);
 
   return (
     <div className="ring-viz-container">
@@ -117,7 +132,7 @@ export const RingViz = memo(function RingViz({
           cy={CY}
           r={R}
           fill="none"
-          stroke="var(--bg-elevated)"
+          stroke="#1A1A1A"
           strokeWidth={STROKE}
         />
 
@@ -126,24 +141,33 @@ export const RingViz = memo(function RingViz({
           const isDone = idx < activeIdx;
           const isActive = idx === activeIdx;
 
+          // Background arc color
+          let bgColor: string;
+          if (isDone) {
+            bgColor = SEGMENT_COLORS_DONE[seg.type] ?? SEGMENT_COLOR_FUTURE;
+          } else if (isActive) {
+            bgColor = SEGMENT_COLOR_FUTURE; // unfilled portion of active segment
+          } else {
+            bgColor = SEGMENT_COLOR_FUTURE;
+          }
+
           return (
             <g key={idx}>
               {/* Background arc */}
               <path
                 d={arcPath(seg.startDeg, seg.endDeg)}
                 fill="none"
-                stroke={seg.color}
+                stroke={bgColor}
                 strokeWidth={STROKE}
                 strokeLinecap="butt"
-                opacity={isDone ? 0.6 : 0.2}
               />
 
-              {/* Foreground arc (progress fill, clockwise) */}
+              {/* Foreground arc (progress fill) */}
               {isActive && (
                 <path
                   d={arcPath(seg.startDeg, seg.endDeg)}
                   fill="none"
-                  stroke={seg.color}
+                  stroke={SEGMENT_COLORS[seg.type]}
                   strokeWidth={STROKE}
                   strokeLinecap="butt"
                   pathLength={1}
@@ -155,6 +179,17 @@ export const RingViz = memo(function RingViz({
             </g>
           );
         })}
+
+        {/* Progress dot (white indicator at end of filled arc) */}
+        {progressDot && (
+          <circle
+            cx={progressDot.x}
+            cy={progressDot.y}
+            r={4.5}
+            fill="#FFFFFF"
+            className="ring-viz-dot"
+          />
+        )}
       </svg>
 
       {/* Countdown in center */}
