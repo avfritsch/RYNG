@@ -2,6 +2,10 @@
 -- Exercise library data model cleanup
 -- ============================================
 
+-- 0. Drop fts column first (depends on detail + name + howto + muscle_group)
+DROP INDEX IF EXISTS idx_exercise_library_fts;
+ALTER TABLE exercise_library DROP COLUMN IF EXISTS fts;
+
 -- 1. Merge detail into howto (keep howto, drop detail)
 UPDATE exercise_library
 SET howto = COALESCE(
@@ -24,7 +28,6 @@ ALTER TABLE exercise_library DROP COLUMN IF EXISTS muscle_group;
 
 -- 3. Drop unused columns
 ALTER TABLE exercise_library DROP COLUMN IF EXISTS tags;
-ALTER TABLE exercise_library DROP COLUMN IF EXISTS fts;
 
 -- 4. Merge mobility into stretch
 UPDATE exercise_library SET category = 'stretch' WHERE category = 'mobility';
