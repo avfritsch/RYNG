@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
 import { useSaveSession } from '../../hooks/useSessions.ts';
+import { toast } from '../../stores/toast-store.ts';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/done-screen.css';
+
+const MIN_DURATION_SEC = 60;
 
 export function DoneScreen() {
   const state = useTimerStore((s) => s.state);
@@ -15,19 +18,21 @@ export function DoneScreen() {
   const resetSession = useSessionStore((s) => s.reset);
   const saveSession = useSaveSession();
   const navigate = useNavigate();
+  const skippedRef = useRef(false);
 
-  // Auto-save session when done
+  // Auto-save session when done (skip if < 60s)
   useEffect(() => {
     if (!lastSummary || !config) return;
     if (state.phase !== 'done' && state.phase !== 'idle') return;
     if (saveSession.isPending || saveSession.isSuccess) return;
+    if (skippedRef.current) return;
 
     const now = new Date().toISOString();
     const startedAt = sessionStartedAt
       ? new Date(sessionStartedAt).toISOString()
       : new Date(Date.now() - lastSummary.totalSeconds * 1000).toISOString();
 
-    saveSession.mutate({
+    const sessionPayload = {
       session: {
         user_id: '',
         started_at: startedAt,
@@ -39,7 +44,18 @@ export function DoneScreen() {
         mesocycle_week: null,
       },
       entries: sessionEntries,
-    });
+    };
+
+    if (lastSummary.totalSeconds < MIN_DURATION_SEC) {
+      // Too short — don't save, but offer the option
+      skippedRef.current = true;
+      toast.undo('Training unter 1 Min — nicht gespeichert', () => {
+        saveSession.mutate(sessionPayload);
+      });
+      return;
+    }
+
+    saveSession.mutate(sessionPayload);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSummary, state.phase, config, sessionEntries, sessionStartedAt]);
 
@@ -54,12 +70,14 @@ export function DoneScreen() {
   }
 
   function handleAgain() {
+    skippedRef.current = false;
     saveSession.reset();
     resetSession();
     reset();
   }
 
   function handleHistory() {
+    skippedRef.current = false;
     saveSession.reset();
     resetSession();
     reset();
@@ -78,7 +96,7 @@ export function DoneScreen() {
           </div>
           <div className="done-stat">
             <span className="done-stat-value">{lastSummary.stationsDone}</span>
-            <span className="done-stat-label">Stationen</span>
+            <span className="done-stat-label">Übungen</span>
           </div>
           <div className="done-stat">
             <span className="done-stat-value">{formatDuration(lastSummary.totalSeconds)}</span>
@@ -87,7 +105,7 @@ export function DoneScreen() {
         </div>
 
         {saveSession.isError && (
-          <p style={{ color: 'var(--color-rest)', fontSize: '0.8125rem', marginBottom: 16 }}>
+          <p style={{ color: 'var(--color-rest)', fontSize: 'var(--text-sm)', marginBottom: 16 }}>
             Session konnte nicht gespeichert werden.
           </p>
         )}
