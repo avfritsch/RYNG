@@ -1,6 +1,8 @@
-# React + TypeScript + Vite
+# RYNG — Fitness Timer PWA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![CI](https://github.com/avfritsch/RYNG/actions/workflows/ci.yml/badge.svg)
+
+Zirkeltraining-Timer mit Trainingsplänen, Übungsbibliothek und Gewichts-Tracking. React + TypeScript + Vite + Supabase.
 
 Currently, two official plugins are available:
 
