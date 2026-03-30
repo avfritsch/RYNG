@@ -14,13 +14,13 @@ export function TimerControls({ isPaused, onPause, onResume, onSkipBack, onSkipF
   return (
     <div className="timer-controls">
       <div className="tc-row">
-        <button className="tc-btn tc-btn--nav" onClick={onSkipBack} aria-label="Zurück">
-          <Icon name="skip-back" size={20} />
+        <button className="tc-btn tc-btn--back" onClick={onSkipBack} aria-label="Zurück">
+          <Icon name="skip-back" size={18} />
           <span>ZURÜCK</span>
         </button>
-        <button className="tc-btn tc-btn--nav" onClick={onSkipForward} aria-label="Weiter">
+        <button className="tc-btn tc-btn--forward" onClick={onSkipForward} aria-label="Weiter">
           <span>WEITER</span>
-          <Icon name="skip-forward" size={20} />
+          <Icon name="skip-forward" size={18} />
         </button>
       </div>
       <div className="tc-row">
@@ -29,10 +29,10 @@ export function TimerControls({ isPaused, onPause, onResume, onSkipBack, onSkipF
           onClick={isPaused ? onResume : onPause}
           aria-label={isPaused ? 'Fortsetzen' : 'Pause'}
         >
-          <Icon name={isPaused ? 'play' : 'pause'} size={22} />
+          <Icon name={isPaused ? 'play' : 'pause'} size={20} />
           <span>{isPaused ? 'WEITER' : 'PAUSE'}</span>
         </button>
-        <button className="tc-btn tc-btn--danger" onClick={onStop} aria-label="Stopp">
+        <button className="tc-btn tc-btn--stop" onClick={onStop} aria-label="Stopp">
           <Icon name="stop-square" size={18} />
         </button>
       </div>
