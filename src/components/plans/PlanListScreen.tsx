@@ -34,36 +34,13 @@ export function PlanListScreen() {
     );
   }
 
-  const systemPlans = plans?.filter((p) => p.is_system) ?? [];
   const customPlans = plans?.filter((p) => !p.is_system) ?? [];
 
   return (
     <div className="plan-list">
-      <h2 className="plan-list-title">Trainingspläne</h2>
-
-      {systemPlans.length > 0 && (
-        <section className="plan-section">
-          <h3 className="plan-section-label">Eingebaute Pläne</h3>
-          <div className="plan-cards">
-            {systemPlans.map((plan) => (
-              <button
-                key={plan.id}
-                className="card card--interactive plan-card"
-                onClick={() => navigate(`/plans/${plan.id}`)}
-              >
-                <div className="plan-card-row1">
-                  <span className="plan-card-name">{plan.name}</span>
-                  <span className="plan-card-badge plan-card-badge--system">System</span>
-                </div>
-                <span className="plan-card-desc">{plan.description}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
+      <h2 className="plan-list-title">Meine Pläne</h2>
 
       <section className="plan-section">
-        <h3 className="plan-section-label">Meine Pläne</h3>
         {customPlans.length === 0 ? (
           <p className="plan-empty">Noch keine eigenen Pläne erstellt.</p>
         ) : (
