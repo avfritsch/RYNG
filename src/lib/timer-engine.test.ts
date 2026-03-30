@@ -54,7 +54,7 @@ function collectStates(engine: ReturnType<typeof createTimerEngine>): TimerState
   return states;
 }
 
-function tickEngine(engine: ReturnType<typeof createTimerEngine>, ticks: number) {
+function tickEngine(_engine: ReturnType<typeof createTimerEngine>, ticks: number) {
   // Simulate ticks by advancing the interval
   for (let i = 0; i < ticks; i++) {
     // Access the internal tick via the interval mechanism
