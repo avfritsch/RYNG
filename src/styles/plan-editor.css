@@ -25,28 +25,29 @@
 .plan-editor-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .plan-editor-input {
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .plan-editor-textarea {
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  color: var(--text-primary);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   resize: vertical;
+  min-height: 40px;
 }
 
 .plan-editor-save {
@@ -65,7 +66,7 @@
 .plan-editor-day-tabs {
   display: flex;
   gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   overflow-x: auto;
 }
 
@@ -75,50 +76,52 @@
   font-size: var(--text-lg);
 }
 
+/* Day config — single compact row */
 .plan-editor-day-config {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 12px;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 10px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-nested);
 }
 
 .plan-editor-field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
-  min-width: 100px;
+  min-width: 70px;
 }
 
 .plan-editor-field span {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  font-size: 0.625rem;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .plan-editor-field input {
-  padding: 6px 8px;
+  padding: 4px 6px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--text-primary);
 }
 
 .plan-editor-delete-day {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-rest);
-  padding: 6px 10px;
+  padding: 4px 8px;
   align-self: flex-end;
 }
 
+/* Sections */
 .plan-editor-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .plan-editor-section-label {
@@ -127,9 +130,10 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
+/* Exercise cards — compact 2-line */
 .plan-editor-exercise {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
@@ -138,7 +142,7 @@
   margin-bottom: 6px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .plan-editor-ex-name {
@@ -146,8 +150,8 @@
   border: none;
   border-bottom: 1px solid var(--border-default);
   border-radius: 0;
-  padding: 4px 0;
-  font-size: var(--text-md);
+  padding: 2px 0;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -155,28 +159,26 @@
 .plan-editor-ex-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: var(--text-base);
-  color: var(--text-secondary);
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 .plan-editor-ex-row input[type="number"] {
-  width: 48px;
-  padding: 3px 5px;
+  width: 42px;
+  padding: 2px 4px;
   text-align: center;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 3px;
 }
 
 .plan-editor-ex-delete {
   margin-left: auto;
-  font-size: var(--text-lg);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   width: 28px;
   height: 28px;
   display: flex;
@@ -191,20 +193,22 @@
 .plan-editor-ex-detail {
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-default);
-  border-radius: 0;
-  padding: 3px 0;
-  font-size: var(--text-base);
-  color: var(--text-secondary);
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.plan-editor-ex-detail::placeholder {
+  color: var(--text-disabled);
 }
 
 .plan-editor-add-exercise {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-size: var(--text-base);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
 }
 
 .plan-editor-add-exercise:active {

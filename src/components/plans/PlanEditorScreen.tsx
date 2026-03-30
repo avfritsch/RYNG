@@ -343,11 +343,14 @@ function ExerciseFields({ ex, onUpdate, onDelete }: {
 }) {
   return (
     <div className="plan-editor-exercise">
-      <DebouncedInput
-        className="plan-editor-ex-name"
-        value={ex.name}
-        onCommit={(v) => onUpdate(ex.id, 'name', v)}
-      />
+      <div className="plan-editor-ex-row">
+        <DebouncedInput
+          className="plan-editor-ex-name"
+          value={ex.name}
+          onCommit={(v) => onUpdate(ex.id, 'name', v)}
+        />
+        <button className="plan-editor-ex-delete" onClick={() => onDelete(ex.id)}><Icon name="x-close" size={14} /></button>
+      </div>
       <div className="plan-editor-ex-row">
         <label>
           Work <DebouncedInput type="number" value={ex.work_seconds} onCommit={(v) => onUpdate(ex.id, 'work_seconds', Number(v))} />s
@@ -355,20 +358,13 @@ function ExerciseFields({ ex, onUpdate, onDelete }: {
         <label>
           Pause <DebouncedInput type="number" value={ex.pause_seconds} onCommit={(v) => onUpdate(ex.id, 'pause_seconds', Number(v))} />s
         </label>
-        <button className="plan-editor-ex-delete" onClick={() => onDelete(ex.id)}><Icon name="x-close" size={14} /></button>
+        <DebouncedInput
+          className="plan-editor-ex-detail"
+          value={ex.muscle_group ?? ''}
+          onCommit={(v) => onUpdate(ex.id, 'muscle_group', v)}
+          placeholder="Muskel"
+        />
       </div>
-      <DebouncedInput
-        className="plan-editor-ex-detail"
-        value={ex.detail ?? ''}
-        onCommit={(v) => onUpdate(ex.id, 'detail', v)}
-        placeholder="Detail / Anleitung"
-      />
-      <DebouncedInput
-        className="plan-editor-ex-detail"
-        value={ex.muscle_group ?? ''}
-        onCommit={(v) => onUpdate(ex.id, 'muscle_group', v)}
-        placeholder="Muskelgruppe"
-      />
     </div>
   );
 }
