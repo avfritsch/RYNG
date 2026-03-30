@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useExerciseLibrary, useCopyToplan } from '../../hooks/useExerciseLibrary.ts';
-import { CATEGORY_LABELS, type ExerciseCategory } from '../../types/exercise-library.ts';
+import { CATEGORY_LABELS, MUSCLE_GROUP_OPTIONS, EQUIPMENT_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import '../../styles/library-picker.css';
@@ -16,11 +16,21 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
   const trapRef = useFocusTrap<HTMLDivElement>();
   const [category, setCategory] = useState<ExerciseCategory | ''>('');
   const [search, setSearch] = useState('');
+  const [muscleGroups, setMuscleGroups] = useState<string[]>([]);
+  const [equipment, setEquipment] = useState<string[]>([]);
+  const [showMuscle, setShowMuscle] = useState(false);
+  const [showEquipment, setShowEquipment] = useState(false);
   const { data: exercises, isLoading } = useExerciseLibrary({
     categories: category ? [category] : undefined,
+    muscleGroups: muscleGroups.length > 0 ? muscleGroups : undefined,
+    equipment: equipment.length > 0 ? equipment : undefined,
     search: search || undefined,
   });
   const copyToPlan = useCopyToplan();
+
+  function toggle(arr: string[], val: string, setter: (v: string[]) => void) {
+    setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
+  }
 
   function handleAdd(ex: typeof exercises extends (infer T)[] | undefined ? T : never) {
     if (!ex) return;
@@ -72,6 +82,46 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
               {CATEGORY_LABELS[cat]}
             </button>
           ))}
+        </div>
+
+        <div className="picker-filter-section">
+          <button className="picker-filter-toggle" onClick={() => setShowMuscle(!showMuscle)}>
+            <span>Muskelgruppe</span>
+            {muscleGroups.length > 0 && <span className="picker-filter-badge">({muscleGroups.length})</span>}
+            <Icon name={showMuscle ? 'chevron-up' : 'chevron-down'} size={14} />
+          </button>
+          {showMuscle && (
+            <div className="picker-cats" style={{ paddingLeft: 0 }}>
+              {MUSCLE_GROUP_OPTIONS.map((mg) => (
+                <button
+                  key={mg}
+                  className={`picker-cat ${muscleGroups.includes(mg) ? 'picker-cat--active' : ''}`}
+                  onClick={() => toggle(muscleGroups, mg, setMuscleGroups)}
+                >
+                  {mg}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button className="picker-filter-toggle" onClick={() => setShowEquipment(!showEquipment)}>
+            <span>Equipment</span>
+            {equipment.length > 0 && <span className="picker-filter-badge">({equipment.length})</span>}
+            <Icon name={showEquipment ? 'chevron-up' : 'chevron-down'} size={14} />
+          </button>
+          {showEquipment && (
+            <div className="picker-cats" style={{ paddingLeft: 0 }}>
+              {EQUIPMENT_OPTIONS.map((eq) => (
+                <button
+                  key={eq}
+                  className={`picker-cat ${equipment.includes(eq) ? 'picker-cat--active' : ''}`}
+                  onClick={() => toggle(equipment, eq, setEquipment)}
+                >
+                  {eq}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="picker-list">
