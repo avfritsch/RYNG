@@ -4,6 +4,14 @@ import { toast } from '../stores/toast-store.ts';
 import { checkRateLimit } from '../lib/rate-limit.ts';
 import type { Plan } from '../types/plan.ts';
 
+export type PublicPlan = Plan & {
+  vote_count: number;
+  copy_count: number;
+  tags: string[];
+  muscle_groups: string[];
+  equipment: string[];
+};
+
 export function usePublicPlans() {
   return useQuery({
     queryKey: ['public_plans'],
@@ -11,11 +19,22 @@ export function usePublicPlans() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('plans')
-        .select('*')
+        .select('*, plan_days(plan_exercises(muscle_groups, equipment))')
         .eq('is_public', true)
         .order('vote_count', { ascending: false });
       if (error) throw error;
-      return data as (Plan & { vote_count: number; copy_count: number; tags: string[] })[];
+      return (data as (Plan & { vote_count: number; copy_count: number; tags: string[]; plan_days: { plan_exercises: { muscle_groups: string[] | null; equipment: string[] | null }[] }[] })[]).map((p) => {
+        const mgs = new Set<string>();
+        const eqs = new Set<string>();
+        for (const day of p.plan_days ?? []) {
+          for (const ex of day.plan_exercises ?? []) {
+            for (const mg of ex.muscle_groups ?? []) mgs.add(mg);
+            for (const eq of ex.equipment ?? []) eqs.add(eq);
+          }
+        }
+        const { plan_days: _, ...rest } = p;
+        return { ...rest, muscle_groups: [...mgs], equipment: [...eqs] } as PublicPlan;
+      });
     },
   });
 }

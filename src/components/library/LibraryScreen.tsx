@@ -41,14 +41,36 @@ export function LibraryScreen() {
 
   const listRef = useRef<HTMLDivElement>(null);
 
+  const [planMuscleGroups, setPlanMuscleGroups] = useState<string[]>([]);
+  const [planEquipment, setPlanEquipment] = useState<string[]>([]);
+  const [planMgOpen, setPlanMgOpen] = useState(false);
+  const [planEqOpen, setPlanEqOpen] = useState(false);
+
+  function togglePlanFilter<T>(arr: T[], val: T, setter: (v: T[]) => void) {
+    setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
+  }
+
   const filteredPlans = useMemo(() => {
     if (!publicPlans) return [];
-    if (!filters.search) return publicPlans;
-    const q = filters.search.toLowerCase();
-    return publicPlans.filter((p) =>
-      p.name.toLowerCase().includes(q) || (p.description?.toLowerCase().includes(q)),
-    );
-  }, [publicPlans, filters.search]);
+    let result = publicPlans;
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(q) || (p.description?.toLowerCase().includes(q)),
+      );
+    }
+    if (planMuscleGroups.length > 0) {
+      result = result.filter((p) =>
+        planMuscleGroups.some((mg) => p.muscle_groups.includes(mg)),
+      );
+    }
+    if (planEquipment.length > 0) {
+      result = result.filter((p) =>
+        planEquipment.some((eq) => p.equipment.includes(eq)),
+      );
+    }
+    return result;
+  }, [publicPlans, filters.search, planMuscleGroups, planEquipment]);
 
   const { data: exercises, isLoading } = useExerciseLibrary(filters.queryFilters);
 
@@ -276,6 +298,46 @@ export function LibraryScreen() {
             </button>
           )}
         </div>
+
+        {tab === 'plans' && (
+          <div className="library-filters">
+            <button className="library-filter-header" onClick={() => setPlanMgOpen(!planMgOpen)}>
+              <span>Muskelgruppe{planMuscleGroups.length > 0 ? ` (${planMuscleGroups.length})` : ''}</span>
+              {planMuscleGroups.length > 0 && <span className="library-filter-count">{planMuscleGroups.length} aktiv</span>}
+              <Icon name={planMgOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+            </button>
+            {planMgOpen && (
+              <div className="library-chip-wrap">
+                {planMuscleGroups.length > 0 && (
+                  <button className="library-chip library-chip--reset" onClick={() => setPlanMuscleGroups([])}>Zurücksetzen</button>
+                )}
+                {MUSCLE_GROUP_OPTIONS.map((mg) => (
+                  <button key={mg} className={`library-chip ${planMuscleGroups.includes(mg) ? 'library-chip--active' : ''}`} onClick={() => togglePlanFilter(planMuscleGroups, mg, setPlanMuscleGroups)}>
+                    {mg}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button className="library-filter-header" onClick={() => setPlanEqOpen(!planEqOpen)}>
+              <span>Equipment{planEquipment.length > 0 ? ` (${planEquipment.length})` : ''}</span>
+              {planEquipment.length > 0 && <span className="library-filter-count">{planEquipment.length} aktiv</span>}
+              <Icon name={planEqOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+            </button>
+            {planEqOpen && (
+              <div className="library-chip-wrap">
+                {planEquipment.length > 0 && (
+                  <button className="library-chip library-chip--reset" onClick={() => setPlanEquipment([])}>Zurücksetzen</button>
+                )}
+                {EQUIPMENT_OPTIONS.map((eq) => (
+                  <button key={eq} className={`library-chip ${planEquipment.includes(eq) ? 'library-chip--active' : ''}`} onClick={() => togglePlanFilter(planEquipment, eq, setPlanEquipment)}>
+                    {eq}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {tab === 'exercises' && (
           <>
