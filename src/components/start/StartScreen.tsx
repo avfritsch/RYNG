@@ -101,11 +101,13 @@ export function StartScreen() {
   }
 
   function handleSuggestionAction(s: Suggestion) {
-    if (s.type === 'next-day' && s.dayId) {
+    if ((s.type === 'next-day' || s.type === 'different' || s.type === 'random') && s.dayId) {
       handleStartDay(s.dayId);
     } else if ((s.type === 'repeat' || s.type === 'repeat-week') && s.sessionId) {
       handleRepeatSession(s.sessionId);
-    } else if (s.type === 'get-started' || s.type === 'no-plans') {
+    } else if (s.type === 'create') {
+      navigate('/plans/quick');
+    } else if (s.type === 'get-started') {
       navigate('/plans');
     }
   }
@@ -129,8 +131,12 @@ export function StartScreen() {
                 <span className="start-card-desc">{s.description}</span>
               </div>
               <div className="start-card-action">
-                {s.type === 'get-started' || s.type === 'no-plans' ? (
-                  <Icon name="arrow-right" size={20} />
+                {s.type === 'create' || s.type === 'get-started' ? (
+                  <Icon name="plus" size={20} />
+                ) : s.type === 'random' ? (
+                  <Icon name="refresh" size={20} />
+                ) : s.type === 'repeat' || s.type === 'repeat-week' ? (
+                  <Icon name="repeat" size={20} />
                 ) : (
                   <Icon name="play" size={20} />
                 )}

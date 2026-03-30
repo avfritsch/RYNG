@@ -5,7 +5,7 @@ import type { Session } from '../types/session.ts';
 import type { Plan, PlanDay } from '../types/plan.ts';
 
 export interface Suggestion {
-  type: 'next-day' | 'repeat' | 'repeat-week' | 'no-plans' | 'get-started';
+  type: 'next-day' | 'repeat' | 'repeat-week' | 'different' | 'random' | 'create' | 'get-started';
   title: string;
   description: string;
   planId?: string;
@@ -15,20 +15,20 @@ export interface Suggestion {
   sessionId?: string;
 }
 
-/** Fetch recent sessions (last 14 days) for suggestion engine */
+/** Fetch recent sessions (last 30 days) for suggestion engine */
 function useRecentSessions() {
   return useQuery({
     queryKey: ['recent-sessions'],
     staleTime: 1000 * 60 * 2,
     queryFn: async (): Promise<Session[]> => {
       const since = new Date();
-      since.setDate(since.getDate() - 14);
+      since.setDate(since.getDate() - 30);
       const { data, error } = await supabase
         .from('sessions')
         .select('*')
         .gte('started_at', since.toISOString())
         .order('started_at', { ascending: false })
-        .limit(20);
+        .limit(30);
       if (error) throw error;
       return data;
     },
@@ -74,8 +74,11 @@ export function useSuggestions() {
     const result: Suggestion[] = [];
     const lastSession = sessions[0];
     const now = Date.now();
+    const allDays = plansWithDays.flatMap(({ plan, days }) =>
+      days.map((d) => ({ plan, day: d })),
+    );
 
-    // 1. If last session has a plan_day_id → suggest next day in that plan
+    // 1. Continue plan — next day after last session
     if (lastSession?.plan_day_id) {
       for (const { plan, days } of plansWithDays) {
         const dayIndex = days.findIndex((d) => d.id === lastSession.plan_day_id);
@@ -96,20 +99,36 @@ export function useSuggestions() {
       }
     }
 
-    // 2. Repeat last session (if within 48h)
+    // 2. Repeat last session
     if (lastSession) {
-      const hoursAgo = (now - new Date(lastSession.started_at).getTime()) / (1000 * 60 * 60);
-      if (hoursAgo < 48) {
+      result.push({
+        type: 'repeat',
+        title: 'Letztes Training wiederholen',
+        description: `${lastSession.station_count} Übungen · ${lastSession.rounds} Runden · ${Math.round(lastSession.duration_sec / 60)} Min`,
+        sessionId: lastSession.id,
+      });
+    }
+
+    // 3. Different training — a plan day the user hasn't done recently
+    if (allDays.length > 0) {
+      const recentDayIds = new Set(
+        sessions.slice(0, 5).map((s) => s.plan_day_id).filter(Boolean),
+      );
+      const unseen = allDays.find(({ day }) => !recentDayIds.has(day.id));
+      if (unseen) {
         result.push({
-          type: 'repeat',
-          title: 'Letztes Training wiederholen',
-          description: `${lastSession.station_count} Übungen · ${lastSession.rounds} Runden · ${Math.round(lastSession.duration_sec / 60)} Min`,
-          sessionId: lastSession.id,
+          type: 'different',
+          title: `${unseen.day.label} — ${unseen.day.focus || unseen.plan.name}`,
+          description: `Mal was anderes: ${unseen.plan.name}`,
+          planId: unseen.plan.id,
+          planName: unseen.plan.name,
+          dayId: unseen.day.id,
+          dayLabel: unseen.day.label,
         });
       }
     }
 
-    // 3. Same training from ~7 days ago
+    // 4. Training from ~7 days ago
     const weekAgoSession = sessions.find((s) => {
       const daysAgo = (now - new Date(s.started_at).getTime()) / (1000 * 60 * 60 * 24);
       return daysAgo >= 5 && daysAgo <= 9;
@@ -123,31 +142,34 @@ export function useSuggestions() {
       });
     }
 
-    // 4. If user has custom plans but no recent sessions → suggest starting one
-    const customPlans = plansWithDays.filter(({ plan }) => !plan.is_system);
-    if (result.length === 0 && customPlans.length > 0) {
-      const first = customPlans[0];
-      const firstDay = first.days[0];
-      if (firstDay) {
-        result.push({
-          type: 'next-day',
-          title: `${firstDay.label} — ${firstDay.focus || first.plan.name}`,
-          description: `Starte ${first.plan.name}`,
-          planId: first.plan.id,
-          planName: first.plan.name,
-          dayId: firstDay.id,
-          dayLabel: firstDay.label,
-        });
-      }
+    // 5. Random training from a random plan day
+    if (allDays.length > 0) {
+      const random = allDays[Math.floor(Math.random() * allDays.length)];
+      result.push({
+        type: 'random',
+        title: `${random.day.label} — ${random.day.focus || random.plan.name}`,
+        description: 'Zufälliges Training',
+        planId: random.plan.id,
+        planName: random.plan.name,
+        dayId: random.day.id,
+        dayLabel: random.day.label,
+      });
     }
 
-    // 5. No plans at all → get started
-    if (result.length === 0) {
-      result.push({
-        type: 'get-started',
-        title: 'Erstes Training erstellen',
-        description: 'Erstelle einen Plan oder starte mit einem Training aus der Bibliothek.',
-      });
+    // 6. Always offer to create a new training
+    result.push({
+      type: 'create',
+      title: 'Neues Training erstellen',
+      description: 'Eigenes Training zusammenstellen',
+    });
+
+    // If no sessions and no plans → simplified get-started
+    if (!lastSession && allDays.length === 0) {
+      return [{
+        type: 'get-started' as const,
+        title: 'Los geht\'s!',
+        description: 'Erstelle dein erstes Training oder wähle einen Plan.',
+      }];
     }
 
     return result;
