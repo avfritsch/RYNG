@@ -72,7 +72,7 @@ export const RingViz = memo(function RingViz({
         duration: s.workSeconds,
         stationIndex: i,
       });
-      if (i < stations.length - 1 && s.pauseSeconds > 0) {
+      if (s.pauseSeconds > 0) {
         segs.push({
           type: 'pause',
           duration: s.pauseSeconds,
@@ -164,8 +164,8 @@ export const RingViz = memo(function RingViz({
                 strokeLinecap="butt"
               />
 
-              {/* Foreground arc (progress fill) */}
-              {isActive && (
+              {/* Foreground arc (progress fill) — skip render at progress 0 to avoid flash */}
+              {isActive && progress > 0.01 && (
                 <path
                   d={arcPath(seg.startDeg, seg.endDeg)}
                   fill="none"
