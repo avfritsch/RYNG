@@ -18,13 +18,32 @@ export function usePublicPlans() {
     queryKey: ['public_plans'],
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
+      // Try full query with joins; fall back to plans-only if RLS blocks nested relations
       const { data, error } = await supabase
         .from('plans')
-        .select('*, profiles(display_name), plan_days(plan_exercises(muscle_groups, equipment))')
+        .select('*, profiles!left(display_name), plan_days!left(plan_exercises!left(muscle_groups, equipment))')
         .eq('is_public', true)
         .order('vote_count', { ascending: false });
-      if (error) throw error;
-      return (data as (Plan & { vote_count: number; copy_count: number; tags: string[]; profiles: { display_name: string | null } | null; plan_days: { plan_exercises: { muscle_groups: string[] | null; equipment: string[] | null }[] }[] })[]).map((p) => {
+
+      if (error) {
+        // Fallback: fetch plans without nested joins
+        const { data: fallback, error: fbErr } = await supabase
+          .from('plans')
+          .select('*')
+          .eq('is_public', true)
+          .order('vote_count', { ascending: false });
+        if (fbErr) throw fbErr;
+        return (fallback as (Plan & { vote_count: number; copy_count: number; tags: string[] })[]).map((p) => ({
+          ...p, muscle_groups: [], equipment: [], author_name: null,
+        } as PublicPlan));
+      }
+
+      type RawPlan = Plan & {
+        vote_count: number; copy_count: number; tags: string[];
+        profiles: { display_name: string | null } | null;
+        plan_days: { plan_exercises: { muscle_groups: string[] | null; equipment: string[] | null }[] }[] | null;
+      };
+      return (data as RawPlan[]).map((p) => {
         const mgs = new Set<string>();
         const eqs = new Set<string>();
         for (const day of p.plan_days ?? []) {
