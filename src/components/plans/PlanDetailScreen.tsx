@@ -16,7 +16,9 @@ export function PlanDetailScreen() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const backTo = (location.state as { from?: string })?.from || '/plans';
+  const navState = location.state as { from?: string; tab?: string } | null;
+  const backTo = navState?.from || '/plans';
+  const backState = navState?.tab ? { tab: navState.tab } : undefined;
   const { data: plans } = usePlans();
   const { data: days, isLoading: daysLoading } = usePlanDays(planId);
   const [showShare, setShowShare] = useState(false);
@@ -64,7 +66,7 @@ export function PlanDetailScreen() {
   return (
     <div className="plan-detail">
       <div className="plan-detail-header">
-        <button className="plan-detail-back" onClick={() => navigate(backTo)}>
+        <button className="plan-detail-back" onClick={() => navigate(backTo, { state: backState })}>
           &larr; Zurück
         </button>
         <h2 className="plan-detail-title">{plan.name}</h2>

@@ -1,5 +1,5 @@
 import { useState, memo, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
 import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
@@ -21,8 +21,10 @@ type LibraryTab = 'exercises' | 'plans';
 
 export function LibraryScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialTab = (location.state as { tab?: LibraryTab })?.tab ?? 'exercises';
   const filters = useLibraryFilters();
-  const [tab, setTab] = useState<LibraryTab>('exercises');
+  const [tab, setTab] = useState<LibraryTab>(initialTab);
   const [selected, setSelected] = useState<LibraryExercise | null>(null);
   const { data: favorites } = useFavorites();
   const toggleFavorite = useToggleFavorite();
@@ -112,6 +114,11 @@ export function LibraryScreen() {
         {tab === 'exercises' && (
           <button className="library-create-btn" onClick={() => setShowCreate(true)}>
             <Icon name="plus" size={16} /> Neue Übung
+          </button>
+        )}
+        {tab === 'plans' && (
+          <button className="library-create-btn" onClick={() => navigate('/plans/quick')}>
+            <Icon name="plus" size={16} /> Neues Training
           </button>
         )}
       </div>
@@ -282,17 +289,19 @@ export function LibraryScreen() {
         ) : (
           <div className="library-list">
             {filteredPlans.map((plan) => (
-              <div key={plan.id} className="card library-card" onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library' } })}>
+              <div key={plan.id} className="card library-card" onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library', tab: 'plans' } })}>
                 <div className="library-card-header">
                   <div className="library-card-info">
-                    <span className="library-card-name">{plan.name}</span>
+                    <span className="library-card-name">
+                      {plan.name}
+                      {plan.is_system && <span className="library-card-author"> · System</span>}
+                    </span>
                     {plan.description && <span className="library-card-meta">{plan.description}</span>}
                   </div>
                 </div>
                 <div className="library-card-row2">
-                  <span className="library-card-author">
-                    {plan.is_system ? 'von System' : 'Community'}
-                    {(plan.copy_count ?? 0) > 0 && ` · ${plan.copy_count}× kopiert`}
+                  <span className="library-card-meta">
+                    {(plan.copy_count ?? 0) > 0 && `${plan.copy_count}× kopiert`}
                   </span>
                   <div className="library-card-actions-inline">
                     <button className="library-action-btn library-action-btn--primary" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id); }}>
