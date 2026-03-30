@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlans, usePlanDays, usePlanExercises } from '../../hooks/usePlans.ts';
 import { usePublishPlan } from '../../hooks/usePlanLibrary.ts';
-import { useNavigationStore } from '../../stores/navigation-store.ts';
+import { useTimerStore } from '../../stores/timer-store.ts';
+import { useSessionStore } from '../../stores/session-store.ts';
+import { unlockAudio } from '../../lib/timer-engine.ts';
 import { ExerciseCard } from './ExerciseCard.tsx';
 import { ShareModal } from '../ui/ShareModal.tsx';
 import { Icon } from '../ui/Icon.tsx';
@@ -18,7 +20,9 @@ export function PlanDetailScreen() {
   const [showShare, setShowShare] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const publishPlan = usePublishPlan();
-  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
+  const loadConfig = useTimerStore((s) => s.loadConfig);
+  const startTimer = useTimerStore((s) => s.start);
+  const startSession = useSessionStore((s) => s.start);
 
   const plan = plans?.find((p) => p.id === planId);
   const selectedDay = days?.[selectedDayIndex];
@@ -37,7 +41,7 @@ export function PlanDetailScreen() {
       workSeconds: ex.work_seconds,
       pauseSeconds: ex.pause_seconds,
       isWarmup: ex.is_warmup,
-      howto: ex.detail ?? '',
+      howto: ex.howto ?? ex.detail ?? '',
     }));
 
     const config: TimerConfig = {
@@ -46,8 +50,10 @@ export function PlanDetailScreen() {
       roundPause: selectedDay.round_pause,
     };
 
-    setPendingConfig(config);
-    navigate('/');
+    unlockAudio();
+    loadConfig(config);
+    startSession();
+    startTimer();
   }
 
   const warmupExercises = exercises?.filter((e) => e.is_warmup) ?? [];
