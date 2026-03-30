@@ -32,6 +32,31 @@
   font-weight: 700;
 }
 
+.library-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.library-tab {
+  flex: 1;
+  padding: 10px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-secondary);
+  background: transparent;
+  transition: background var(--duration-normal), color var(--duration-normal);
+}
+
+.library-tab--active {
+  background: var(--color-work);
+  color: var(--bg-base);
+}
+
 /* Search */
 .library-search {
   display: flex;

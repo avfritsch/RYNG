@@ -1,8 +1,9 @@
-import { useState, memo, useCallback } from 'react';
+import { useState, memo, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
 import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
+import { usePublicPlans, useCopyPlan } from '../../hooks/usePlanLibrary.ts';
 import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
@@ -15,9 +16,12 @@ import '../../styles/library.css';
 
 const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio', 'stretch', 'mobility'];
 
+type LibraryTab = 'exercises' | 'plans';
+
 export function LibraryScreen() {
   const navigate = useNavigate();
   const filters = useLibraryFilters();
+  const [tab, setTab] = useState<LibraryTab>('exercises');
   const [selected, setSelected] = useState<LibraryExercise | null>(null);
   const { data: favorites } = useFavorites();
   const toggleFavorite = useToggleFavorite();
@@ -27,6 +31,17 @@ export function LibraryScreen() {
   const deleteLibExercise = useDeleteLibraryExercise();
   const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
   const setPendingExercise = useNavigationStore((s) => s.setPendingExercise);
+  const { data: publicPlans, isLoading: plansLoading } = usePublicPlans();
+  const copyPlan = useCopyPlan();
+
+  const filteredPlans = useMemo(() => {
+    if (!publicPlans) return [];
+    if (!filters.search) return publicPlans;
+    const q = filters.search.toLowerCase();
+    return publicPlans.filter((p) =>
+      p.name.toLowerCase().includes(q) || (p.description?.toLowerCase().includes(q)),
+    );
+  }, [publicPlans, filters.search]);
 
   const { data: exercises, isLoading } = useExerciseLibrary(filters.queryFilters);
 
@@ -87,9 +102,26 @@ export function LibraryScreen() {
   return (
     <div className="library-screen">
       <div className="library-title-row">
-        <h2 className="library-title">Übungsbibliothek</h2>
-        <button className="library-create-btn" onClick={() => setShowCreate(true)}>
-          <Icon name="plus" size={16} /> Neue Übung
+        <h2 className="library-title">Bibliothek</h2>
+        {tab === 'exercises' && (
+          <button className="library-create-btn" onClick={() => setShowCreate(true)}>
+            <Icon name="plus" size={16} /> Neue Übung
+          </button>
+        )}
+      </div>
+
+      <div className="library-tabs">
+        <button
+          className={`library-tab ${tab === 'exercises' ? 'library-tab--active' : ''}`}
+          onClick={() => setTab('exercises')}
+        >
+          Übungen
+        </button>
+        <button
+          className={`library-tab ${tab === 'plans' ? 'library-tab--active' : ''}`}
+          onClick={() => setTab('plans')}
+        >
+          Pläne
         </button>
       </div>
 
@@ -97,10 +129,10 @@ export function LibraryScreen() {
         <Icon name="search" size={18} />
         <input
           className="library-search-input"
-          placeholder="Übung suchen..."
+          placeholder={tab === 'exercises' ? 'Übung suchen...' : 'Plan suchen...'}
           value={filters.search}
           onChange={(e) => filters.setSearch(e.target.value)}
-          aria-label="Übung suchen"
+          aria-label="Suchen"
         />
         {filters.search && (
           <button className="library-search-clear" onClick={() => filters.setSearch('')}>
@@ -109,6 +141,7 @@ export function LibraryScreen() {
         )}
       </div>
 
+      {tab === 'exercises' && (
       <div className="library-fav-toggle">
         <button
           className={`library-chip ${filters.showFavoritesOnly ? 'library-chip--active' : ''}`}
@@ -122,11 +155,10 @@ export function LibraryScreen() {
         >
           <Icon name="user" size={14} /> Eigene
         </button>
-        <button className="library-chip" onClick={() => navigate('/library/plans')}>
-          <Icon name="clipboard-list" size={14} /> Pläne
-        </button>
       </div>
+      )}
 
+      {tab === 'exercises' && <>
       <div className="library-filters">
         <button className="library-filter-header" onClick={() => filters.setCatOpen(!filters.catOpen)}>
           <span>Kategorie</span>
@@ -223,6 +255,37 @@ export function LibraryScreen() {
 
       {showCreate && (
         <ExerciseEditModal onClose={() => setShowCreate(false)} />
+      )}
+      </>}
+
+      {tab === 'plans' && (
+        plansLoading ? (
+          <SkeletonCard count={4} />
+        ) : filteredPlans.length === 0 ? (
+          <p className="library-empty">Keine Pläne gefunden.</p>
+        ) : (
+          <div className="library-list">
+            {filteredPlans.map((plan) => (
+              <div key={plan.id} className="card library-card">
+                <div className="library-card-header">
+                  <div className="library-card-info">
+                    <span className="library-card-name">{plan.name}</span>
+                    {plan.description && <span className="library-card-meta">{plan.description}</span>}
+                  </div>
+                  {plan.is_system && <span className="plan-lib-badge">System</span>}
+                </div>
+                <div className="library-card-actions" style={{ marginTop: 8 }}>
+                  <button className="library-action-btn" onClick={() => navigate(`/plans/${plan.id}`)}>
+                    <Icon name="eye" size={14} /> Ansehen
+                  </button>
+                  <button className="library-action-btn library-action-btn--primary" onClick={() => copyPlan.mutate(plan.id)}>
+                    <Icon name="copy" size={14} /> Kopieren
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );
