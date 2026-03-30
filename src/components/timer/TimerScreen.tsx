@@ -124,13 +124,9 @@ export function TimerScreen() {
 
   const isWarmup = currentStation?.isWarmup ?? false;
 
-  // Howto text — always show during work/warmup, also during pause (for current station)
-  const howtoText = (state.phase === 'work' || state.phase === 'warmup' || state.phase === 'pause')
-    ? (currentStation?.howto ?? '')
-    : '';
-
-  // "Nächste Übung" — computed without useMemo to avoid dep issues
-  let nextExerciseText = '';
+  // Find next station for preview
+  let nextStation: typeof currentStation | null = null;
+  let nextLabel = '';
   {
     const warmupStations = config.stations.filter((s) => s.isWarmup);
     const kraftStations = config.stations.filter((s) => !s.isWarmup);
@@ -139,20 +135,32 @@ export function TimerScreen() {
     if (isInWarmup) {
       const idx = warmupStations.indexOf(currentStation!);
       const next = warmupStations[idx + 1];
-      if (next) nextExerciseText = `Nächste Übung: ${next.name}`;
-      else if (kraftStations.length > 0) nextExerciseText = `Nächste Übung: ${kraftStations[0].name}`;
+      if (next) { nextStation = next; nextLabel = `Nächste Übung: ${next.name}`; }
+      else if (kraftStations.length > 0) { nextStation = kraftStations[0]; nextLabel = `Nächste Übung: ${kraftStations[0].name}`; }
     } else {
       const idx = kraftStations.indexOf(currentStation!);
       const next = kraftStations[idx + 1];
-      if (next) nextExerciseText = `Nächste Übung: ${next.name}`;
-      else if (state.round < config.rounds && kraftStations.length > 0) nextExerciseText = `Nächste Runde: ${kraftStations[0].name}`;
-      else if (state.round >= config.rounds && idx >= kraftStations.length - 1) nextExerciseText = 'Letzte Übung';
+      if (next) { nextStation = next; nextLabel = `Nächste Übung: ${next.name}`; }
+      else if (state.round < config.rounds && kraftStations.length > 0) { nextStation = kraftStations[0]; nextLabel = `Nächste Runde: ${kraftStations[0].name}`; }
+      else if (state.round >= config.rounds && idx >= kraftStations.length - 1) { nextLabel = 'Letzte Übung'; }
     }
 
     if (state.phase === 'roundPause' && kraftStations.length > 0) {
-      nextExerciseText = `Nächste Runde: ${kraftStations[0].name}`;
+      nextStation = kraftStations[0];
+      nextLabel = `Nächste Runde: ${kraftStations[0].name}`;
     }
   }
+
+  // Howto: during work/warmup show current, during pause show NEXT exercise howto
+  let howtoText = '';
+  if (state.phase === 'work' || state.phase === 'warmup') {
+    howtoText = currentStation?.howto ?? '';
+  } else if (state.phase === 'pause' && nextStation) {
+    howtoText = `Nächste Übung: ${nextStation.name}\n${nextStation.howto ?? ''}`;
+  }
+
+  // "Nächste Übung" text below ring — hide during pause (shown in howto instead)
+  const nextExerciseText = (state.phase === 'pause') ? '' : nextLabel;
   const bg = phaseBg[state.phase] ?? 'var(--bg-base)';
 
   const progress = state.phaseDuration > 0
