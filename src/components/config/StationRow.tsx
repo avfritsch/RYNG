@@ -65,6 +65,7 @@ export function StationRow({ id, index, station, onChange, onRemove }: StationRo
             max={300}
             value={station.workSeconds}
             onChange={(e) => onChange({ ...station, workSeconds: Number(e.target.value) })}
+            onFocus={(e) => e.target.select()}
           />
           <span className="station-row-unit">s</span>
         </label>
@@ -76,6 +77,7 @@ export function StationRow({ id, index, station, onChange, onRemove }: StationRo
             max={300}
             value={station.pauseSeconds}
             onChange={(e) => onChange({ ...station, pauseSeconds: Number(e.target.value) })}
+            onFocus={(e) => e.target.select()}
           />
           <span className="station-row-unit">s</span>
         </label>
