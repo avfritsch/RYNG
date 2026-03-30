@@ -1,6 +1,7 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
+import { useLastWeights } from '../../hooks/useLastWeights.ts';
 import { speakStation, speakPause, speakRoundPause, speakDone } from '../../lib/speech.ts';
 import { onHeartRate, getLastBpm } from '../../lib/heartrate.ts';
 import { RING_VIZ_MAX_STATIONS } from '../../lib/constants.ts';
@@ -12,6 +13,7 @@ import { PhaseLabel } from './PhaseLabel.tsx';
 import { HowtoPanel } from './HowtoPanel.tsx';
 import { TimerControls } from './TimerControls.tsx';
 import { SpotifyBar } from './SpotifyBar.tsx';
+import { WeightInput } from './WeightInput.tsx';
 import '../../styles/timer-screen.css';
 
 const phaseBg: Record<string, string> = {
@@ -33,6 +35,13 @@ export function TimerScreen() {
   const skipBack = useTimerStore((s) => s.skipBack);
   const stop = useTimerStore((s) => s.stop);
   const addEntry = useSessionStore((s) => s.addEntry);
+
+  // Fetch last-used weights for all trackWeight stations
+  const weightStationNames = useMemo(() => {
+    if (!config) return [];
+    return config.stations.filter((s) => s.trackWeight && !s.isWarmup).map((s) => s.name);
+  }, [config]);
+  const { data: lastWeights } = useLastWeights(weightStationNames);
 
   const prevRef = useRef<{ station: number; phase: string; round: number } | null>(null);
 
@@ -214,6 +223,14 @@ export function TimerScreen() {
             <LinearViz total={setStations.length} current={activeStationInSet} phase={state.phase} />
             <Countdown seconds={state.currentSec} phase={state.phase} />
           </>
+        )}
+
+        {state.phase === 'pause' && currentStation?.trackWeight && !currentStation.isWarmup && (
+          <WeightInput
+            stationIndex={state.station - 1}
+            roundNumber={state.round}
+            lastWeight={lastWeights?.get(currentStation.name)}
+          />
         )}
 
         <div className="timer-howto-area">

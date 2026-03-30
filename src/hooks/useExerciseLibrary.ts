@@ -129,6 +129,7 @@ export function useCopyToplan() {
           day_id: dayId,
           name: exercise.name,
           speech_name: exercise.speech_name,
+          track_weight: exercise.track_weight ?? false,
           muscle_groups: exercise.muscle_groups,
           howto: exercise.howto,
           is_warmup: isWarmup,

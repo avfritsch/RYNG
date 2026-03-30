@@ -47,6 +47,7 @@ export interface LibraryExercise {
   category: ExerciseCategory;
   howto: string | null;
   equipment: string[];
+  track_weight: boolean;
   is_public: boolean;
   usage_count: number;
   created_at: string;

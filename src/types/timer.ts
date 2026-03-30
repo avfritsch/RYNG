@@ -7,6 +7,7 @@ export interface StationConfig {
   isWarmup: boolean;
   howto: string;
   animationKey?: string;
+  trackWeight?: boolean;
 }
 
 export interface TimerConfig {

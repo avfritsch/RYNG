@@ -42,6 +42,7 @@ export function StartScreen() {
       pauseSeconds: e.pause_seconds,
       isWarmup: e.is_warmup,
       howto: e.howto ?? '',
+      trackWeight: e.track_weight ?? false,
     }));
 
     const config: TimerConfig = {

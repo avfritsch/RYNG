@@ -120,6 +120,13 @@ export function SessionDetailScreen() {
                 className={`session-entry ${entry.is_warmup ? 'session-entry--warmup' : ''}`}
               >
                 <span className="session-entry-name">{entry.station_name}</span>
+                {(entry.weight_kg != null || entry.reps != null) && (
+                  <span className="session-entry-weight">
+                    {entry.weight_kg != null && `${entry.weight_kg} kg`}
+                    {entry.weight_kg != null && entry.reps != null && ' × '}
+                    {entry.reps != null && `${entry.reps}`}
+                  </span>
+                )}
                 <span className="session-entry-time">
                   {entry.actual_seconds ?? entry.work_seconds}s
                   {entry.actual_seconds && entry.actual_seconds < entry.work_seconds && (

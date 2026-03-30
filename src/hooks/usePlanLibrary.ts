@@ -148,6 +148,7 @@ export function useCopyPlan() {
               day_id: newDay.id,
               name: ex.name,
               speech_name: ex.speech_name,
+              track_weight: ex.track_weight ?? false,
               muscle_groups: ex.muscle_groups,
               howto: ex.howto,
               animation_key: ex.animation_key,

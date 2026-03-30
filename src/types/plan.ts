@@ -35,6 +35,7 @@ export interface PlanExercise {
   is_warmup: boolean;
   work_seconds: number;
   pause_seconds: number;
+  track_weight: boolean;
   sort_order: number;
   created_at: string;
 }

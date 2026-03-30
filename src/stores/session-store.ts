@@ -7,6 +7,7 @@ interface SessionStore {
 
   start: () => void;
   addEntry: (entry: Omit<SessionEntry, 'id' | 'session_id'>) => void;
+  updateLastEntry: (stationIndex: number, roundNumber: number, patch: { weight_kg?: number | null; reps?: number | null }) => void;
   reset: () => void;
 }
 
@@ -18,6 +19,17 @@ export const useSessionStore = create<SessionStore>((set) => ({
 
   addEntry: (entry) =>
     set((s) => ({ entries: [...s.entries, entry] })),
+
+  updateLastEntry: (stationIndex, roundNumber, patch) =>
+    set((s) => {
+      const idx = s.entries.findLastIndex(
+        (e) => e.station_index === stationIndex && e.round_number === roundNumber,
+      );
+      if (idx === -1) return s;
+      const updated = [...s.entries];
+      updated[idx] = { ...updated[idx], ...patch };
+      return { entries: updated };
+    }),
 
   reset: () => set({ entries: [], startedAt: null }),
 }));

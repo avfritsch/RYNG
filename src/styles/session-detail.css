@@ -106,10 +106,18 @@
   font-weight: 500;
 }
 
+.session-entry-weight {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-work);
+}
+
 .session-entry-time {
   font-size: var(--text-base);
   color: var(--text-secondary);
   font-weight: 600;
+  margin-left: auto;
 }
 
 .session-entry-skipped {

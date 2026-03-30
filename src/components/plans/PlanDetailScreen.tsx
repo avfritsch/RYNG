@@ -47,6 +47,7 @@ export function PlanDetailScreen() {
       pauseSeconds: ex.pause_seconds,
       isWarmup: ex.is_warmup,
       howto: ex.howto ?? '',
+      trackWeight: ex.track_weight ?? false,
     }));
 
     const config: TimerConfig = {
