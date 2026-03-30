@@ -17,6 +17,7 @@ import { toast } from '../../stores/toast-store.ts';
 import { Stepper } from '../ui/Stepper.tsx';
 import { StationRow } from './StationRow.tsx';
 import { PresetBar } from './PresetBar.tsx';
+import { QuickLibraryPicker } from './QuickLibraryPicker.tsx';
 import '../../styles/config-screen.css';
 
 const defaultStation = (index: number): StationConfig => ({
@@ -27,14 +28,7 @@ const defaultStation = (index: number): StationConfig => ({
   howto: '',
 });
 
-const defaultStations: StationConfig[] = [
-  { name: 'Jumping Jacks', workSeconds: 30, pauseSeconds: 10, isWarmup: true, howto: 'Aufrecht stehen, Arme seitlich. Gleichzeitig Arme über Kopf klatschen und Beine spreizen. Zurück in Ausgangsposition.' },
-  { name: 'Arm Circles', workSeconds: 30, pauseSeconds: 10, isWarmup: true, howto: 'Arme gestreckt auf Schulterhöhe. Kleine Kreise vorwärts, dann rückwärts. Amplitude langsam vergrößern.' },
-  { name: 'Liegestütze', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Hände schulterbreit, Körper gerade. Brust bis fast zum Boden senken. Explosiv hochdrücken. Core anspannen.' },
-  { name: 'Kniebeugen', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Füße schulterbreit, Zehenspitzen leicht nach außen. Tief senken, mindestens parallel. Brust hoch, Rücken gerade.' },
-  { name: 'Plank', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Unterarmstütz, Körper bildet gerade Linie. Core maximal anspannen, Gesäß aktiv. Nicht durchhängen.' },
-  { name: 'Ausfallschritte', workSeconds: 45, pauseSeconds: 30, isWarmup: false, howto: 'Großer Schritt nach vorn, hinteres Knie fast zum Boden. Oberkörper aufrecht. Seiten abwechseln.' },
-];
+const defaultStations: StationConfig[] = [];
 
 let nextId = 1;
 function generateId() {
@@ -53,6 +47,7 @@ export function ConfigScreen() {
   const [stationIds, setStationIds] = useState<string[]>(() => createIds(defaultStations.length));
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState('');
+  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
 
   const loadConfig = useTimerStore((s) => s.loadConfig);
   const start = useTimerStore((s) => s.start);
@@ -130,6 +125,17 @@ export function ConfigScreen() {
 
   function addStation() {
     setStations((prev) => [...prev, defaultStation(prev.length)]);
+    setStationIds((prev) => [...prev, generateId()]);
+  }
+
+  function addFromLibrary(exercise: { name: string; howto?: string | null; isWarmup: boolean; workSeconds: number; pauseSeconds: number }) {
+    setStations((prev) => [...prev, {
+      name: exercise.name,
+      workSeconds: exercise.workSeconds,
+      pauseSeconds: exercise.pauseSeconds,
+      isWarmup: exercise.isWarmup,
+      howto: exercise.howto ?? '',
+    }]);
     setStationIds((prev) => [...prev, generateId()]);
   }
 
@@ -263,9 +269,14 @@ export function ConfigScreen() {
           </SortableContext>
         </DndContext>
 
-        <button className="config-add-btn" onClick={addStation}>
-          + Übung hinzufügen
-        </button>
+        <div className="config-add-row">
+          <button className="config-add-btn" onClick={() => setShowLibraryPicker(true)}>
+            Aus Bibliothek
+          </button>
+          <button className="config-add-btn" onClick={addStation}>
+            + Leere Übung
+          </button>
+        </div>
 
         {trainingWarnings.length > 0 && (
           <div className="config-warnings">
@@ -334,6 +345,12 @@ export function ConfigScreen() {
         </button>
       </div>
 
+      {showLibraryPicker && (
+        <QuickLibraryPicker
+          onAdd={addFromLibrary}
+          onClose={() => setShowLibraryPicker(false)}
+        />
+      )}
     </div>
   );
 }

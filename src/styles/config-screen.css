@@ -77,10 +77,15 @@
   gap: 12px;
 }
 
-.config-add-btn {
-  width: 100%;
-  padding: 12px;
+.config-add-row {
+  display: flex;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.config-add-btn {
+  flex: 1;
+  padding: 12px;
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-md);
   color: var(--text-secondary);
