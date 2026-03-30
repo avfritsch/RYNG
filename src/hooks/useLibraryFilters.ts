@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { SEARCH_DEBOUNCE_MS } from '../lib/constants.ts';
 import type { ExerciseCategory } from '../types/exercise-library.ts';
 
+export type SortOption = 'popular' | 'name' | 'category';
+
 export function useLibraryFilters() {
   const [categories, setCategories] = useState<ExerciseCategory[]>([]);
   const [equipmentSel, setEquipmentSel] = useState<string[]>([]);
@@ -10,6 +12,7 @@ export function useLibraryFilters() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showOwnOnly, setShowOwnOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
 
   const [catOpen, setCatOpen] = useState(true);
   const [mgOpen, setMgOpen] = useState(false);
@@ -41,6 +44,7 @@ export function useLibraryFilters() {
     search, setSearch,
     showFavoritesOnly, setShowFavoritesOnly,
     showOwnOnly, setShowOwnOnly,
+    sortBy, setSortBy,
 
     // Panel open state
     catOpen, setCatOpen,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { usePlans, usePlanDays, usePlanExercises } from '../../hooks/usePlans.ts';
 import { usePublishPlan } from '../../hooks/usePlanLibrary.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
@@ -15,6 +15,8 @@ import '../../styles/plan-detail.css';
 export function PlanDetailScreen() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const backTo = (location.state as { from?: string })?.from || '/plans';
   const { data: plans } = usePlans();
   const { data: days, isLoading: daysLoading } = usePlanDays(planId);
   const [showShare, setShowShare] = useState(false);
@@ -62,7 +64,7 @@ export function PlanDetailScreen() {
   return (
     <div className="plan-detail">
       <div className="plan-detail-header">
-        <button className="plan-detail-back" onClick={() => navigate('/plans')}>
+        <button className="plan-detail-back" onClick={() => navigate(backTo)}>
           &larr; Zurück
         </button>
         <h2 className="plan-detail-title">{plan.name}</h2>

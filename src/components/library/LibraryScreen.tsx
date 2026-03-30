@@ -4,6 +4,7 @@ import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExe
 import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
 import { usePublicPlans, useCopyPlan } from '../../hooks/usePlanLibrary.ts';
+import { usePlans } from '../../hooks/usePlans.ts';
 import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
@@ -30,7 +31,8 @@ export function LibraryScreen() {
   const [deleteExercise, setDeleteExercise] = useState<LibraryExercise | null>(null);
   const deleteLibExercise = useDeleteLibraryExercise();
   const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
-  const setPendingExercise = useNavigationStore((s) => s.setPendingExercise);
+  const [addToPlanExercise, setAddToPlanExercise] = useState<LibraryExercise | null>(null);
+  const { data: userPlans } = usePlans();
   const { data: publicPlans, isLoading: plansLoading } = usePublicPlans();
   const copyPlan = useCopyPlan();
 
@@ -80,15 +82,8 @@ export function LibraryScreen() {
   }, []);
 
   function handleAddToPlan(ex: LibraryExercise) {
-    setPendingExercise({
-      name: ex.name,
-      detail: ex.detail,
-      muscle_group: ex.muscle_group,
-      howto: ex.howto,
-      category: ex.category,
-      library_exercise_id: ex.id,
-    });
-    navigate('/plans');
+    setAddToPlanExercise(ex);
+    setSelected(null);
   }
 
   let filteredExercises = exercises;
@@ -98,6 +93,17 @@ export function LibraryScreen() {
   if (filters.showOwnOnly) {
     filteredExercises = filteredExercises?.filter((ex) => ex.created_by !== null);
   }
+
+  // Sort
+  if (filteredExercises) {
+    filteredExercises = [...filteredExercises].sort((a, b) => {
+      if (filters.sortBy === 'name') return a.name.localeCompare(b.name, 'de');
+      if (filters.sortBy === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name, 'de');
+      return (b.usage_count ?? 0) - (a.usage_count ?? 0); // popular (default)
+    });
+  }
+
+  const myPlans = userPlans?.filter((p) => !p.is_system) ?? [];
 
   return (
     <div className="library-screen">
@@ -121,7 +127,7 @@ export function LibraryScreen() {
           className={`library-tab ${tab === 'plans' ? 'library-tab--active' : ''}`}
           onClick={() => setTab('plans')}
         >
-          Pläne
+          Trainings
         </button>
       </div>
 
@@ -129,7 +135,7 @@ export function LibraryScreen() {
         <Icon name="search" size={18} />
         <input
           className="library-search-input"
-          placeholder={tab === 'exercises' ? 'Übung suchen...' : 'Plan suchen...'}
+          placeholder={tab === 'exercises' ? 'Übung suchen...' : 'Training suchen...'}
           value={filters.search}
           onChange={(e) => filters.setSearch(e.target.value)}
           aria-label="Suchen"
@@ -155,6 +161,16 @@ export function LibraryScreen() {
         >
           <Icon name="user" size={14} /> Eigene
         </button>
+        <span className="library-sort-sep">|</span>
+        {(['popular', 'name', 'category'] as const).map((s) => (
+          <button
+            key={s}
+            className={`library-chip library-chip--sm ${filters.sortBy === s ? 'library-chip--active' : ''}`}
+            onClick={() => filters.setSortBy(s)}
+          >
+            {s === 'popular' ? 'Beliebt' : s === 'name' ? 'A–Z' : 'Kategorie'}
+          </button>
+        ))}
       </div>
       )}
 
@@ -262,30 +278,60 @@ export function LibraryScreen() {
         plansLoading ? (
           <SkeletonCard count={4} />
         ) : filteredPlans.length === 0 ? (
-          <p className="library-empty">Keine Pläne gefunden.</p>
+          <p className="library-empty">Keine Trainings gefunden.</p>
         ) : (
           <div className="library-list">
             {filteredPlans.map((plan) => (
-              <div key={plan.id} className="card library-card">
+              <div key={plan.id} className="card library-card" onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library' } })}>
                 <div className="library-card-header">
                   <div className="library-card-info">
                     <span className="library-card-name">{plan.name}</span>
                     {plan.description && <span className="library-card-meta">{plan.description}</span>}
                   </div>
-                  {plan.is_system && <span className="plan-lib-badge">System</span>}
                 </div>
-                <div className="library-card-actions" style={{ marginTop: 8 }}>
-                  <button className="library-action-btn" onClick={() => navigate(`/plans/${plan.id}`)}>
-                    <Icon name="eye" size={14} /> Ansehen
-                  </button>
-                  <button className="library-action-btn library-action-btn--primary" onClick={() => copyPlan.mutate(plan.id)}>
-                    <Icon name="copy" size={14} /> Kopieren
-                  </button>
+                <div className="library-card-row2">
+                  <span className="library-card-author">
+                    {plan.is_system ? 'von System' : 'Community'}
+                    {(plan.copy_count ?? 0) > 0 && ` · ${plan.copy_count}× kopiert`}
+                  </span>
+                  <div className="library-card-actions-inline">
+                    <button className="library-action-btn library-action-btn--primary" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id); }}>
+                      <Icon name="copy" size={14} /> Kopieren
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )
+      )}
+
+      {addToPlanExercise && myPlans.length > 0 && (
+        <div className="picker-overlay" onClick={() => setAddToPlanExercise(null)}>
+          <div className="picker-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="picker-header">
+              <h3>Zu Plan hinzufügen</h3>
+              <button onClick={() => setAddToPlanExercise(null)} aria-label="Schließen">
+                <Icon name="x-close" size={18} />
+              </button>
+            </div>
+            <div className="picker-list">
+              {myPlans.map((plan) => (
+                <button
+                  key={plan.id}
+                  className="picker-item"
+                  onClick={() => {
+                    navigate(`/plans/${plan.id}`, { state: { addExercise: addToPlanExercise } });
+                    setAddToPlanExercise(null);
+                  }}
+                >
+                  <span className="picker-item-name">{plan.name}</span>
+                  <Icon name="arrow-right" size={16} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -322,12 +368,17 @@ const LibraryCard = memo(function LibraryCard({
       <div className="library-card-header">
         <div className="library-card-info">
           <span className="library-card-name">{ex.name}</span>
-          <span className="library-card-meta">
-            {ex.muscle_group && <span className="library-card-muscle">{ex.muscle_group}</span>}
-            {ex.equipment.length > 0 && <span className="library-card-equipment">{ex.equipment.join(', ')}</span>}
-            {(ex.usage_count ?? 0) > 0 && <span className="library-card-usage">{ex.usage_count}×</span>}
-          </span>
         </div>
+        <span className={`library-card-cat library-card-cat--${ex.category}`}>
+          {CATEGORY_LABELS[ex.category]}
+        </span>
+      </div>
+      <div className="library-card-row2">
+        <span className="library-card-meta">
+          {ex.muscle_group && <span className="library-card-muscle">{ex.muscle_group}</span>}
+          {ex.equipment.length > 0 && <span className="library-card-equipment">{ex.equipment.join(', ')}</span>}
+          {(ex.usage_count ?? 0) > 0 && <span className="library-card-usage">{ex.usage_count}×</span>}
+        </span>
         <div className="library-card-actions-inline" onClick={(e) => e.stopPropagation()}>
           <button
             className={`library-icon-btn ${isFav ? 'library-icon-btn--fav' : ''}`}
@@ -344,9 +395,6 @@ const LibraryCard = memo(function LibraryCard({
             <Icon name="plus" size={16} />
           </button>
         </div>
-        <span className={`library-card-cat library-card-cat--${ex.category}`}>
-          {CATEGORY_LABELS[ex.category]}
-        </span>
       </div>
 
       {isSelected && (

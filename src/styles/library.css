@@ -156,6 +156,17 @@
   font-weight: 600;
 }
 
+.library-chip--sm {
+  padding: 4px 10px;
+  font-size: var(--text-xs);
+}
+
+.library-sort-sep {
+  color: var(--border-default);
+  font-size: var(--text-sm);
+  align-self: center;
+}
+
 .library-chip--reset {
   border-color: var(--text-muted);
   color: var(--text-muted);
@@ -211,10 +222,18 @@
   color: var(--text-primary);
 }
 
+.library-card-row2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .library-card-actions-inline {
   display: flex;
   gap: 0;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .library-card-cat {
@@ -287,6 +306,12 @@
 
 .library-card-usage {
   font-variant-numeric: tabular-nums;
+}
+
+.library-card-author {
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--text-muted);
 }
 
 .library-card-detail {
