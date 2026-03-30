@@ -196,14 +196,6 @@ export function ProfileScreen() {
         )}
       </div>
 
-      <button
-        className="profile-signout"
-        style={{ background: 'var(--color-rest)', color: 'var(--text-primary)', marginBottom: 8 }}
-        onClick={() => { throw new Error('Sentry Test Error — this is intentional!'); }}
-      >
-        Sentry Test Error
-      </button>
-
       <button className="profile-signout" onClick={() => signOut()}>
         Abmelden
       </button>
