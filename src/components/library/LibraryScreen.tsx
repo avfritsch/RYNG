@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
 import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
-import { useVotes, useToggleVote } from '../../hooks/useVotes.ts';
 import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
@@ -22,8 +21,6 @@ export function LibraryScreen() {
   const [selected, setSelected] = useState<LibraryExercise | null>(null);
   const { data: favorites } = useFavorites();
   const toggleFavorite = useToggleFavorite();
-  const { data: votes } = useVotes();
-  const toggleVote = useToggleVote();
   const [editExercise, setEditExercise] = useState<LibraryExercise | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteExercise, setDeleteExercise] = useState<LibraryExercise | null>(null);
@@ -61,10 +58,6 @@ export function LibraryScreen() {
     setEditExercise(ex);
     setSelected(null);
   }, []);
-
-  const handleToggleVote = useCallback((ex: LibraryExercise, hasVoted: boolean) => {
-    toggleVote.mutate({ exerciseId: ex.id, hasVoted });
-  }, [toggleVote]);
 
   const handleDelete = useCallback((ex: LibraryExercise) => {
     setDeleteExercise(ex);
@@ -201,11 +194,9 @@ export function LibraryScreen() {
               key={ex.id}
               exercise={ex}
               isFav={favorites?.has(ex.id) ?? false}
-              hasVoted={votes?.has(ex.id) ?? false}
               isSelected={selected?.id === ex.id}
               onSelect={handleSelect}
               onToggleFav={handleToggleFav}
-              onToggleVote={handleToggleVote}
               onAddToPlan={handleAddToPlan}
               onQuickStart={handleQuickStart}
               onEdit={handleEdit}
@@ -242,11 +233,9 @@ export function LibraryScreen() {
 const LibraryCard = memo(function LibraryCard({
   exercise: ex,
   isFav,
-  hasVoted,
   isSelected,
   onSelect,
   onToggleFav,
-  onToggleVote,
   onAddToPlan,
   onQuickStart,
   onEdit,
@@ -254,11 +243,9 @@ const LibraryCard = memo(function LibraryCard({
 }: {
   exercise: LibraryExercise;
   isFav: boolean;
-  hasVoted: boolean;
   isSelected: boolean;
   onSelect: (ex: LibraryExercise) => void;
   onToggleFav: (ex: LibraryExercise, isFav: boolean) => void;
-  onToggleVote: (ex: LibraryExercise, hasVoted: boolean) => void;
   onAddToPlan: (ex: LibraryExercise) => void;
   onQuickStart: (ex: LibraryExercise) => void;
   onEdit: (ex: LibraryExercise) => void;
@@ -279,14 +266,9 @@ const LibraryCard = memo(function LibraryCard({
       <div className="library-card-row2">
         <span className="library-card-detail">{ex.detail ?? ''}</span>
         <div className="library-card-inline-actions" onClick={(e) => e.stopPropagation()}>
-          <button
-            className={`library-icon-btn library-icon-btn--vote ${hasVoted ? 'library-icon-btn--voted' : ''}`}
-            onClick={() => onToggleVote(ex, hasVoted)}
-            aria-label={hasVoted ? 'Vote entfernen' : 'Upvote'}
-          >
-            <Icon name="thumbs-up" size={14} />
-            {(ex.vote_count ?? 0) > 0 && <span className="library-vote-count">{ex.vote_count}</span>}
-          </button>
+          {(ex.usage_count ?? 0) > 0 && (
+            <span className="library-usage-count">{ex.usage_count}×</span>
+          )}
           <button
             className={`library-icon-btn ${isFav ? 'library-icon-btn--fav' : ''}`}
             onClick={() => onToggleFav(ex, isFav)}

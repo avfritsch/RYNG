@@ -248,22 +248,13 @@
   color: var(--color-rest);
 }
 
-.library-icon-btn--vote {
-  gap: 2px;
-  width: auto;
-  padding: 0 6px;
-  border-radius: 14px;
-  height: 28px;
-}
-
-.library-icon-btn--voted {
-  color: var(--color-work);
-}
-
-.library-vote-count {
-  font-size: var(--text-xs);
+.library-usage-count {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .library-card-detail {
