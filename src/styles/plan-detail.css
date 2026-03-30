@@ -4,30 +4,6 @@
   margin: 0 auto;
 }
 
-@media (min-width: 768px) {
-  .plan-detail {
-    max-width: 720px;
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 24px;
-  }
-
-  .plan-detail-header {
-    grid-column: 1 / -1;
-  }
-
-  .plan-day-tabs {
-    flex-direction: column;
-    position: sticky;
-    top: 20px;
-    align-self: start;
-  }
-
-  .plan-detail-actions {
-    grid-column: 1 / -1;
-  }
-}
-
 .plan-detail-loading {
   padding: 40px 16px;
   text-align: center;
