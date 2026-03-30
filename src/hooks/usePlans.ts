@@ -105,7 +105,10 @@ export function useUpdatePlan() {
       if (error) throw error;
       return data as Plan;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['plans'] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['plans'] });
+      qc.invalidateQueries({ queryKey: ['plan', vars.id] });
+    },
   });
 }
 
