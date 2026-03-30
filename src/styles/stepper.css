@@ -8,12 +8,14 @@
 .stepper-label {
   font-size: var(--text-base);
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .stepper-controls {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .stepper-btn {
