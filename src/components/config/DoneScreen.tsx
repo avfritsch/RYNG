@@ -40,7 +40,8 @@ export function DoneScreen() {
       },
       entries: sessionEntries,
     });
-  }, [lastSummary, state.phase, config, sessionEntries, sessionStartedAt, saveSession]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastSummary, state.phase, config, sessionEntries, sessionStartedAt]);
 
   if (state.phase !== 'done' && !lastSummary) return null;
   if (state.phase !== 'done' && state.phase !== 'idle') return null;
