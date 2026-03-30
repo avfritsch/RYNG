@@ -14,7 +14,7 @@ export function useLibraryFilters() {
   const [showOwnOnly, setShowOwnOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('popular');
 
-  const [catOpen, setCatOpen] = useState(true);
+  const [catOpen, setCatOpen] = useState(false);
   const [mgOpen, setMgOpen] = useState(false);
   const [eqOpen, setEqOpen] = useState(false);
 
