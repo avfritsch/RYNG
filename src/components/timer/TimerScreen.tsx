@@ -124,35 +124,42 @@ export function TimerScreen() {
 
   const isWarmup = currentStation?.isWarmup ?? false;
 
-  // During work/warmup: show howto of current station
-  // During pause/roundPause: show next station name as preview
-  let howtoText = '';
-  if (state.phase === 'work' || state.phase === 'warmup') {
-    howtoText = currentStation?.howto ?? '';
-  } else if (state.phase === 'pause' || state.phase === 'roundPause') {
-    // Find next work/warmup station
+  // Howto text (only during work/warmup)
+  const howtoText = (state.phase === 'work' || state.phase === 'warmup')
+    ? (currentStation?.howto ?? '')
+    : '';
+
+  // "Nächste Übung" — visible in all phases
+  const nextExerciseText = useMemo(() => {
+    if (!config) return '';
     const warmupStations = config.stations.filter((s) => s.isWarmup);
     const kraftStations = config.stations.filter((s) => !s.isWarmup);
     const isInWarmup = currentStation?.isWarmup ?? false;
 
     if (isInWarmup) {
-      const warmupIdx = warmupStations.indexOf(currentStation!);
-      const next = warmupStations[warmupIdx + 1];
-      if (next) {
-        howtoText = `Nächste Übung: ${next.name}`;
-      } else if (kraftStations.length > 0) {
-        howtoText = `Nächste Übung: ${kraftStations[0].name}`;
-      }
+      const idx = warmupStations.indexOf(currentStation!);
+      const next = warmupStations[idx + 1];
+      if (next) return `Nächste Übung: ${next.name}`;
+      if (kraftStations.length > 0) return `Nächste Übung: ${kraftStations[0].name}`;
     } else {
-      const kraftIdx = kraftStations.indexOf(currentStation!);
-      const next = kraftStations[kraftIdx + 1];
-      if (next) {
-        howtoText = `Nächste Übung: ${next.name}`;
-      } else if (state.phase === 'roundPause' && kraftStations.length > 0) {
-        howtoText = `Nächste Übung: ${kraftStations[0].name}`;
+      const idx = kraftStations.indexOf(currentStation!);
+      const next = kraftStations[idx + 1];
+      if (next) return `Nächste Übung: ${next.name}`;
+      if (state.round < config.rounds && kraftStations.length > 0) {
+        return `Nächste Runde: ${kraftStations[0].name}`;
+      }
+      if (state.round >= config.rounds && idx >= kraftStations.length - 1) {
+        return 'Letzte Übung';
       }
     }
-  }
+
+    // During roundPause: next round's first exercise
+    if (state.phase === 'roundPause' && kraftStations.length > 0) {
+      return `Nächste Runde: ${kraftStations[0].name}`;
+    }
+
+    return '';
+  }, [config, currentStation, state.round, state.phase]);
   const bg = phaseBg[state.phase] ?? 'var(--bg-base)';
 
   const progress = state.phaseDuration > 0
@@ -191,6 +198,10 @@ export function TimerScreen() {
         <div className="timer-howto-area">
           <HowtoPanel text={howtoText} />
         </div>
+
+        {nextExerciseText && (
+          <p className="timer-next-exercise">{nextExerciseText}</p>
+        )}
       </div>
 
       <SpotifyBar phase={state.phase} />
