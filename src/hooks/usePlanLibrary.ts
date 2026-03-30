@@ -10,6 +10,7 @@ export type PublicPlan = Plan & {
   tags: string[];
   muscle_groups: string[];
   equipment: string[];
+  author_name: string | null;
 };
 
 export function usePublicPlans() {
@@ -19,11 +20,11 @@ export function usePublicPlans() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('plans')
-        .select('*, plan_days(plan_exercises(muscle_groups, equipment))')
+        .select('*, profiles(display_name), plan_days(plan_exercises(muscle_groups, equipment))')
         .eq('is_public', true)
         .order('vote_count', { ascending: false });
       if (error) throw error;
-      return (data as (Plan & { vote_count: number; copy_count: number; tags: string[]; plan_days: { plan_exercises: { muscle_groups: string[] | null; equipment: string[] | null }[] }[] })[]).map((p) => {
+      return (data as (Plan & { vote_count: number; copy_count: number; tags: string[]; profiles: { display_name: string | null } | null; plan_days: { plan_exercises: { muscle_groups: string[] | null; equipment: string[] | null }[] }[] })[]).map((p) => {
         const mgs = new Set<string>();
         const eqs = new Set<string>();
         for (const day of p.plan_days ?? []) {
@@ -32,8 +33,8 @@ export function usePublicPlans() {
             for (const eq of ex.equipment ?? []) eqs.add(eq);
           }
         }
-        const { plan_days: _, ...rest } = p;
-        return { ...rest, muscle_groups: [...mgs], equipment: [...eqs] } as PublicPlan;
+        const { plan_days: _, profiles, ...rest } = p;
+        return { ...rest, muscle_groups: [...mgs], equipment: [...eqs], author_name: profiles?.display_name ?? null } as PublicPlan;
       });
     },
   });

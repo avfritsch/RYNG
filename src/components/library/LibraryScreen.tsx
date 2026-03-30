@@ -500,7 +500,10 @@ export function LibraryScreen() {
                   <div className="library-card-info">
                     <span className="library-card-name">
                       {plan.name}
-                      {plan.is_system && <span className="library-card-author"> · System</span>}
+                      {plan.is_system
+                        ? <span className="library-card-author"> · System</span>
+                        : plan.author_name && <span className="library-card-author"> · {plan.author_name}</span>
+                      }
                     </span>
                     {plan.description && <span className="library-card-meta">{plan.description}</span>}
                   </div>
