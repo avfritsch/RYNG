@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSession, useSessionEntries, useDeleteSession } from '../../hooks/useSessions.ts';
-import { useNavigationStore } from '../../stores/navigation-store.ts';
+import { useTimerStore } from '../../stores/timer-store.ts';
+import { useSessionStore } from '../../stores/session-store.ts';
+import { unlockAudio } from '../../lib/timer-engine.ts';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
-import type { TimerConfig } from '../../types/timer.ts';
+import type { TimerConfig, StationConfig } from '../../types/timer.ts';
 import '../../styles/session-detail.css';
 
 export function SessionDetailScreen() {
@@ -12,7 +14,9 @@ export function SessionDetailScreen() {
   const { data: session, isLoading } = useSession(sessionId);
   const { data: entries } = useSessionEntries(sessionId);
   const deleteSession = useDeleteSession();
-  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
+  const loadConfig = useTimerStore((s) => s.loadConfig);
+  const startTimer = useTimerStore((s) => s.start);
+  const startSession = useSessionStore((s) => s.start);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading || !session) {
@@ -35,10 +39,15 @@ export function SessionDetailScreen() {
   const sec = session.duration_sec % 60;
   const durationStr = `${min}:${sec.toString().padStart(2, '0')}`;
 
+  // Derive training name from entries
+  const kraftEntries = entries?.filter((e) => !e.is_warmup) ?? [];
+  const trainingName = kraftEntries.length > 0
+    ? kraftEntries.slice(0, 3).map((e) => e.station_name).join(', ')
+    : entries?.slice(0, 3).map((e) => e.station_name).join(', ') ?? 'Training';
+
   function handleRepeat() {
     if (!entries || entries.length === 0 || !session) return;
 
-    // Build a TimerConfig from the session entries
     const uniqueStations = new Map<number, typeof entries[0]>();
     for (const e of entries) {
       if (!uniqueStations.has(e.station_index)) {
@@ -46,12 +55,12 @@ export function SessionDetailScreen() {
       }
     }
 
-    const stations = Array.from(uniqueStations.values())
+    const stations: StationConfig[] = Array.from(uniqueStations.values())
       .sort((a, b) => a.station_index - b.station_index)
       .map((e) => ({
         name: e.station_name,
         workSeconds: e.work_seconds,
-        pauseSeconds: 30, // default, not stored in entries
+        pauseSeconds: 30,
         isWarmup: e.is_warmup,
         howto: '',
       }));
@@ -59,11 +68,13 @@ export function SessionDetailScreen() {
     const config: TimerConfig = {
       stations,
       rounds: session.rounds,
-      roundPause: 90, // default
+      roundPause: 90,
     };
 
-    setPendingConfig(config);
-    navigate('/');
+    unlockAudio();
+    loadConfig(config);
+    startSession();
+    startTimer();
   }
 
   // Group entries by round
@@ -80,7 +91,7 @@ export function SessionDetailScreen() {
         <button className="session-detail-back" onClick={() => navigate('/history')}>
           &larr; Zurück
         </button>
-        <h2 className="session-detail-title">Session</h2>
+        <h2 className="session-detail-title">{trainingName}</h2>
         <p className="session-detail-date">{dateStr}, {timeStr}</p>
       </div>
 
@@ -95,7 +106,7 @@ export function SessionDetailScreen() {
         </div>
         <div className="session-detail-stat">
           <span className="session-detail-stat-value">{session.station_count}</span>
-          <span className="session-detail-stat-label">Stationen</span>
+          <span className="session-detail-stat-label">Übungen</span>
         </div>
       </div>
 
