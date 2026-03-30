@@ -4,12 +4,19 @@
   margin: 0 auto;
 }
 
+.history-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .history-title {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: var(--text-xl);
   letter-spacing: -0.025em;
-  margin-bottom: 32px;
+  margin-bottom: 0;
 }
 
 .history-filters {

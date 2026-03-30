@@ -32,9 +32,10 @@ export function HistoryListScreen() {
 
   return (
     <div className="history-list">
-      <h2 className="history-title">Verlauf</h2>
-
-      <StreakCounter sessions={allSessions ?? []} />
+      <div className="history-title-row">
+        <h2 className="history-title">Verlauf</h2>
+        <StreakCounter sessions={allSessions ?? []} />
+      </div>
       <TrainingCalendar sessions={allSessions ?? []} onDayClick={handleDayClick} />
       <StatsPanel sessions={allSessions ?? []} />
 
