@@ -4,23 +4,38 @@
 
 .phase-badge {
   display: inline-block;
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  padding: 3px 10px;
-  border-radius: 10px;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
   margin-bottom: 8px;
 }
 
-.phase-badge--warmup {
-  background: rgba(255, 230, 0, 0.15);
-  color: var(--color-prepare);
+.phase-badge--work {
+  background: #7FFF0033;
+  border: 1px solid #7FFF0066;
+  color: #7FFF00;
 }
 
-.phase-badge--kraft {
-  background: rgba(127, 255, 0, 0.15);
-  color: var(--color-work);
+.phase-badge--pause {
+  background: #FF3B3B33;
+  border: 1px solid #FF3B3B66;
+  color: #FF3B3B;
+}
+
+.phase-badge--roundpause {
+  background: #FFE60033;
+  border: 1px solid #FFE60066;
+  color: #FFE600;
+}
+
+.phase-badge--warmup {
+  background: #FFE60033;
+  border: 1px solid #FFE60066;
+  color: #FFE600;
 }
 
 .phase-station-name {
@@ -29,4 +44,9 @@
   font-size: 1.75rem;
   letter-spacing: 0.03em;
   margin: 0;
+  color: var(--text-primary);
+}
+
+.phase-station-dim {
+  color: var(--text-muted);
 }
