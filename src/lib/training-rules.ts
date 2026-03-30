@@ -116,17 +116,6 @@ function musclesToRegions(muscles: string[]): Set<Region> {
   return regions;
 }
 
-// ── Push/Pull for consecutive exercise check ──
-
-function getMovementType(name: string): 'push' | 'pull' | 'legs' | 'core' | 'other' {
-  const regions = musclesToRegions(detectMuscles(name));
-  if (regions.has('push') && !regions.has('pull') && !regions.has('beine')) return 'push';
-  if (regions.has('pull') && !regions.has('push') && !regions.has('beine')) return 'pull';
-  if (regions.has('beine') && !regions.has('push') && !regions.has('pull')) return 'legs';
-  if (regions.has('core') && regions.size === 1) return 'core';
-  return 'other';
-}
-
 // ── Analysis ──
 
 export function analyzeTraining(stations: StationConfig[]): TrainingWarning[] {
@@ -136,30 +125,28 @@ export function analyzeTraining(stations: StationConfig[]): TrainingWarning[] {
 
   if (kraftStations.length === 0) return warnings;
 
-  // Rule 1: Consecutive same region (except core which is OK to repeat)
-  for (let i = 1; i < kraftStations.length; i++) {
-    const prevRegions = musclesToRegions(detectMuscles(kraftStations[i - 1].name));
-    const currRegions = musclesToRegions(detectMuscles(kraftStations[i].name));
-    for (const region of prevRegions) {
-      if (region !== 'core' && currRegions.has(region)) {
-        warnings.push({
-          type: 'warning',
-          message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" belasten beide ${REGION_LABELS[region]} — besser abwechseln.`,
-        });
-        break; // one warning per pair
-      }
-    }
-  }
+  // Detect if this is a deliberate split (all exercises target the same region)
+  const allRegions = kraftStations.map((s) => musclesToRegions(detectMuscles(s.name)));
+  const commonRegions = allRegions.reduce((acc, regions) => {
+    if (acc === null) return regions;
+    return new Set([...acc].filter((r) => regions.has(r)));
+  }, null as Set<Region> | null);
+  const isDeliberateSplit = commonRegions !== null && commonRegions.size > 0;
 
-  // Rule 2: Consecutive push or pull
-  for (let i = 1; i < kraftStations.length; i++) {
-    const prevType = getMovementType(kraftStations[i - 1].name);
-    const currType = getMovementType(kraftStations[i].name);
-    if (prevType === currType && (prevType === 'push' || prevType === 'pull')) {
-      warnings.push({
-        type: 'info',
-        message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" sind beide ${prevType === 'push' ? 'Drück' : 'Zug'}-Übungen — abwechseln verbessert die Leistung.`,
-      });
+  // Rule 1 + 2: Only warn about consecutive same-region / same-movement if NOT a deliberate split
+  if (!isDeliberateSplit) {
+    for (let i = 1; i < kraftStations.length; i++) {
+      const prevRegions = musclesToRegions(detectMuscles(kraftStations[i - 1].name));
+      const currRegions = musclesToRegions(detectMuscles(kraftStations[i].name));
+      for (const region of prevRegions) {
+        if (region !== 'core' && currRegions.has(region)) {
+          warnings.push({
+            type: 'info',
+            message: `"${kraftStations[i - 1].name}" und "${kraftStations[i].name}" belasten beide ${REGION_LABELS[region]} — besser abwechseln.`,
+          });
+          break;
+        }
+      }
     }
   }
 
@@ -203,5 +190,6 @@ export function analyzeTraining(stations: StationConfig[]): TrainingWarning[] {
     }
   }
 
-  return warnings;
+  // Limit to max 3 warnings to avoid overwhelming the user
+  return warnings.slice(0, 3);
 }
