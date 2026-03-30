@@ -3,10 +3,11 @@ import '../../styles/session-card.css';
 
 interface SessionCardProps {
   session: Session;
+  name?: string;
   onClick: () => void;
 }
 
-export function SessionCard({ session, onClick }: SessionCardProps) {
+export function SessionCard({ session, name, onClick }: SessionCardProps) {
   const date = new Date(session.started_at);
   const dateStr = date.toLocaleDateString('de-DE', {
     weekday: 'short',
@@ -25,18 +26,18 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
   return (
     <button className="card card--interactive session-card" onClick={onClick}>
       <div className="session-card-date">
-        <span className="session-card-day">{dateStr}</span>
-        <span className="session-card-time">{timeStr}</span>
+        {name && <span className="session-card-name">{name}</span>}
+        <span className="session-card-day">{dateStr}, {timeStr}</span>
       </div>
       <div className="session-card-stats">
         <span className="session-card-stat">
-          <strong>{durationStr}</strong> Dauer
+          <strong>{durationStr}</strong> <span>Dauer</span>
         </span>
         <span className="session-card-stat">
-          <strong>{session.rounds}</strong> Runden
+          <strong>{session.rounds}</strong> <span>Runden</span>
         </span>
         <span className="session-card-stat">
-          <strong>{session.station_count}</strong> Stationen
+          <strong>{session.station_count}</strong> <span>Übungen</span>
         </span>
       </div>
     </button>

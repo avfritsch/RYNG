@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../lib/supabase.ts';
 import { useSessions, type SessionFilter } from '../../hooks/useSessions.ts';
 import { SessionCard } from './SessionCard.tsx';
 import { TrainingCalendar } from './TrainingCalendar.tsx';
@@ -14,11 +16,33 @@ const filters: { value: SessionFilter; label: string }[] = [
   { value: 'all', label: 'Alle' },
 ];
 
+/** Load plan day names for session name display */
+function usePlanDayNames() {
+  return useQuery({
+    queryKey: ['plan-day-names'],
+    staleTime: 1000 * 60 * 10,
+    queryFn: async (): Promise<Map<string, string>> => {
+      const { data, error } = await supabase
+        .from('plan_days')
+        .select('id, label, plan_id, plans(name)')
+        .order('sort_order');
+      if (error) throw error;
+      const map = new Map<string, string>();
+      for (const d of data ?? []) {
+        const planName = (d.plans as unknown as { name: string })?.name ?? '';
+        map.set(d.id, planName ? `${d.label} — ${planName}` : d.label);
+      }
+      return map;
+    },
+  });
+}
+
 export function HistoryListScreen() {
   const [filter, setFilter] = useState<SessionFilter>('all');
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const { data: sessions, isLoading, error } = useSessions(filter);
   const { data: allSessions } = useSessions('all');
+  const { data: dayNames } = usePlanDayNames();
   const navigate = useNavigate();
 
   function handleDayClick(dateKey: string) {
@@ -81,6 +105,7 @@ export function HistoryListScreen() {
           <SessionCard
             key={session.id}
             session={session}
+            name={session.plan_day_id && dayNames ? dayNames.get(session.plan_day_id) : undefined}
             onClick={() => navigate(`/history/${session.id}`)}
           />
         ))}

@@ -18,14 +18,15 @@
   gap: 2px;
 }
 
-.session-card-day {
+.session-card-name {
   font-weight: 600;
   font-size: var(--text-base);
+  color: var(--text-primary);
 }
 
-.session-card-time {
+.session-card-day {
   font-size: var(--text-sm);
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .session-card-stats {
