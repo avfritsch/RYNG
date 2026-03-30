@@ -3,7 +3,6 @@ import { corsHeaders } from "../_shared/cors.ts";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -17,34 +16,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { focus, equipment, durationMinutes, rounds, notes } = await req.json();
+    const { focus, equipment, durationMinutes, rounds, notes, exercises } = await req.json();
 
-    const systemPrompt = `Du bist ein erfahrener Physiotherapeut und Sportwissenschaftler, der Zirkeltraining-Pläne erstellt.
+    // Build exercise catalog for Claude
+    const exerciseCatalog = (exercises ?? []).map((ex: { name: string; category: string; muscle_groups: string[]; equipment: string[]; howto: string }) =>
+      `- ${ex.name} [${ex.category}] Muskeln: ${ex.muscle_groups?.join(', ') || '?'} | Equipment: ${ex.equipment?.join(', ') || 'Bodyweight'}`
+    ).join('\n');
 
-Erstelle einen Trainingsplan als JSON. Der Plan besteht aus:
-- Warmup-Übungen (isWarmup: true) die auf die Kraft-Übungen abgestimmt sind
-- Kraft-Übungen (isWarmup: false) mit sinnvoller Reihenfolge
+    const systemPrompt = `Du bist ein erfahrener Sportwissenschaftler, der Zirkeltraining-Pläne zusammenstellt.
 
-Wichtige Regeln:
-- Abwechslung zwischen Push/Pull/Beine innerhalb eines Zirkels
+Du hast folgende Übungsbibliothek zur Verfügung. Wähle NUR Übungen aus dieser Liste — erfinde KEINE eigenen Übungen:
+
+${exerciseCatalog}
+
+Regeln:
+- Wähle passende Warmup-Übungen (Kategorie "warmup" oder "stretch") und Kraft-Übungen
+- Abwechslung zwischen Muskelgruppen im Zirkel
 - Keine zwei Übungen hintereinander für dieselbe Muskelgruppe
-- Warmup muss die Muskelgruppen des Kraftteils vorbereiten
-- Warmup-Übungen: individuelle Dauer (30-120s), kurze Pausen (10s)
-- Kraft-Übungen: einheitliche Dauer (30-45s), Pausen (20-30s)
-- Übungsnamen auf Deutsch
+- Warmup bereitet die Muskelgruppen des Kraftteils vor
+- Warmup: individuelle Dauer (30-120s), Pausen 10s
+- Kraft: einheitliche Dauer (30-45s), Pausen (20-30s)
+- Verwende die Übungsnamen EXAKT wie in der Bibliothek
 
-Antworte NUR mit validem JSON in diesem Format:
+Antworte NUR mit validem JSON:
 {
   "name": "Planname",
   "description": "Kurze Beschreibung",
   "stations": [
     {
-      "name": "Übungsname",
-      "muscleGroups": ["Brust", "Trizeps"],
+      "name": "EXAKTER Übungsname aus der Bibliothek",
       "workSeconds": 45,
       "pauseSeconds": 30,
-      "isWarmup": false,
-      "howto": "Ausführungsbeschreibung in 1-2 Sätzen"
+      "isWarmup": false
     }
   ],
   "rounds": 3,
@@ -52,7 +55,7 @@ Antworte NUR mit validem JSON in diesem Format:
 }`;
 
     const userPrompt = [
-      `Erstelle einen Zirkeltraining-Plan mit folgenden Vorgaben:`,
+      `Stelle einen Zirkeltraining-Plan zusammen:`,
       focus ? `Fokus: ${focus}` : null,
       equipment?.length ? `Verfügbares Equipment: ${equipment.join(", ")}` : `Equipment: nur Bodyweight`,
       durationMinutes ? `Gewünschte Dauer: ca. ${durationMinutes} Minuten` : null,
@@ -86,7 +89,6 @@ Antworte NUR mit validem JSON in diesem Format:
     const data = await response.json();
     const text = data.content?.[0]?.text ?? "";
 
-    // Extract JSON from response (Claude might wrap it in markdown)
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return new Response(
