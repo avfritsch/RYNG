@@ -261,8 +261,12 @@
 
 .library-group-header {
   position: sticky;
-  top: 0; /* JS or layout will handle offset from sticky header */
+  top: 0;
   z-index: 5;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-family: 'Saira Condensed', var(--font-display);
   font-size: 13px;
   font-weight: 600;
@@ -272,6 +276,11 @@
   padding: 10px 0 6px;
   background: var(--bg-base);
   border-bottom: 1px solid var(--border-default);
+  cursor: pointer;
+}
+
+.library-group-header:active {
+  color: var(--text-secondary);
 }
 
 /* ---- Compact row ---- */
@@ -474,7 +483,7 @@
 /* ---- Alphabet quick-nav ---- */
 .library-alpha-nav {
   position: fixed;
-  right: 4px;
+  right: max(4px, calc((100vw - 480px) / 2 - 12px));
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -482,6 +491,10 @@
   align-items: center;
   z-index: 20;
   gap: 1px;
+  padding: 8px 4px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
 }
 
 .library-alpha-letter {

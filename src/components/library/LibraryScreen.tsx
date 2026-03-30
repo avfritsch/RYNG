@@ -31,6 +31,7 @@ export function LibraryScreen() {
   const [editExercise, setEditExercise] = useState<LibraryExercise | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteExercise, setDeleteExercise] = useState<LibraryExercise | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const deleteLibExercise = useDeleteLibraryExercise();
   const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
   const [addToPlanExercise, setAddToPlanExercise] = useState<LibraryExercise | null>(null);
@@ -218,12 +219,21 @@ export function LibraryScreen() {
     if (!groupedExercises) return null;
     const sections: React.ReactNode[] = [];
     for (const [cat, items] of groupedExercises) {
+      const isCollapsed = collapsedGroups.has(cat);
       sections.push(
         <div key={cat} className="library-group">
-          <div className="library-group-header">
-            {CATEGORY_LABELS[cat].toUpperCase()} ({items.length})
-          </div>
-          {items.map((ex) => {
+          <button
+            className="library-group-header"
+            onClick={() => setCollapsedGroups((prev) => {
+              const next = new Set(prev);
+              if (next.has(cat)) next.delete(cat); else next.add(cat);
+              return next;
+            })}
+          >
+            <span>{CATEGORY_LABELS[cat].toUpperCase()} ({items.length})</span>
+            <Icon name={isCollapsed ? 'chevron-right' : 'chevron-down'} size={14} />
+          </button>
+          {!isCollapsed && items.map((ex) => {
             const firstChar = ex.name.charAt(0).toUpperCase();
             return (
               <LibraryCard
