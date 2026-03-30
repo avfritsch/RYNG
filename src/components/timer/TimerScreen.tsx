@@ -124,8 +124,8 @@ export function TimerScreen() {
 
   const isWarmup = currentStation?.isWarmup ?? false;
 
-  // Howto text (only during work/warmup)
-  const howtoText = (state.phase === 'work' || state.phase === 'warmup')
+  // Howto text — always show during work/warmup, also during pause (for current station)
+  const howtoText = (state.phase === 'work' || state.phase === 'warmup' || state.phase === 'pause')
     ? (currentStation?.howto ?? '')
     : '';
 
@@ -173,7 +173,16 @@ export function TimerScreen() {
       <div className="timer-body">
         <PhaseLabel stationName={stationName} phase={state.phase} isWarmup={isWarmup} />
 
-        {useRing ? (
+        {state.phase === 'roundPause' ? (
+          /* Rundenpause: show a single-segment ring */
+          <RingViz
+            stations={[{ name: 'Rundenpause', workSeconds: state.phaseDuration, pauseSeconds: 0, isWarmup: false, howto: '' }]}
+            activeStation={1}
+            phase="warmup"
+            progress={progress}
+            countdown={state.currentSec}
+          />
+        ) : useRing ? (
           <RingViz
             stations={setStations}
             activeStation={activeStationInSet}

@@ -33,10 +33,10 @@
   outline-offset: 2px;
 }
 
-/* ZURÜCK — subdued */
+/* ZURÜCK — 1/3 width, subdued */
 .tc-btn--back {
   flex: 1;
-  padding: 16px 24px;
+  padding: 16px 16px;
   font-size: 14px;
   background: #1A1A1A;
   border: 1px solid #2A2A2A;
@@ -48,9 +48,9 @@
   color: #AAAAAA;
 }
 
-/* WEITER — slightly more prominent */
+/* WEITER — 2/3 width, more prominent */
 .tc-btn--forward {
-  flex: 1;
+  flex: 2;
   padding: 16px 24px;
   font-size: 14px;
   background: #1A1A1A;
@@ -63,9 +63,9 @@
   color: #FFFFFF;
 }
 
-/* PAUSE / WEITER (primary CTA) */
+/* PAUSE / WEITER (primary CTA) — 4/5 width */
 .tc-btn--primary {
-  flex: 1;
+  flex: 4;
   padding: 18px 32px;
   font-size: 16px;
   background: #7FFF00;
@@ -77,10 +77,11 @@
   filter: brightness(0.9);
 }
 
-/* STOP */
+/* STOP — 1/5 width, with label */
 .tc-btn--stop {
-  width: 64px;
-  padding: 18px;
+  flex: 1;
+  padding: 18px 16px;
+  font-size: 13px;
   background: transparent;
   border: 1.5px solid #FF3B3B;
   color: #FF3B3B;
