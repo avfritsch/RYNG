@@ -51,9 +51,11 @@ export function PlanListScreen() {
                 className="card card--interactive plan-card"
                 onClick={() => navigate(`/plans/${plan.id}`)}
               >
-                <span className="plan-card-name">{plan.name}</span>
+                <div className="plan-card-row1">
+                  <span className="plan-card-name">{plan.name}</span>
+                  <span className="plan-card-badge plan-card-badge--system">System</span>
+                </div>
                 <span className="plan-card-desc">{plan.description}</span>
-                <span className="plan-card-badge plan-card-badge--system">System</span>
               </button>
             ))}
           </div>
