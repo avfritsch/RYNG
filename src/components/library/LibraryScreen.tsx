@@ -257,18 +257,15 @@ const LibraryCard = memo(function LibraryCard({
       onClick={() => onSelect(ex)}
     >
       <div className="library-card-header">
-        <span className="library-card-name">{ex.name}</span>
-        <span className={`library-card-cat library-card-cat--${ex.category}`}>
-          {CATEGORY_LABELS[ex.category]}
-        </span>
-      </div>
-
-      <div className="library-card-row2">
-        <span className="library-card-detail">{ex.detail ?? ''}</span>
-        <div className="library-card-inline-actions" onClick={(e) => e.stopPropagation()}>
-          {(ex.usage_count ?? 0) > 0 && (
-            <span className="library-usage-count">{ex.usage_count}×</span>
-          )}
+        <div className="library-card-info">
+          <span className="library-card-name">{ex.name}</span>
+          <span className="library-card-meta">
+            {ex.muscle_group && <span className="library-card-muscle">{ex.muscle_group}</span>}
+            {ex.equipment.length > 0 && <span className="library-card-equipment">{ex.equipment.join(', ')}</span>}
+            {(ex.usage_count ?? 0) > 0 && <span className="library-card-usage">{ex.usage_count}×</span>}
+          </span>
+        </div>
+        <div className="library-card-actions-inline" onClick={(e) => e.stopPropagation()}>
           <button
             className={`library-icon-btn ${isFav ? 'library-icon-btn--fav' : ''}`}
             onClick={() => onToggleFav(ex, isFav)}
@@ -284,20 +281,14 @@ const LibraryCard = memo(function LibraryCard({
             <Icon name="plus" size={16} />
           </button>
         </div>
-      </div>
-
-      <div className="library-card-meta">
-        <span className={ex.created_by ? 'library-card-owner library-card-owner--own' : 'library-card-owner'}>
-          {ex.created_by ? 'Eigene' : 'System'}
+        <span className={`library-card-cat library-card-cat--${ex.category}`}>
+          {CATEGORY_LABELS[ex.category]}
         </span>
-        {ex.muscle_group && <span className="library-card-muscle">{ex.muscle_group}</span>}
-        {ex.equipment.length > 0 && (
-          <span className="library-card-equipment">{ex.equipment.join(', ')}</span>
-        )}
       </div>
 
       {isSelected && (
         <div className="library-card-expanded" onClick={(e) => e.stopPropagation()}>
+          {ex.detail && <p className="library-card-detail">{ex.detail}</p>}
           {ex.howto && <p className="library-card-howto">{ex.howto}</p>}
           <div className="library-card-actions">
             <button className="library-action-btn library-action-btn--primary" onClick={() => onQuickStart(ex)}>
