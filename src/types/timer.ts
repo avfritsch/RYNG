@@ -1,5 +1,6 @@
 export interface StationConfig {
   name: string;
+  muscleGroups?: string[];
   workSeconds: number;
   pauseSeconds: number;
   isWarmup: boolean;

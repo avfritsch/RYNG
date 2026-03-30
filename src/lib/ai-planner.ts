@@ -38,6 +38,7 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
   // Ensure all stations have required fields
   const stations: StationConfig[] = data.stations.map((s: Record<string, unknown>) => ({
     name: String(s.name || 'Übung'),
+    muscleGroups: Array.isArray(s.muscleGroups) ? s.muscleGroups.map(String) : [],
     workSeconds: Number(s.workSeconds) || 45,
     pauseSeconds: Number(s.pauseSeconds) || 30,
     isWarmup: Boolean(s.isWarmup),
@@ -86,6 +87,7 @@ export async function saveGeneratedPlan(plan: GeneratedPlan): Promise<string> {
   const exercises = plan.stations.map((s, i) => ({
     day_id: dayRow.id,
     name: s.name,
+    muscle_groups: s.muscleGroups ?? [],
     howto: s.howto || null,
     is_warmup: s.isWarmup,
     work_seconds: s.workSeconds,

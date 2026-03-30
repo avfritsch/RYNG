@@ -40,6 +40,7 @@ Antworte NUR mit validem JSON in diesem Format:
   "stations": [
     {
       "name": "Übungsname",
+      "muscleGroups": ["Brust", "Trizeps"],
       "workSeconds": 45,
       "pauseSeconds": 30,
       "isWarmup": false,
