@@ -129,9 +129,9 @@ export function TimerScreen() {
     ? (currentStation?.howto ?? '')
     : '';
 
-  // "Nächste Übung" — visible in all phases
-  const nextExerciseText = useMemo(() => {
-    if (!config) return '';
+  // "Nächste Übung" — computed without useMemo to avoid dep issues
+  let nextExerciseText = '';
+  {
     const warmupStations = config.stations.filter((s) => s.isWarmup);
     const kraftStations = config.stations.filter((s) => !s.isWarmup);
     const isInWarmup = currentStation?.isWarmup ?? false;
@@ -139,27 +139,20 @@ export function TimerScreen() {
     if (isInWarmup) {
       const idx = warmupStations.indexOf(currentStation!);
       const next = warmupStations[idx + 1];
-      if (next) return `Nächste Übung: ${next.name}`;
-      if (kraftStations.length > 0) return `Nächste Übung: ${kraftStations[0].name}`;
+      if (next) nextExerciseText = `Nächste Übung: ${next.name}`;
+      else if (kraftStations.length > 0) nextExerciseText = `Nächste Übung: ${kraftStations[0].name}`;
     } else {
       const idx = kraftStations.indexOf(currentStation!);
       const next = kraftStations[idx + 1];
-      if (next) return `Nächste Übung: ${next.name}`;
-      if (state.round < config.rounds && kraftStations.length > 0) {
-        return `Nächste Runde: ${kraftStations[0].name}`;
-      }
-      if (state.round >= config.rounds && idx >= kraftStations.length - 1) {
-        return 'Letzte Übung';
-      }
+      if (next) nextExerciseText = `Nächste Übung: ${next.name}`;
+      else if (state.round < config.rounds && kraftStations.length > 0) nextExerciseText = `Nächste Runde: ${kraftStations[0].name}`;
+      else if (state.round >= config.rounds && idx >= kraftStations.length - 1) nextExerciseText = 'Letzte Übung';
     }
 
-    // During roundPause: next round's first exercise
     if (state.phase === 'roundPause' && kraftStations.length > 0) {
-      return `Nächste Runde: ${kraftStations[0].name}`;
+      nextExerciseText = `Nächste Runde: ${kraftStations[0].name}`;
     }
-
-    return '';
-  }, [config, currentStation, state.round, state.phase]);
+  }
   const bg = phaseBg[state.phase] ?? 'var(--bg-base)';
 
   const progress = state.phaseDuration > 0
