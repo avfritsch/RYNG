@@ -495,29 +495,19 @@ export function LibraryScreen() {
         ) : (
           <div className="library-list">
             {filteredPlans.map((plan) => (
-              <div key={plan.id} className="card library-card library-card--plan" onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library', tab: 'plans' } })}>
-                <div className="library-card-header">
-                  <div className="library-card-info">
-                    <span className="library-card-name">
-                      {plan.name}
-                      {plan.is_system
-                        ? <span className="library-card-author"> · System</span>
-                        : plan.author_name && <span className="library-card-author"> · {plan.author_name}</span>
-                      }
+              <div key={plan.id} className="library-plan-row" onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library', tab: 'plans' } })}>
+                <div className="library-plan-row-info">
+                  <span className="library-plan-row-name">
+                    {plan.name}
+                    <span className="library-plan-row-author">
+                      {plan.is_system ? ' · System' : plan.author_name ? ` · ${plan.author_name}` : ''}
                     </span>
-                    {plan.description && <span className="library-card-meta">{plan.description}</span>}
-                  </div>
-                </div>
-                <div className="library-card-row2">
-                  <span className="library-card-meta">
-                    {(plan.copy_count ?? 0) > 0 && `${plan.copy_count}× kopiert`}
                   </span>
-                  <div className="library-card-actions-inline">
-                    <button className="library-action-btn library-action-btn--primary" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id); }}>
-                      <Icon name="copy" size={14} /> Kopieren
-                    </button>
-                  </div>
+                  {plan.description && <span className="library-plan-row-desc">{plan.description}</span>}
                 </div>
+                <button className="library-plan-row-copy" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id); }} aria-label="Kopieren">
+                  <Icon name="copy" size={16} />
+                </button>
               </div>
             ))}
           </div>
