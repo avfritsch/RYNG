@@ -278,6 +278,7 @@ export function ConfigScreen() {
         )}
       </div>
 
+      <div className="config-footer-spacer" />
       <div className="config-footer">
         <div className="config-duration">
           Geschätzte Dauer: <strong>{getEstimatedDuration()}</strong>
