@@ -185,7 +185,6 @@ export function LibraryScreen() {
     return `${count} Übungen`;
   }, [filteredExercises, hasActiveFilters, filters.search, activeFilterLabels]);
 
-  const filterCountCat = filters.categories.length;
   const filterCountMg = filters.muscleGroups.length;
   const filterCountEq = filters.equipmentSel.length;
 
@@ -356,36 +355,18 @@ export function LibraryScreen() {
                 <Icon name="user" size={14} /> Eigene
               </button>
               <span className="library-sort-sep">|</span>
-              {(['popular', 'name', 'category'] as const).map((s) => (
+              {(['popular', 'name'] as const).map((s) => (
                 <button
                   key={s}
                   className={`library-chip library-chip--sm ${filters.sortBy === s ? 'library-chip--active' : ''}`}
                   onClick={() => filters.setSortBy(s)}
                 >
-                  {s === 'popular' ? 'Beliebt' : s === 'name' ? 'A–Z' : 'Kategorie'}
+                  {s === 'popular' ? 'Beliebt' : 'A–Z'}
                 </button>
               ))}
             </div>
 
             <div className="library-filters">
-              <button className="library-filter-header" onClick={() => filters.setCatOpen(!filters.catOpen)}>
-                <span>Kategorie{filterCountCat > 0 ? ` (${filterCountCat})` : ''}</span>
-                {filterCountCat > 0 && <span className="library-filter-count">{filterCountCat} aktiv</span>}
-                <Icon name={filters.catOpen ? 'chevron-up' : 'chevron-down'} size={16} />
-              </button>
-              {filters.catOpen && (
-                <div className="library-chip-wrap">
-                  {filters.categories.length > 0 && (
-                    <button className="library-chip library-chip--reset" onClick={() => filters.setCategories([])}>Zurücksetzen</button>
-                  )}
-                  {allCategories.map((cat) => (
-                    <button key={cat} className={`library-chip ${filters.categories.includes(cat) ? 'library-chip--active' : ''}`} onClick={() => filters.toggleFilter(filters.categories, cat, filters.setCategories)}>
-                      {CATEGORY_LABELS[cat]}
-                    </button>
-                  ))}
-                </div>
-              )}
-
               <button className="library-filter-header" onClick={() => filters.setMgOpen(!filters.mgOpen)}>
                 <span>Muskelgruppe{filterCountMg > 0 ? ` (${filterCountMg})` : ''}</span>
                 {filterCountMg > 0 && <span className="library-filter-count">{filterCountMg} aktiv</span>}
