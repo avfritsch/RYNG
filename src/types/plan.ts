@@ -31,6 +31,7 @@ export interface PlanExercise {
   speech_name: string | null;
   muscle_groups: string[];
   howto: string | null;
+  illustration_key: string | null;
   animation_key: string | null;
   is_warmup: boolean;
   work_seconds: number;

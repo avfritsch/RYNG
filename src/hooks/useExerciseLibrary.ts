@@ -130,6 +130,7 @@ export function useCopyToplan() {
           name: exercise.name,
           speech_name: exercise.speech_name,
           track_weight: exercise.track_weight ?? false,
+          illustration_key: exercise.illustration_key,
           muscle_groups: exercise.muscle_groups,
           howto: exercise.howto,
           is_warmup: isWarmup,

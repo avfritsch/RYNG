@@ -9,6 +9,7 @@ export interface GymSet {
 export interface GymExercise {
   name: string;
   speechName?: string;
+  illustrationKey?: string;
   sets: GymSet[];
   restSeconds: number;
   isWarmup: boolean;

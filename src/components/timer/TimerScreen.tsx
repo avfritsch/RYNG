@@ -173,10 +173,13 @@ export function TimerScreen() {
 
   // Howto: during work/warmup show current, during pause show NEXT exercise howto
   let howtoText = '';
+  let howtoIllustration: string | undefined;
   if (state.phase === 'work' || state.phase === 'warmup') {
     howtoText = currentStation?.howto ?? '';
+    howtoIllustration = currentStation?.illustrationKey;
   } else if (state.phase === 'pause' && nextStation) {
     howtoText = `Nächste Übung: ${nextStation.name}\n${nextStation.howto ?? ''}`;
+    howtoIllustration = nextStation.illustrationKey;
   }
 
   // "Nächste Übung" text below ring — hide during pause (shown in howto instead)
@@ -234,7 +237,7 @@ export function TimerScreen() {
         )}
 
         <div className="timer-howto-area">
-          <HowtoPanel text={howtoText} />
+          <HowtoPanel text={howtoText} illustrationKey={howtoIllustration} />
         </div>
 
         {nextExerciseText && (

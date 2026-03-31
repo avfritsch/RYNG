@@ -6,6 +6,7 @@ export interface StationConfig {
   pauseSeconds: number;
   isWarmup: boolean;
   howto: string;
+  illustrationKey?: string;
   animationKey?: string;
   trackWeight?: boolean;
 }

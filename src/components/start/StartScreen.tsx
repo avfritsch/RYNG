@@ -56,6 +56,7 @@ export function StartScreen() {
       pauseSeconds: e.pause_seconds,
       isWarmup: e.is_warmup,
       howto: e.howto ?? '',
+      illustrationKey: e.illustration_key ?? undefined,
       trackWeight: e.track_weight ?? false,
     }));
 
@@ -130,6 +131,7 @@ export function StartScreen() {
       .map((e: PlanExercise) => ({
         name: e.name,
         speechName: e.speech_name ?? undefined,
+        illustrationKey: e.illustration_key ?? undefined,
         sets: [
           { weight_kg: null, reps: null, done: false },
           { weight_kg: null, reps: null, done: false },

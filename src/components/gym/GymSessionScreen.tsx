@@ -6,6 +6,7 @@ import { useSessionStore } from '../../stores/session-store.ts';
 import { beep, beepDone } from '../../lib/timer-engine.ts';
 import { speakDone } from '../../lib/speech.ts';
 import { Icon } from '../ui/Icon.tsx';
+import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
 import { Confetti } from '../ui/Confetti.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { useState } from 'react';
@@ -201,6 +202,7 @@ export function GymSessionScreen() {
       {/* Active exercise: set list */}
       {activeEx && (
         <div className="gym-exercise">
+          <ExerciseIllustration illustrationKey={activeEx.illustrationKey} size="preview" />
           <h2 className="gym-exercise-name">{activeEx.name}</h2>
 
           {lastWeights?.has(activeEx.name) && (

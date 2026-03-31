@@ -1,0 +1,26 @@
+.exercise-illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  background: transparent;
+}
+
+.exercise-illustration--thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.exercise-illustration--preview {
+  max-width: 240px;
+  margin: 0 auto 8px;
+}
+
+.exercise-illustration--full {
+  max-width: 100%;
+  margin: 0 auto 12px;
+}

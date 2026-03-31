@@ -12,6 +12,7 @@ import type { TimerConfig } from '../../types/timer.ts';
 import { ExerciseEditModal } from './ExerciseEditModal.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { Icon } from '../ui/Icon.tsx';
+import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
 import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import '../../styles/library.css';
 
@@ -589,6 +590,7 @@ const LibraryCard = memo(function LibraryCard({
 
       {isSelected && (
         <div className="library-row-expanded" onClick={(e) => e.stopPropagation()}>
+          <ExerciseIllustration illustrationKey={ex.illustration_key} size="preview" />
           {ex.howto && <p className="library-row-howto">{ex.howto}</p>}
           <div className="library-row-actions">
             <button className="library-action-btn library-action-btn--primary library-action-btn--sm" onClick={() => onQuickStart(ex)}>
