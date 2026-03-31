@@ -12,6 +12,64 @@
   margin-bottom: 32px;
 }
 
+/* Mode toggle */
+.start-mode-toggle {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 28px;
+  padding: 3px;
+  margin-bottom: 24px;
+}
+
+.start-mode-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 24px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  transition: all var(--duration-normal);
+}
+
+.start-mode-btn--active {
+  background: var(--color-work);
+  color: var(--bg-base);
+}
+
+/* Gym mode */
+.start-gym {
+  margin-bottom: 32px;
+}
+
+.start-gym-desc {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.start-gym-plans,
+.start-gym-days {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.start-gym-back {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  padding: 8px 0;
+  margin-bottom: 4px;
+}
+
+.start-gym-empty {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding: 24px 0;
+  text-align: center;
+}
+
 .start-suggestions {
   display: flex;
   flex-direction: column;

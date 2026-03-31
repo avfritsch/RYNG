@@ -8,6 +8,7 @@ import { BottomNav } from './components/ui/BottomNav.tsx';
 import { StartScreen } from './components/start/StartScreen.tsx';
 import { DoneScreen } from './components/config/DoneScreen.tsx';
 import { TimerScreen } from './components/timer/TimerScreen.tsx';
+import { GymSessionScreen } from './components/gym/GymSessionScreen.tsx';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx';
 import { ToastContainer } from './components/ui/ToastContainer.tsx';
 
@@ -90,6 +91,7 @@ function AppContent() {
       {/* Fullscreen overlays — rendered above everything */}
       <TimerScreen />
       <DoneScreen />
+      <GymSessionScreen />
       <ToastContainer />
     </div>
   );
