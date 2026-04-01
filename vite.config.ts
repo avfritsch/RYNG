@@ -2,6 +2,21 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const vendorChunks: Record<string, string[]> = {
+  'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+  'vendor-supabase': ['@supabase/supabase-js'],
+  'vendor-query': ['@tanstack/react-query'],
+  'vendor-sentry': ['@sentry/react'],
+}
+
+function manualChunks(id: string) {
+  for (const [chunkName, packages] of Object.entries(vendorChunks)) {
+    if (packages.some((pkg) => id.includes(`node_modules/${pkg}/`))) {
+      return chunkName
+    }
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
@@ -32,4 +47,11 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks,
+      },
+    },
+  },
 })

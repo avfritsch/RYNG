@@ -3,14 +3,18 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from './hooks/useAuth.ts';
 import { useOffline } from './hooks/useOffline.ts';
+import { useTimerStore } from './stores/timer-store.ts';
+import { useGymStore } from './stores/gym-store.ts';
 import { AuthScreen } from './components/auth/AuthScreen.tsx';
 import { BottomNav } from './components/ui/BottomNav.tsx';
 import { StartScreen } from './components/start/StartScreen.tsx';
-import { DoneScreen } from './components/config/DoneScreen.tsx';
-import { TimerScreen } from './components/timer/TimerScreen.tsx';
-import { GymSessionScreen } from './components/gym/GymSessionScreen.tsx';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx';
 import { ToastContainer } from './components/ui/ToastContainer.tsx';
+
+// Lazy-loaded overlay screens (only loaded when training is active)
+const TimerScreen = lazy(() => import('./components/timer/TimerScreen.tsx').then(m => ({ default: m.TimerScreen })));
+const DoneScreen = lazy(() => import('./components/config/DoneScreen.tsx').then(m => ({ default: m.DoneScreen })));
+const GymSessionScreen = lazy(() => import('./components/gym/GymSessionScreen.tsx').then(m => ({ default: m.GymSessionScreen })));
 
 // Lazy-loaded routes (not needed on initial load)
 const PlanListScreen = lazy(() => import('./components/plans/PlanListScreen.tsx').then(m => ({ default: m.PlanListScreen })));
@@ -34,6 +38,29 @@ const queryClient = new QueryClient({
 
 function LazyFallback() {
   return <div className="loading-center"><div className="spinner" /></div>;
+}
+
+/** Mount TimerScreen only when the timer is running */
+function LazyTimerOverlay() {
+  const isRunning = useTimerStore((s) => s.state.isRunning);
+  if (!isRunning) return null;
+  return <TimerScreen />;
+}
+
+/** Mount DoneScreen only when the timer phase is 'done' (or idle with a summary) */
+function LazyDoneOverlay() {
+  const phase = useTimerStore((s) => s.state.phase);
+  const hasSummary = useTimerStore((s) => !!s.lastSummary);
+  if (!hasSummary) return null;
+  if (phase !== 'done' && phase !== 'idle') return null;
+  return <DoneScreen />;
+}
+
+/** Mount GymSessionScreen only when a gym session is active */
+function LazyGymOverlay() {
+  const isActive = useGymStore((s) => s.isActive);
+  if (!isActive) return null;
+  return <GymSessionScreen />;
 }
 
 function AppContent() {
@@ -88,10 +115,12 @@ function AppContent() {
       </main>
       <BottomNav />
 
-      {/* Fullscreen overlays — rendered above everything */}
-      <TimerScreen />
-      <DoneScreen />
-      <GymSessionScreen />
+      {/* Fullscreen overlays — lazy-loaded, only mounted when active */}
+      <Suspense fallback={null}>
+        <LazyTimerOverlay />
+        <LazyDoneOverlay />
+        <LazyGymOverlay />
+      </Suspense>
       <ToastContainer />
     </div>
   );
