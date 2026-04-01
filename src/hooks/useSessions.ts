@@ -28,6 +28,7 @@ export function useSessions(filter: SessionFilter = 'all') {
       let query = supabase
         .from('sessions')
         .select('*')
+        .gt('station_count', 0)
         .order('started_at', { ascending: false });
 
       const since = getFilterDate(filter);

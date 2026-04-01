@@ -40,7 +40,7 @@ export function DoneScreen() {
         finished_at: now,
         duration_sec: lastSummary.totalSeconds,
         rounds: lastSummary.roundsDone,
-        station_count: lastSummary.stationsDone,
+        station_count: lastSummary.stationsDone || new Set(sessionEntries.map((e) => e.station_name)).size,
         plan_day_id: null,
         mesocycle_week: null,
       },

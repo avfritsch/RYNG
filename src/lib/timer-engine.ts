@@ -306,8 +306,9 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
     clearTimer();
     releaseWakeLock();
     const totalSeconds = Math.round((Date.now() - startTime) / 1000);
+    // Include current station (seqIndex) in count — slice(0, seqIndex+1)
     const stationsDone = new Set(
-      sequence.slice(0, seqIndex).filter((e) => e.phase === 'work' || e.phase === 'warmup').map((e) => e.stationIndex),
+      sequence.slice(0, seqIndex + 1).filter((e) => e.phase === 'work' || e.phase === 'warmup').map((e) => e.stationIndex),
     ).size;
     const roundsDone = state.round;
 
