@@ -75,7 +75,7 @@ export function LibraryScreen() {
 
   const { data: exercises, isLoading } = useExerciseLibrary(filters.queryFilters);
 
-  function handleQuickStart(ex: LibraryExercise) {
+  const handleQuickStart = useCallback((ex: LibraryExercise) => {
     const config: TimerConfig = {
       stations: [{
         name: ex.name,
@@ -89,8 +89,8 @@ export function LibraryScreen() {
       roundPause: 90,
     };
     setPendingConfig(config);
-    navigate('/');
-  }
+    navigate('/plans/quick');
+  }, [setPendingConfig, navigate]);
 
   const handleSelect = useCallback((ex: LibraryExercise) => {
     setSelected((prev) => prev?.id === ex.id ? null : ex);
@@ -110,27 +110,28 @@ export function LibraryScreen() {
     setSelected(null);
   }, []);
 
-  function handleAddToPlan(ex: LibraryExercise) {
+  const handleAddToPlan = useCallback((ex: LibraryExercise) => {
     setAddToPlanExercise(ex);
     setSelected(null);
-  }
+  }, []);
 
-  let filteredExercises = exercises;
-  if (filters.showFavoritesOnly && favorites) {
-    filteredExercises = filteredExercises?.filter((ex) => favorites.has(ex.id));
-  }
-  if (filters.showOwnOnly) {
-    filteredExercises = filteredExercises?.filter((ex) => ex.created_by !== null);
-  }
-
-  // Sort
-  if (filteredExercises) {
-    filteredExercises = [...filteredExercises].sort((a, b) => {
-      if (filters.sortBy === 'name') return a.name.localeCompare(b.name, 'de');
-      if (filters.sortBy === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name, 'de');
-      return (b.usage_count ?? 0) - (a.usage_count ?? 0); // popular (default)
-    });
-  }
+  const filteredExercises = useMemo(() => {
+    let result = exercises;
+    if (filters.showFavoritesOnly && favorites) {
+      result = result?.filter((ex) => favorites.has(ex.id));
+    }
+    if (filters.showOwnOnly) {
+      result = result?.filter((ex) => ex.created_by !== null);
+    }
+    if (result) {
+      result = [...result].sort((a, b) => {
+        if (filters.sortBy === 'name') return a.name.localeCompare(b.name, 'de');
+        if (filters.sortBy === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name, 'de');
+        return (b.usage_count ?? 0) - (a.usage_count ?? 0); // popular (default)
+      });
+    }
+    return result;
+  }, [exercises, favorites, filters.showFavoritesOnly, filters.showOwnOnly, filters.sortBy]);
 
   // Category grouping
   const shouldGroup = useMemo(() => {

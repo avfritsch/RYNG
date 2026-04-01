@@ -36,7 +36,6 @@ export function DoneScreen() {
 
     const sessionPayload = {
       session: {
-        user_id: '',
         started_at: startedAt,
         finished_at: now,
         duration_sec: lastSummary.totalSeconds,

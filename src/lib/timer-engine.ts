@@ -240,6 +240,7 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
   }
 
   function start() {
+    if (state.isRunning) return;
     if (sequence.length === 0) return;
     seqIndex = 0;
     startTime = Date.now();
@@ -255,12 +256,14 @@ export function createTimerEngine(config: TimerConfig): TimerEngine {
     if (!state.isRunning || state.isPaused) return;
     state.isPaused = true;
     clearTimer();
+    releaseWakeLock();
     emit();
   }
 
   function resume() {
     if (!state.isRunning || !state.isPaused) return;
     state.isPaused = false;
+    requestWakeLock();
     intervalId = setInterval(tick, 1000);
     emit();
   }

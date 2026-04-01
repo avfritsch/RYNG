@@ -130,6 +130,7 @@ export function useCopyPlan() {
 
       // Copy days
       const { data: days } = await supabase.from('plan_days').select('*').eq('plan_id', planId).order('sort_order');
+      const allExercises: Record<string, unknown>[] = [];
       for (const day of (days ?? [])) {
         const { data: newDay } = await supabase.from('plan_days').insert({
           plan_id: newPlan.id,
@@ -144,7 +145,7 @@ export function useCopyPlan() {
         if (newDay) {
           const { data: exercises } = await supabase.from('plan_exercises').select('*').eq('day_id', day.id).order('sort_order');
           for (const ex of (exercises ?? [])) {
-            await supabase.from('plan_exercises').insert({
+            allExercises.push({
               day_id: newDay.id,
               name: ex.name,
               speech_name: ex.speech_name,
@@ -161,6 +162,10 @@ export function useCopyPlan() {
             });
           }
         }
+      }
+      if (allExercises.length > 0) {
+        const { error: exError } = await supabase.from('plan_exercises').insert(allExercises);
+        if (exError) throw exError;
       }
 
       // Increment copy count

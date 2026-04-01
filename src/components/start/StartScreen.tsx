@@ -35,19 +35,20 @@ export function StartScreen() {
   if (gymActive) return null;
 
   async function handleStartDay(dayId: string) {
-    const { data: exercises } = await supabase
-      .from('plan_exercises')
-      .select('*')
-      .eq('day_id', dayId)
-      .order('sort_order');
+    const [{ data: exercises }, { data: day }] = await Promise.all([
+      supabase
+        .from('plan_exercises')
+        .select('*')
+        .eq('day_id', dayId)
+        .order('sort_order'),
+      supabase
+        .from('plan_days')
+        .select('*')
+        .eq('id', dayId)
+        .single(),
+    ]);
 
     if (!exercises || exercises.length === 0) return;
-
-    const { data: day } = await supabase
-      .from('plan_days')
-      .select('*')
-      .eq('id', dayId)
-      .single();
 
     const stations: StationConfig[] = exercises.map((e: PlanExercise) => ({
       name: e.name,
@@ -73,18 +74,19 @@ export function StartScreen() {
   }
 
   async function handleRepeatSession(sessionId: string) {
-    const { data: entries } = await supabase
-      .from('session_entries')
-      .select('*')
-      .eq('session_id', sessionId)
-      .order('round_number')
-      .order('station_index');
-
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('id', sessionId)
-      .single();
+    const [{ data: entries }, { data: session }] = await Promise.all([
+      supabase
+        .from('session_entries')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('round_number')
+        .order('station_index'),
+      supabase
+        .from('sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single(),
+    ]);
 
     if (!entries || entries.length === 0 || !session) return;
 

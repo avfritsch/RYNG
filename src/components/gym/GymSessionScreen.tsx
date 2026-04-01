@@ -1,9 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useGymStore } from '../../stores/gym-store.ts';
 import { useLastWeights } from '../../hooks/useLastWeights.ts';
 import { useSaveSession } from '../../hooks/useSessions.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
 import { beep, beepDone } from '../../lib/timer-engine.ts';
+import { toast } from '../../stores/toast-store.ts';
 import { speakDone } from '../../lib/speech.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
@@ -35,8 +36,11 @@ export function GymSessionScreen() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
-  // Last weights lookup
-  const exerciseNames = exercises.filter((e) => e.trackWeight).map((e) => e.name);
+  // Last weights lookup — memoize so the array reference is stable for useLastWeights
+  const exerciseNames = useMemo(
+    () => exercises.filter((e) => e.trackWeight).map((e) => e.name),
+    [exercises],
+  );
   const { data: lastWeights } = useLastWeights(exerciseNames);
 
   // Rest timer interval
@@ -99,7 +103,6 @@ export function GymSessionScreen() {
 
     saveSession.mutate({
       session: {
-        user_id: '',
         started_at: new Date(startedAt).toISOString(),
         finished_at: now,
         duration_sec: totalSeconds,
@@ -109,13 +112,18 @@ export function GymSessionScreen() {
         mesocycle_week: null,
       },
       entries,
+    }, {
+      onSuccess: () => {
+        beepDone();
+        speakDone();
+        setShowConfetti(true);
+        setIsDone(true);
+        finish();
+      },
+      onError: () => {
+        toast.error('Session konnte nicht gespeichert werden.');
+      },
     });
-
-    beepDone();
-    speakDone();
-    setShowConfetti(true);
-    setIsDone(true);
-    finish();
   }
 
   function handleClose() {

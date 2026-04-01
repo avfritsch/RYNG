@@ -78,7 +78,7 @@ export function useSaveSession() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: {
-      session: Omit<Session, 'id' | 'created_at'>;
+      session: Omit<Session, 'id' | 'created_at' | 'user_id'> & { user_id?: string };
       entries: Omit<SessionEntry, 'id' | 'session_id'>[];
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -98,16 +98,23 @@ export function useSaveSession() {
           ...e,
           session_id: sessionData.id,
         }));
-        const { error: entriesError } = await supabase
-          .from('session_entries')
-          .insert(entries);
-        if (entriesError) throw entriesError;
+        try {
+          const { error: entriesError } = await supabase
+            .from('session_entries')
+            .insert(entries);
+          if (entriesError) throw entriesError;
+        } catch (entriesErr) {
+          // Clean up orphaned session before re-throwing
+          try { await supabase.from('sessions').delete().eq('id', sessionData.id); } catch { /* best-effort cleanup */ }
+          throw entriesErr;
+        }
       }
 
       // Increment usage count for all exercises performed (best-effort)
       const exerciseNames = [...new Set(payload.entries.map((e) => e.station_name))];
       if (exerciseNames.length > 0) {
-        supabase.rpc('increment_exercise_usage_by_names', { exercise_names: exerciseNames });
+        supabase.rpc('increment_exercise_usage_by_names', { exercise_names: exerciseNames })
+          .then(null, (e) => console.warn('Usage increment failed:', e));
       }
 
       return sessionData as Session;

@@ -16,6 +16,9 @@ interface ToastStore {
 
 const UNDO_DURATION_MS = 5000;
 
+/** Maps toast id -> setTimeout handle so we can clear on early dismiss */
+const timeoutMap = new Map<string, ReturnType<typeof setTimeout>>();
+
 export const useToastStore = create<ToastStore>((set) => ({
   toasts: [],
 
@@ -24,12 +27,19 @@ export const useToastStore = create<ToastStore>((set) => ({
     set((s) => ({ toasts: [...s.toasts, { id, message, type, onUndo }] }));
 
     const duration = onUndo ? UNDO_DURATION_MS : TOAST_DURATION_MS;
-    setTimeout(() => {
+    const handle = setTimeout(() => {
+      timeoutMap.delete(id);
       set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
     }, duration);
+    timeoutMap.set(id, handle);
   },
 
   dismiss: (id) => {
+    const handle = timeoutMap.get(id);
+    if (handle) {
+      clearTimeout(handle);
+      timeoutMap.delete(id);
+    }
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
   },
 }));

@@ -2,6 +2,15 @@ const STORAGE_KEY = 'ryng_spotify_token';
 const CLIENT_ID_KEY = 'ryng_spotify_client_id';
 const SCOPES = 'user-modify-playback-state user-read-playback-state user-read-currently-playing';
 
+/** Spotify tokens last 3600s; expire 300s early to avoid mid-request failures. */
+const TOKEN_LIFETIME_S = 3600;
+const TOKEN_BUFFER_S = 300;
+
+interface StoredToken {
+  token: string;
+  expiresAt: number; // epoch ms
+}
+
 export function getSpotifyClientId(): string {
   return localStorage.getItem(CLIENT_ID_KEY) ?? '';
 }
@@ -11,11 +20,26 @@ export function setSpotifyClientId(id: string) {
 }
 
 export function getSpotifyToken(): string | null {
-  return localStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed: StoredToken = JSON.parse(raw);
+    if (parsed.token && parsed.expiresAt) {
+      return Date.now() < parsed.expiresAt ? parsed.token : null;
+    }
+  } catch {
+    // Old format (plain string) — treat as expired
+  }
+  return null;
 }
 
 function setSpotifyToken(token: string) {
-  localStorage.setItem(STORAGE_KEY, token);
+  const stored: StoredToken = {
+    token,
+    expiresAt: Date.now() + (TOKEN_LIFETIME_S - TOKEN_BUFFER_S) * 1000,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 }
 
 export function isSpotifyConnected(): boolean {

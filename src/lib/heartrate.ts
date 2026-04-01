@@ -7,6 +7,7 @@ let device: BluetoothDevice | null = null;
 let characteristic: BluetoothRemoteGATTCharacteristic | null = null;
 let listeners: HRCallback[] = [];
 let lastBpm = 0;
+let onDisconnected: (() => void) | null = null;
 
 export function isBluetoothAvailable(): boolean {
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
@@ -70,9 +71,10 @@ export async function connect(): Promise<string> {
   characteristic.addEventListener('characteristicvaluechanged', handleMeasurement);
   await characteristic.startNotifications();
 
-  device.addEventListener('gattserverdisconnected', () => {
+  onDisconnected = () => {
     notify(0);
-  });
+  };
+  device.addEventListener('gattserverdisconnected', onDisconnected);
 
   return device.name ?? 'HR Sensor';
 }
@@ -84,8 +86,14 @@ export async function disconnect() {
       await characteristic.stopNotifications().catch(() => {});
       characteristic = null;
     }
-    if (device?.gatt?.connected) {
-      device.gatt.disconnect();
+    if (device) {
+      if (onDisconnected) {
+        device.removeEventListener('gattserverdisconnected', onDisconnected);
+        onDisconnected = null;
+      }
+      if (device.gatt?.connected) {
+        device.gatt.disconnect();
+      }
     }
     device = null;
     lastBpm = 0;
