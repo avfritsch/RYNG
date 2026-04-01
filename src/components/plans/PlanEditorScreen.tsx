@@ -353,7 +353,7 @@ function ExerciseFields({ ex, onUpdate, onDelete }: {
       </div>
       <div className="plan-editor-ex-row">
         <label>
-          Work <DebouncedInput type="number" value={ex.work_seconds} onCommit={(v) => onUpdate(ex.id, 'work_seconds', Number(v))} />s
+          Dauer <DebouncedInput type="number" value={ex.work_seconds} onCommit={(v) => onUpdate(ex.id, 'work_seconds', Number(v))} />s
         </label>
         <label>
           Pause <DebouncedInput type="number" value={ex.pause_seconds} onCommit={(v) => onUpdate(ex.id, 'pause_seconds', Number(v))} />s
@@ -362,7 +362,7 @@ function ExerciseFields({ ex, onUpdate, onDelete }: {
           className="plan-editor-ex-detail"
           value={ex.muscle_groups?.join(', ') ?? ''}
           onCommit={(v) => onUpdate(ex.id, 'muscle_groups', v ? v.split(',').map(s => s.trim()) : [])}
-          placeholder="Muskel"
+          placeholder="Muskelgruppe"
         />
       </div>
     </div>

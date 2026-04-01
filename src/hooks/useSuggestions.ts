@@ -27,6 +27,7 @@ function useRecentSessions() {
       const { data, error } = await supabase
         .from('sessions')
         .select('*')
+        .gt('station_count', 0)
         .gte('started_at', since.toISOString())
         .order('started_at', { ascending: false })
         .limit(30);
