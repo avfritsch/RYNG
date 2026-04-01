@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useGymStore } from '../../stores/gym-store.ts';
 import { useLastWeights } from '../../hooks/useLastWeights.ts';
 import { useSaveSession } from '../../hooks/useSessions.ts';
@@ -11,7 +11,57 @@ import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
 import { Confetti } from '../ui/Confetti.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { useState } from 'react';
+import type { GymSet } from '../../stores/gym-store.ts';
 import '../../styles/gym-session.css';
+
+interface GymSetRowProps {
+  activeIndex: number;
+  setIdx: number;
+  set: GymSet;
+  trackWeight: boolean;
+  updateSet: (exIdx: number, setIdx: number, patch: Partial<GymSet>) => void;
+  handleDoneSet: (exIdx: number, setIdx: number) => void;
+}
+
+const GymSetRow = memo(function GymSetRow({ activeIndex, setIdx, set: s, trackWeight, updateSet, handleDoneSet }: GymSetRowProps) {
+  return (
+    <div className={`gym-set-row ${s.done ? 'gym-set-row--done' : ''}`}>
+      <span className="gym-sets-col gym-sets-col--num">{setIdx + 1}</span>
+
+      {trackWeight && (
+        <input
+          className="gym-set-input"
+          type="number"
+          inputMode="decimal"
+          step="0.5"
+          value={s.weight_kg ?? ''}
+          placeholder="–"
+          onChange={(e) => updateSet(activeIndex, setIdx, { weight_kg: e.target.value ? Number(e.target.value) : null })}
+          disabled={s.done}
+        />
+      )}
+
+      <input
+        className="gym-set-input"
+        type="number"
+        inputMode="numeric"
+        value={s.reps ?? ''}
+        placeholder="–"
+        onChange={(e) => updateSet(activeIndex, setIdx, { reps: e.target.value ? Number(e.target.value) : null })}
+        disabled={s.done}
+      />
+
+      <button
+        className={`gym-set-done-btn ${s.done ? 'gym-set-done-btn--checked' : ''}`}
+        onClick={() => !s.done && handleDoneSet(activeIndex, setIdx)}
+        disabled={s.done}
+        aria-label={s.done ? 'Erledigt' : 'Satz abschließen'}
+      >
+        <Icon name={s.done ? 'check' : 'check'} size={16} />
+      </button>
+    </div>
+  );
+});
 
 export function GymSessionScreen() {
   const isActive = useGymStore((s) => s.isActive);
@@ -228,41 +278,15 @@ export function GymSessionScreen() {
           </div>
 
           {activeEx.sets.map((s, setIdx) => (
-            <div key={setIdx} className={`gym-set-row ${s.done ? 'gym-set-row--done' : ''}`}>
-              <span className="gym-sets-col gym-sets-col--num">{setIdx + 1}</span>
-
-              {activeEx.trackWeight && (
-                <input
-                  className="gym-set-input"
-                  type="number"
-                  inputMode="decimal"
-                  step="0.5"
-                  value={s.weight_kg ?? ''}
-                  placeholder="–"
-                  onChange={(e) => updateSet(activeIndex, setIdx, { weight_kg: e.target.value ? Number(e.target.value) : null })}
-                  disabled={s.done}
-                />
-              )}
-
-              <input
-                className="gym-set-input"
-                type="number"
-                inputMode="numeric"
-                value={s.reps ?? ''}
-                placeholder="–"
-                onChange={(e) => updateSet(activeIndex, setIdx, { reps: e.target.value ? Number(e.target.value) : null })}
-                disabled={s.done}
-              />
-
-              <button
-                className={`gym-set-done-btn ${s.done ? 'gym-set-done-btn--checked' : ''}`}
-                onClick={() => !s.done && handleDoneSet(activeIndex, setIdx)}
-                disabled={s.done}
-                aria-label={s.done ? 'Erledigt' : 'Satz abschließen'}
-              >
-                <Icon name={s.done ? 'check' : 'check'} size={16} />
-              </button>
-            </div>
+            <GymSetRow
+              key={setIdx}
+              activeIndex={activeIndex}
+              setIdx={setIdx}
+              set={s}
+              trackWeight={activeEx.trackWeight}
+              updateSet={updateSet}
+              handleDoneSet={handleDoneSet}
+            />
           ))}
 
           <button className="gym-add-set" onClick={() => addSet(activeIndex)}>

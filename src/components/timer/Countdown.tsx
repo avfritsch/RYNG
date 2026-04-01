@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import '../../styles/countdown.css';
 
 interface CountdownProps {
@@ -5,7 +6,7 @@ interface CountdownProps {
   phase: string;
 }
 
-export function Countdown({ seconds, phase }: CountdownProps) {
+export const Countdown = memo(function Countdown({ seconds, phase }: CountdownProps) {
   const phaseColor: Record<string, string> = {
     work: '#7FFF00',
     warmup: '#FFE600',
@@ -24,4 +25,4 @@ export function Countdown({ seconds, phase }: CountdownProps) {
       {seconds}
     </div>
   );
-}
+});

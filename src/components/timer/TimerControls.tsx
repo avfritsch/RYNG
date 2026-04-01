@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Icon } from '../ui/Icon.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import '../../styles/timer-controls.css';
@@ -12,7 +12,7 @@ interface TimerControlsProps {
   onStop: () => void;
 }
 
-export function TimerControls({ isPaused, onPause, onResume, onSkipBack, onSkipForward, onStop }: TimerControlsProps) {
+export const TimerControls = memo(function TimerControls({ isPaused, onPause, onResume, onSkipBack, onSkipForward, onStop }: TimerControlsProps) {
   const [showStopConfirm, setShowStopConfirm] = useState(false);
 
   return (
@@ -56,4 +56,4 @@ export function TimerControls({ isPaused, onPause, onResume, onSkipBack, onSkipF
       )}
     </>
   );
-}
+});

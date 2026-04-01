@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
 import '../../styles/howto-panel.css';
 
@@ -6,7 +7,7 @@ interface HowtoPanelProps {
   illustrationKey?: string;
 }
 
-export function HowtoPanel({ text, illustrationKey }: HowtoPanelProps) {
+export const HowtoPanel = memo(function HowtoPanel({ text, illustrationKey }: HowtoPanelProps) {
   if (!text && !illustrationKey) return null;
 
   return (
@@ -15,4 +16,4 @@ export function HowtoPanel({ text, illustrationKey }: HowtoPanelProps) {
       {text}
     </div>
   );
-}
+});
