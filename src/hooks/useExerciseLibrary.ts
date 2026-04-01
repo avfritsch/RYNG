@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
 import { checkRateLimit } from '../lib/rate-limit.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 import type { LibraryExercise, ExerciseCategory } from '../types/exercise-library.ts';
 
 interface LibraryFilters {
@@ -13,7 +14,7 @@ interface LibraryFilters {
 
 export function useExerciseLibrary(filters: LibraryFilters = {}) {
   return useQuery({
-    queryKey: ['exercise_library', filters],
+    queryKey: queryKeys.exerciseLibrary(filters),
     staleTime: 1000 * 60 * 5,
     queryFn: async (): Promise<LibraryExercise[]> => {
       let query = supabase
@@ -69,7 +70,7 @@ export function useCreateLibraryExercise() {
       return data as LibraryExercise;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['exercise_library'] });
+      qc.invalidateQueries({ queryKey: queryKeys.exerciseLibrary() });
       toast.success('Übung erstellt');
     },
   });
@@ -89,7 +90,7 @@ export function useUpdateLibraryExercise() {
       return data as LibraryExercise;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['exercise_library'] });
+      qc.invalidateQueries({ queryKey: queryKeys.exerciseLibrary() });
       toast.success('Übung aktualisiert');
     },
   });
@@ -103,7 +104,7 @@ export function useDeleteLibraryExercise() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['exercise_library'] });
+      qc.invalidateQueries({ queryKey: queryKeys.exerciseLibrary() });
       toast.success('Übung gelöscht');
     },
   });
@@ -146,7 +147,7 @@ export function useCopyToplan() {
       return data;
     },
     onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['plan_exercises', vars.dayId] });
+      qc.invalidateQueries({ queryKey: queryKeys.planExercises(vars.dayId) });
       toast.success(`"${vars.exercise.name}" hinzugefügt`);
     },
   });

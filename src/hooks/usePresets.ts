@@ -2,12 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { withCache } from '../lib/cached-query.ts';
 import { toast } from '../stores/toast-store.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 import type { Preset } from '../types/database.ts';
 import type { TimerConfig } from '../types/timer.ts';
 
 export function usePresets() {
   return useQuery({
-    queryKey: ['presets'],
+    queryKey: queryKeys.presets(),
     queryFn: withCache('presets', 'all', async (): Promise<Preset[]> => {
       const { data, error } = await supabase
         .from('presets')
@@ -52,7 +53,7 @@ export function useSavePreset() {
       return data as Preset;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['presets'] });
+      qc.invalidateQueries({ queryKey: queryKeys.presets() });
       toast.success('Preset gespeichert');
     },
   });
@@ -65,7 +66,7 @@ export function useDeletePreset() {
       const { error } = await supabase.from('presets').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['presets'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.presets() }),
   });
 }
 

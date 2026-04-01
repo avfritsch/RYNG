@@ -13,7 +13,7 @@ export const queryKeys = {
   votes: () => ['votes'] as const,
 
   // ── Exercise library ───────────────────────────────────
-  exerciseLibrary: (filters?: Record<string, unknown>) =>
+  exerciseLibrary: (filters?: Record<string, unknown> | object) =>
     filters ? (['exercise_library', filters] as const) : (['exercise_library'] as const),
 
   // ── Plans ──────────────────────────────────────────────

@@ -2,13 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { withCache } from '../lib/cached-query.ts';
 import { toast } from '../stores/toast-store.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 import type { Plan, PlanDay, PlanExercise } from '../types/plan.ts';
 
 // --- Queries ---
 
 export function usePlans() {
   return useQuery({
-    queryKey: ['plans'],
+    queryKey: queryKeys.plans(),
     queryFn: withCache('plans', 'all', async (): Promise<Plan[]> => {
       const { data, error } = await supabase
         .from('plans')
@@ -23,7 +24,7 @@ export function usePlans() {
 
 export function usePlan(planId: string | undefined) {
   return useQuery({
-    queryKey: ['plan', planId],
+    queryKey: queryKeys.plan(planId!),
     enabled: !!planId && planId !== 'new',
     queryFn: async (): Promise<Plan> => {
       const { data, error } = await supabase
@@ -39,7 +40,7 @@ export function usePlan(planId: string | undefined) {
 
 export function usePlanDays(planId: string | undefined) {
   return useQuery({
-    queryKey: ['plan_days', planId],
+    queryKey: queryKeys.planDays(planId!),
     enabled: !!planId,
     queryFn: withCache('plan_days', planId!, async (): Promise<PlanDay[]> => {
       const { data, error } = await supabase
@@ -55,7 +56,7 @@ export function usePlanDays(planId: string | undefined) {
 
 export function usePlanExercises(dayId: string | undefined) {
   return useQuery({
-    queryKey: ['plan_exercises', dayId],
+    queryKey: queryKeys.planExercises(dayId!),
     enabled: !!dayId,
     queryFn: withCache('plan_exercises', dayId!, async (): Promise<PlanExercise[]> => {
       const { data, error } = await supabase
@@ -86,7 +87,7 @@ export function useCreatePlan() {
       return data as Plan;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['plans'] });
+      qc.invalidateQueries({ queryKey: queryKeys.plans() });
       toast.success('Plan erstellt');
     },
   });
@@ -106,8 +107,8 @@ export function useUpdatePlan() {
       return data as Plan;
     },
     onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['plans'] });
-      qc.invalidateQueries({ queryKey: ['plan', vars.id] });
+      qc.invalidateQueries({ queryKey: queryKeys.plans() });
+      qc.invalidateQueries({ queryKey: queryKeys.plan(vars.id) });
     },
   });
 }
@@ -120,7 +121,7 @@ export function useDeletePlan() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['plans'] });
+      qc.invalidateQueries({ queryKey: queryKeys.plans() });
       toast.success('Plan gelöscht');
     },
   });
@@ -140,7 +141,7 @@ export function useCreatePlanDay() {
       if (error) throw error;
       return data as PlanDay;
     },
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['plan_days', vars.plan_id] }),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: queryKeys.planDays(vars.plan_id) }),
   });
 }
 
@@ -157,7 +158,7 @@ export function useUpdatePlanDay() {
       if (error) throw error;
       return data as PlanDay;
     },
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['plan_days', vars.plan_id] }),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: queryKeys.planDays(vars.plan_id) }),
   });
 }
 
@@ -169,7 +170,7 @@ export function useDeletePlanDay() {
       if (error) throw error;
       return vars;
     },
-    onSuccess: (vars) => qc.invalidateQueries({ queryKey: ['plan_days', vars.plan_id] }),
+    onSuccess: (vars) => qc.invalidateQueries({ queryKey: queryKeys.planDays(vars.plan_id) }),
   });
 }
 
@@ -187,7 +188,7 @@ export function useCreatePlanExercise() {
       if (error) throw error;
       return data as PlanExercise;
     },
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['plan_exercises', vars.day_id] }),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: queryKeys.planExercises(vars.day_id) }),
   });
 }
 
@@ -204,7 +205,7 @@ export function useUpdatePlanExercise() {
       if (error) throw error;
       return data as PlanExercise;
     },
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['plan_exercises', vars.day_id] }),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: queryKeys.planExercises(vars.day_id) }),
   });
 }
 
@@ -216,6 +217,6 @@ export function useDeletePlanExercise() {
       if (error) throw error;
       return vars;
     },
-    onSuccess: (vars) => qc.invalidateQueries({ queryKey: ['plan_exercises', vars.day_id] }),
+    onSuccess: (vars) => qc.invalidateQueries({ queryKey: queryKeys.planExercises(vars.day_id) }),
   });
 }

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 import type { Session } from '../types/session.ts';
 import type { Plan, PlanDay } from '../types/plan.ts';
 
@@ -18,7 +19,7 @@ export interface Suggestion {
 /** Fetch recent sessions (last 30 days) for suggestion engine */
 function useRecentSessions() {
   return useQuery({
-    queryKey: ['recent-sessions'],
+    queryKey: queryKeys.recentSessions(),
     staleTime: 1000 * 60 * 2,
     queryFn: async (): Promise<Session[]> => {
       const since = new Date();
@@ -38,7 +39,7 @@ function useRecentSessions() {
 /** Fetch all user plans with their days */
 function usePlansWithDays() {
   return useQuery({
-    queryKey: ['plans-with-days'],
+    queryKey: queryKeys.plansWithDays(),
     staleTime: 1000 * 60 * 5,
     queryFn: async (): Promise<{ plan: Plan; days: PlanDay[] }[]> => {
       const { data: plans, error: pErr } = await supabase

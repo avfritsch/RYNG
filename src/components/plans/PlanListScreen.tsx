@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../lib/query-keys.ts';
 import { usePlans, useDeletePlan } from '../../hooks/usePlans.ts';
 import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { Icon } from '../ui/Icon.tsx';
@@ -128,8 +129,8 @@ export function PlanListScreen() {
               setShowAiPlanner(false);
               toast.success('Plan gespeichert');
               // Invalidate caches so the new plan is immediately available
-              await qc.invalidateQueries({ queryKey: ['plans'] });
-              await qc.invalidateQueries({ queryKey: ['plan', planId] });
+              await qc.invalidateQueries({ queryKey: queryKeys.plans() });
+              await qc.invalidateQueries({ queryKey: queryKeys.plan(planId) });
               navigate(`/plans/${planId}`);
             } catch (err) {
               toast.error(err instanceof Error ? err.message : 'Fehler beim Speichern');

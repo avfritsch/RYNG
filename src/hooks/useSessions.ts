@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 import type { Session, SessionEntry } from '../types/session.ts';
 
 export type SessionFilter = 'week' | 'month' | 'all';
@@ -22,7 +23,7 @@ function getFilterDate(filter: SessionFilter): string | null {
 
 export function useSessions(filter: SessionFilter = 'all') {
   return useQuery({
-    queryKey: ['sessions', filter],
+    queryKey: queryKeys.sessions(filter),
     queryFn: async (): Promise<Session[]> => {
       let query = supabase
         .from('sessions')
@@ -43,7 +44,7 @@ export function useSessions(filter: SessionFilter = 'all') {
 
 export function useSession(sessionId: string | undefined) {
   return useQuery({
-    queryKey: ['session', sessionId],
+    queryKey: queryKeys.session(sessionId!),
     enabled: !!sessionId,
     queryFn: async (): Promise<Session> => {
       const { data, error } = await supabase
@@ -59,7 +60,7 @@ export function useSession(sessionId: string | undefined) {
 
 export function useSessionEntries(sessionId: string | undefined) {
   return useQuery({
-    queryKey: ['session_entries', sessionId],
+    queryKey: queryKeys.sessionEntries(sessionId!),
     enabled: !!sessionId,
     queryFn: async (): Promise<SessionEntry[]> => {
       const { data, error } = await supabase
@@ -120,7 +121,7 @@ export function useSaveSession() {
       return sessionData as Session;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['sessions'] });
+      qc.invalidateQueries({ queryKey: queryKeys.sessions() });
       toast.success('Session gespeichert');
     },
   });
@@ -136,7 +137,7 @@ export function useDeleteSession() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['sessions'] });
+      qc.invalidateQueries({ queryKey: queryKeys.sessions() });
       toast.success('Session gelöscht');
     },
   });

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 
 export interface LastWeight {
   weight_kg: number;
@@ -8,7 +9,7 @@ export interface LastWeight {
 
 export function useLastWeights(exerciseNames: string[]) {
   return useQuery({
-    queryKey: ['last_weights', ...exerciseNames.sort()],
+    queryKey: queryKeys.lastWeights(exerciseNames),
     enabled: exerciseNames.length > 0,
     staleTime: 1000 * 60 * 5,
     queryFn: async (): Promise<Map<string, LastWeight>> => {

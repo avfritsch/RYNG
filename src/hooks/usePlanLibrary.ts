@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
 import { checkRateLimit } from '../lib/rate-limit.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 import type { Plan } from '../types/plan.ts';
 
 export type PublicPlan = Plan & {
@@ -15,7 +16,7 @@ export type PublicPlan = Plan & {
 
 export function usePublicPlans() {
   return useQuery({
-    queryKey: ['public_plans'],
+    queryKey: queryKeys.publicPlans(),
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
       // Try full query with joins; fall back to plans-only if RLS blocks nested relations
@@ -61,7 +62,7 @@ export function usePublicPlans() {
 
 export function usePlanVotes() {
   return useQuery({
-    queryKey: ['plan_votes'],
+    queryKey: queryKeys.planVotes(),
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<Set<string>> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -90,19 +91,19 @@ export function useTogglePlanVote() {
       }
     },
     onMutate: async ({ planId, hasVoted }) => {
-      await qc.cancelQueries({ queryKey: ['plan_votes'] });
-      const previous = qc.getQueryData<Set<string>>(['plan_votes']);
-      qc.setQueryData<Set<string>>(['plan_votes'], (old) => {
+      await qc.cancelQueries({ queryKey: queryKeys.planVotes() });
+      const previous = qc.getQueryData<Set<string>>(queryKeys.planVotes());
+      qc.setQueryData<Set<string>>(queryKeys.planVotes(), (old) => {
         const next = new Set(old);
         if (hasVoted) next.delete(planId); else next.add(planId);
         return next;
       });
       return { previous };
     },
-    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['plan_votes'], ctx.previous); },
+    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(queryKeys.planVotes(), ctx.previous); },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ['plan_votes'] });
-      qc.invalidateQueries({ queryKey: ['public_plans'] });
+      qc.invalidateQueries({ queryKey: queryKeys.planVotes() });
+      qc.invalidateQueries({ queryKey: queryKeys.publicPlans() });
     },
   });
 }
@@ -174,8 +175,8 @@ export function useCopyPlan() {
       return newPlan;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['plans'] });
-      qc.invalidateQueries({ queryKey: ['public_plans'] });
+      qc.invalidateQueries({ queryKey: queryKeys.plans() });
+      qc.invalidateQueries({ queryKey: queryKeys.publicPlans() });
       toast.success('Plan kopiert');
     },
   });
@@ -189,8 +190,8 @@ export function usePublishPlan() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['plans'] });
-      qc.invalidateQueries({ queryKey: ['public_plans'] });
+      qc.invalidateQueries({ queryKey: queryKeys.plans() });
+      qc.invalidateQueries({ queryKey: queryKeys.publicPlans() });
       toast.success('Plan aktualisiert');
     },
   });

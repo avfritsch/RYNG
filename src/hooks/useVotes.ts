@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { checkRateLimit } from '../lib/rate-limit.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 
 export function useVotes() {
   return useQuery({
-    queryKey: ['votes'],
+    queryKey: queryKeys.votes(),
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<Set<string>> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -38,9 +39,9 @@ export function useToggleVote() {
       return { exerciseId, hasVoted };
     },
     onMutate: async ({ exerciseId, hasVoted }) => {
-      await qc.cancelQueries({ queryKey: ['votes'] });
-      const previous = qc.getQueryData<Set<string>>(['votes']);
-      qc.setQueryData<Set<string>>(['votes'], (old) => {
+      await qc.cancelQueries({ queryKey: queryKeys.votes() });
+      const previous = qc.getQueryData<Set<string>>(queryKeys.votes());
+      qc.setQueryData<Set<string>>(queryKeys.votes(), (old) => {
         const next = new Set(old);
         if (hasVoted) { next.delete(exerciseId); } else { next.add(exerciseId); }
         return next;
@@ -48,11 +49,11 @@ export function useToggleVote() {
       return { previous };
     },
     onError: (_err, _vars, context) => {
-      if (context?.previous) qc.setQueryData(['votes'], context.previous);
+      if (context?.previous) qc.setQueryData(queryKeys.votes(), context.previous);
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ['votes'] });
-      qc.invalidateQueries({ queryKey: ['exercise_library'] });
+      qc.invalidateQueries({ queryKey: queryKeys.votes() });
+      qc.invalidateQueries({ queryKey: queryKeys.exerciseLibrary() });
     },
   });
 }

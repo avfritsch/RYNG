@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
+import { queryKeys } from '../lib/query-keys.ts';
 
 export function useFavorites() {
   return useQuery({
-    queryKey: ['favorites'],
+    queryKey: queryKeys.favorites(),
     staleTime: 1000 * 60 * 10, // 10 min — rarely changes externally
     queryFn: async (): Promise<Set<string>> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -39,10 +40,10 @@ export function useToggleFavorite() {
     },
     // Optimistic update — instant UI feedback
     onMutate: async ({ exerciseId, isFavorite }) => {
-      await qc.cancelQueries({ queryKey: ['favorites'] });
-      const previous = qc.getQueryData<Set<string>>(['favorites']);
+      await qc.cancelQueries({ queryKey: queryKeys.favorites() });
+      const previous = qc.getQueryData<Set<string>>(queryKeys.favorites());
 
-      qc.setQueryData<Set<string>>(['favorites'], (old) => {
+      qc.setQueryData<Set<string>>(queryKeys.favorites(), (old) => {
         const next = new Set(old);
         if (isFavorite) {
           next.delete(exerciseId);
@@ -57,12 +58,12 @@ export function useToggleFavorite() {
     onError: (_err, _vars, context) => {
       // Rollback on error
       if (context?.previous) {
-        qc.setQueryData(['favorites'], context.previous);
+        qc.setQueryData(queryKeys.favorites(), context.previous);
       }
     },
     onSettled: () => {
       // Refetch in background to ensure consistency
-      qc.invalidateQueries({ queryKey: ['favorites'] });
+      qc.invalidateQueries({ queryKey: queryKeys.favorites() });
     },
   });
 }

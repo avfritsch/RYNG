@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase.ts';
+import { queryKeys } from '../../lib/query-keys.ts';
 import { useSessions, type SessionFilter } from '../../hooks/useSessions.ts';
 import { SessionCard } from './SessionCard.tsx';
 import { TrainingCalendar } from './TrainingCalendar.tsx';
@@ -19,7 +20,7 @@ const filters: { value: SessionFilter; label: string }[] = [
 /** Load plan day names for session name display */
 function usePlanDayNames() {
   return useQuery({
-    queryKey: ['plan-day-names'],
+    queryKey: queryKeys.planDayNames(),
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<Map<string, string>> => {
       const { data, error } = await supabase
