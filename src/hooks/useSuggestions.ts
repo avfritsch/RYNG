@@ -164,8 +164,30 @@ export function useSuggestions() {
       description: 'Eigenes Training zusammenstellen',
     });
 
-    // If no sessions and no plans → simplified get-started
+    // If no sessions and no custom plans → show system plan days for newcomers
     if (!lastSession && allDays.length === 0) {
+      const systemPlans = plansWithDays.filter(({ plan }) => plan.is_system === true);
+      if (systemPlans.length > 0) {
+        const newcomerSuggestions: Suggestion[] = systemPlans.slice(0, 3).flatMap(({ plan, days }) => {
+          const firstDay = days[0];
+          if (!firstDay) return [];
+          return [{
+            type: 'next-day' as const,
+            title: `${plan.name} — ${firstDay.label}`,
+            description: 'Starte mit einem fertigen Plan',
+            planId: plan.id,
+            planName: plan.name,
+            dayId: firstDay.id,
+            dayLabel: firstDay.label,
+          }];
+        });
+        newcomerSuggestions.push({
+          type: 'create',
+          title: 'Eigenes Training',
+          description: 'Stelle dein Training selbst zusammen',
+        });
+        return newcomerSuggestions;
+      }
       return [{
         type: 'get-started' as const,
         title: 'Los geht\'s!',

@@ -5,7 +5,9 @@ import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
 import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
 import { usePublicPlans, useCopyPlan } from '../../hooks/usePlanLibrary.ts';
 import { usePlans } from '../../hooks/usePlans.ts';
-import { useNavigationStore } from '../../stores/navigation-store.ts';
+import { useTimerStore } from '../../stores/timer-store.ts';
+import { useSessionStore } from '../../stores/session-store.ts';
+import { unlockAudio } from '../../lib/timer-engine.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
 import type { TimerConfig } from '../../types/timer.ts';
@@ -34,7 +36,9 @@ export function LibraryScreen() {
   const [deleteExercise, setDeleteExercise] = useState<LibraryExercise | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const deleteLibExercise = useDeleteLibraryExercise();
-  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
+  const loadConfig = useTimerStore((s) => s.loadConfig);
+  const startTimer = useTimerStore((s) => s.start);
+  const startSession = useSessionStore((s) => s.start);
   const [addToPlanExercise, setAddToPlanExercise] = useState<LibraryExercise | null>(null);
   const { data: userPlans } = usePlans();
   const { data: publicPlans, isLoading: plansLoading } = usePublicPlans();
@@ -88,9 +92,12 @@ export function LibraryScreen() {
       rounds: 3,
       roundPause: 90,
     };
-    setPendingConfig(config);
-    navigate('/plans/quick');
-  }, [setPendingConfig, navigate]);
+    unlockAudio();
+    loadConfig(config);
+    startSession();
+    startTimer();
+    navigate('/timer');
+  }, [loadConfig, startSession, startTimer, navigate]);
 
   const handleSelect = useCallback((ex: LibraryExercise) => {
     setSelected((prev) => prev?.id === ex.id ? null : ex);
@@ -489,7 +496,7 @@ export function LibraryScreen() {
                   </span>
                   {plan.description && <span className="library-plan-row-desc">{plan.description}</span>}
                 </div>
-                <button className="library-plan-row-copy" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id); }} aria-label="Kopieren">
+                <button className="library-plan-row-copy" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id, { onSuccess: (newPlan) => { navigate(`/plans/${newPlan.id}`); } }); }} aria-label="Kopieren">
                   <Icon name="copy" size={16} />
                 </button>
               </div>

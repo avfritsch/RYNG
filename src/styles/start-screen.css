@@ -38,6 +38,19 @@
   color: var(--bg-base);
 }
 
+.start-mode-label {
+  display: block;
+  font-size: var(--text-base);
+}
+
+.start-mode-sub {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 1px;
+}
+
 /* Gym mode */
 .start-gym {
   margin-bottom: 32px;
@@ -107,8 +120,20 @@
   color: var(--text-secondary);
 }
 
+.start-card-exercises {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 .start-card-action {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.start-card-action-icon {
   width: 44px;
   height: 44px;
   display: flex;
@@ -119,7 +144,26 @@
   color: var(--text-secondary);
 }
 
-.start-card--primary .start-card-action {
+.start-card-adjust {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background var(--duration-normal);
+}
+
+.start-card-adjust:active {
+  background: var(--bg-elevated);
+}
+
+.start-card--primary .start-card-action-icon {
   background: var(--color-work);
   color: var(--bg-base);
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useSuggestions, type Suggestion } from '../../hooks/useSuggestions.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
+import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { useGymStore, type GymExercise } from '../../stores/gym-store.ts';
 import { usePlans, usePlanDays } from '../../hooks/usePlans.ts';
 import { unlockAudio } from '../../lib/timer-engine.ts';
@@ -25,11 +27,34 @@ export function StartScreen() {
   const startSession = useSessionStore((s) => s.start);
   const gymActive = useGymStore((s) => s.isActive);
   const startGym = useGymStore((s) => s.start);
+  const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
 
   // Gym mode: plan/day selection
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const { data: plans } = usePlans();
   const { data: days } = usePlanDays(selectedPlanId ?? undefined);
+
+  // Fetch exercises for all days of the selected plan (for preview)
+  const dayIds = days?.map((d) => d.id) ?? [];
+  const { data: dayExercisesMap } = useQuery({
+    queryKey: ['plan-day-exercises-preview', selectedPlanId, dayIds],
+    enabled: dayIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('plan_exercises')
+        .select('day_id, name, is_warmup')
+        .in('day_id', dayIds)
+        .order('sort_order');
+      if (error) throw error;
+      const map: Record<string, string[]> = {};
+      for (const ex of data) {
+        if (ex.is_warmup) continue;
+        if (!map[ex.day_id]) map[ex.day_id] = [];
+        map[ex.day_id].push(ex.name);
+      }
+      return map;
+    },
+  });
 
   if (timerPhase !== 'idle' && timerPhase !== 'done') return null;
   if (gymActive) return null;
@@ -119,6 +144,49 @@ export function StartScreen() {
     startTimer();
   }
 
+  async function handleAdjustRepeat(sessionId: string) {
+    const [{ data: entries }, { data: session }] = await Promise.all([
+      supabase
+        .from('session_entries')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('round_number')
+        .order('station_index'),
+      supabase
+        .from('sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single(),
+    ]);
+
+    if (!entries || entries.length === 0 || !session) return;
+
+    const seen = new Set<string>();
+    const stations: StationConfig[] = [];
+    for (const e of entries) {
+      const key = `${e.station_index}-${e.station_name}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        stations.push({
+          name: e.station_name,
+          workSeconds: e.work_seconds,
+          pauseSeconds: 30,
+          isWarmup: e.is_warmup,
+          howto: '',
+        });
+      }
+    }
+
+    const config: TimerConfig = {
+      stations,
+      rounds: session.rounds,
+      roundPause: 90,
+    };
+
+    setPendingConfig(config);
+    navigate('/plans/quick');
+  }
+
   async function handleStartGymDay(dayId: string) {
     const { data: exercises } = await supabase
       .from('plan_exercises')
@@ -170,13 +238,15 @@ export function StartScreen() {
           className={`start-mode-btn ${mode === 'circuit' ? 'start-mode-btn--active' : ''}`}
           onClick={() => setMode('circuit')}
         >
-          Zirkel
+          <span className="start-mode-label">Zirkel</span>
+          <span className="start-mode-sub">Zeitbasiert mit Timer</span>
         </button>
         <button
           className={`start-mode-btn ${mode === 'gym' ? 'start-mode-btn--active' : ''}`}
           onClick={() => setMode('gym')}
         >
-          Gym
+          <span className="start-mode-label">Gym</span>
+          <span className="start-mode-sub">Sätze &amp; Gewichte</span>
         </button>
       </div>
 
@@ -198,15 +268,29 @@ export function StartScreen() {
                     <span className="start-card-desc">{s.description}</span>
                   </div>
                   <div className="start-card-action">
-                    {s.type === 'create' || s.type === 'get-started' ? (
-                      <Icon name="plus" size={20} />
-                    ) : s.type === 'random' ? (
-                      <Icon name="refresh" size={20} />
-                    ) : s.type === 'repeat' || s.type === 'repeat-week' ? (
-                      <Icon name="repeat" size={20} />
-                    ) : (
-                      <Icon name="play" size={20} />
+                    {(s.type === 'repeat' || s.type === 'repeat-week') && s.sessionId && (
+                      <button
+                        className="start-card-adjust"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAdjustRepeat(s.sessionId!);
+                        }}
+                        aria-label="Anpassen & Starten"
+                      >
+                        <Icon name="settings" size={16} />
+                      </button>
                     )}
+                    <span className="start-card-action-icon">
+                      {s.type === 'create' || s.type === 'get-started' ? (
+                        <Icon name="plus" size={20} />
+                      ) : s.type === 'random' ? (
+                        <Icon name="refresh" size={20} />
+                      ) : s.type === 'repeat' || s.type === 'repeat-week' ? (
+                        <Icon name="repeat" size={20} />
+                      ) : (
+                        <Icon name="play" size={20} />
+                      )}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -253,9 +337,16 @@ export function StartScreen() {
                   <div className="start-card-content">
                     <span className="start-card-title">{day.label}</span>
                     {day.focus && <span className="start-card-desc">{day.focus}</span>}
+                    {dayExercisesMap?.[day.id] && (
+                      <span className="start-card-exercises">
+                        {dayExercisesMap[day.id].join(' \u00b7 ')}
+                      </span>
+                    )}
                   </div>
                   <div className="start-card-action">
-                    <Icon name="play" size={20} />
+                    <span className="start-card-action-icon">
+                      <Icon name="play" size={20} />
+                    </span>
                   </div>
                 </button>
               ))}
