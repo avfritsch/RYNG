@@ -30,5 +30,14 @@ export async function mockSupabase(page: Page) {
     };
 
     localStorage.setItem(storageKey, JSON.stringify(session));
+
+    // Dismiss all feature hints so they don't overlay buttons
+    const hints = ['mode-toggle', 'mesocycle', 'spotify', 'heartrate', 'quick-start', 'gym-preview', 'weekly-goal'];
+    for (const id of hints) {
+      localStorage.setItem('ryng_hint_seen_' + id, '1');
+    }
+
+    // Set visit count high enough to skip install banner
+    localStorage.setItem('ryng_visits', '10');
   }, SUPABASE_URL);
 }
