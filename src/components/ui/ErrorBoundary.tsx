@@ -19,6 +19,15 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('ErrorBoundary caught:', error, info.componentStack);
+
+    // Dynamic import to avoid loading Sentry eagerly
+    import('@sentry/react').then((Sentry) => {
+      Sentry.captureException(error, {
+        contexts: { react: { componentStack: info.componentStack } },
+      });
+    }).catch(() => {
+      // Sentry not loaded, that's fine
+    });
   }
 
   render() {

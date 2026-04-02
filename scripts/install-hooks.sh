@@ -22,3 +22,11 @@ EOF
 
 chmod +x "$HOOK"
 echo "✅ Pre-push hook installed."
+
+COMMIT_HOOK=".git/hooks/commit-msg"
+cat > "$COMMIT_HOOK" << 'HOOKEOF'
+#!/bin/sh
+npx --no -- commitlint --edit "$1"
+HOOKEOF
+chmod +x "$COMMIT_HOOK"
+echo "✅ Commit-msg hook installed."

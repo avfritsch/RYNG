@@ -1,5 +1,6 @@
 import { openDB } from 'idb';
 import { supabase } from './supabase.ts';
+import { logger } from './logger.ts';
 
 const DB_NAME = 'ryng_offline_queue';
 const STORE_NAME = 'mutations';
@@ -33,7 +34,7 @@ function getDB() {
  */
 export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp' | 'retries'>) {
   if (!ALLOWED_TABLES.includes(mutation.table as typeof ALLOWED_TABLES[number])) {
-    console.error(`Offline queue: invalid table "${mutation.table}"`);
+    logger.error(`Offline queue: invalid table "${mutation.table}"`);
     return;
   }
   try {
@@ -46,7 +47,7 @@ export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp' 
     };
     await db.put(STORE_NAME, entry);
   } catch (e) {
-    console.warn('Offline queue enqueue error:', e);
+    logger.warn('Offline queue enqueue error', { error: String(e) });
   }
 }
 
@@ -71,18 +72,18 @@ export async function flush(): Promise<number> {
         const retries = (mutation.retries ?? 0) + 1;
         if (retries >= MAX_RETRIES) {
           // Permanently failed — discard to avoid blocking the queue
-          console.warn(`Offline queue: discarding mutation after ${MAX_RETRIES} retries:`, mutation.table, mutation.operation, e);
+          logger.warn(`Offline queue: discarding mutation after ${MAX_RETRIES} retries`, { table: mutation.table, operation: mutation.operation, error: String(e) });
           await db.delete(STORE_NAME, mutation.id);
         } else {
           // Increment retry count and continue with next mutation
           await db.put(STORE_NAME, { ...mutation, retries });
-          console.warn(`Offline queue: retry ${retries}/${MAX_RETRIES} for`, mutation.table, mutation.operation);
+          logger.warn(`Offline queue: retry ${retries}/${MAX_RETRIES}`, { table: mutation.table, operation: mutation.operation });
         }
         // Continue processing remaining mutations instead of stopping
       }
     }
   } catch (e) {
-    console.warn('Offline queue flush error:', e);
+    logger.warn('Offline queue flush error', { error: String(e) });
   }
   return flushed;
 }
@@ -127,7 +128,7 @@ export async function pendingCount(): Promise<number> {
     const db = await getDB();
     return await db.count(STORE_NAME);
   } catch (e) {
-    console.warn('Offline queue count error:', e);
+    logger.warn('Offline queue count error', { error: String(e) });
     return 0;
   }
 }

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { handleSpotifyCallback } from './lib/spotify.ts';
 import { getTheme, applyTheme } from './lib/theme.ts';
 import { useInstallStore, type BeforeInstallPromptEvent } from './stores/install-store.ts';
+import { env } from './lib/env.ts';
 import App from './App.tsx';
 import './styles/globals.css';
 import './styles/transitions.css';
@@ -18,12 +19,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // Error monitoring — lazy-loaded to keep Sentry (~77KB) out of the critical path
-const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+const sentryDsn = env.VITE_SENTRY_DSN;
 if (sentryDsn) {
   import('@sentry/react').then((Sentry) => {
     Sentry.init({
       dsn: sentryDsn,
       environment: import.meta.env.MODE,
+      release: env.VITE_APP_VERSION || 'dev',
       tracesSampleRate: 0.2,
       replaysSessionSampleRate: 0,
       replaysOnErrorSampleRate: 1.0,
@@ -42,3 +44,6 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+import { initWebVitals } from './lib/web-vitals.ts';
+initWebVitals();

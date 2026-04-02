@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
 import { queryKeys } from '../lib/query-keys.ts';
+import { logger } from '../lib/logger.ts';
 import type { Session, SessionEntry } from '../types/session.ts';
 
 export type SessionFilter = 'week' | 'month' | 'all';
@@ -116,7 +117,7 @@ export function useSaveSession() {
       const exerciseNames = [...new Set(payload.entries.map((e) => e.station_name))];
       if (exerciseNames.length > 0) {
         supabase.rpc('increment_exercise_usage_by_names', { exercise_names: exerciseNames })
-          .then(null, (e) => console.warn('Usage increment failed:', e));
+          .then(null, (e) => logger.warn('Usage increment failed', { error: String(e) }));
       }
 
       return sessionData as Session;

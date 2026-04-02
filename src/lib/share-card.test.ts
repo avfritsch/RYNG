@@ -88,7 +88,7 @@ describe('share-card: ShareCardData interface', () => {
 
 describe('share-card: generateShareCard', () => {
   it('returns a Blob of type image/png', async () => {
-    const { mockCanvas, mockCtx } = setupCanvasMock();
+    const { mockCanvas } = setupCanvasMock();
 
     const { generateShareCard } = await import('./share-card.ts');
     const blob = await generateShareCard(sampleData);

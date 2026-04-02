@@ -1,6 +1,7 @@
 import { supabase } from './supabase.ts';
+import { env } from './env.ts';
 
-const VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+const VAPID_KEY = env.VITE_VAPID_PUBLIC_KEY;
 
 export async function subscribeToPush(): Promise<boolean> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !VAPID_KEY) {
