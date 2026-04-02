@@ -17,6 +17,7 @@ import { MesocycleEditor } from './MesocycleEditor.tsx';
 import { BadgeGrid } from '../ui/BadgeGrid.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { useBadges } from '../../hooks/useBadges.ts';
+import { FeatureHint } from '../ui/FeatureHint.tsx';
 import '../../styles/profile-screen.css';
 import '../../styles/weekly-goal.css';
 
@@ -72,6 +73,10 @@ export function ProfileScreen() {
     <div className="profile-screen">
       <h2 className="profile-title">Profil</h2>
       <p className="profile-email">{user?.email}</p>
+
+      <FeatureHint hintId="mesocycle">
+        Richte einen Mesozyklus ein für automatische Progression über mehrere Wochen.
+      </FeatureHint>
 
       {showEditor ? (
         <MesocycleEditor onClose={() => setShowEditor(false)} />
@@ -160,6 +165,10 @@ export function ProfileScreen() {
         </div>
       )}
 
+      <FeatureHint hintId="heartrate">
+        Verbinde einen Bluetooth-Brustgurt für Live-Herzfrequenz im Timer.
+      </FeatureHint>
+
       {hr.available && (
         <div className="profile-section">
           <h3 className="profile-section-title">Herzfrequenz</h3>
@@ -179,6 +188,10 @@ export function ProfileScreen() {
           </div>
         </div>
       )}
+
+      <FeatureHint hintId="spotify">
+        Verbinde Spotify — die Musik pausiert automatisch in Trainingspausen.
+      </FeatureHint>
 
       <div className="profile-section">
         <h3 className="profile-section-title">Spotify</h3>

@@ -1,0 +1,30 @@
+.feature-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border-left: 3px solid var(--color-work);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  animation: hint-in 0.3s ease;
+}
+
+.feature-hint-icon { flex-shrink: 0; }
+
+.feature-hint-text { flex: 1; line-height: 1.4; }
+
+.feature-hint-close {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  padding: 2px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+@keyframes hint-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

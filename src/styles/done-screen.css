@@ -83,3 +83,42 @@
   border: 1px solid var(--border-default);
   color: var(--text-primary);
 }
+
+.done-records {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.done-record {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-work);
+  animation: record-pop 0.5s ease;
+}
+
+.done-record-icon {
+  font-size: 1.25rem;
+}
+
+@keyframes record-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.done-streak {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-top: 12px;
+  margin-bottom: 16px;
+}

@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
-import { useSaveSession } from '../../hooks/useSessions.ts';
+import { useSaveSession, useSessions } from '../../hooks/useSessions.ts';
 import { toast } from '../../stores/toast-store.ts';
 import { useNavigate } from 'react-router-dom';
 import { Confetti } from '../ui/Confetti.tsx';
 import { getWeeklyGoal } from '../../lib/weekly-goal.ts';
 import { useWeeklySessionCount } from '../../hooks/useWeeklySessionCount.ts';
 import { useBadges } from '../../hooks/useBadges.ts';
+import { calculateStreak } from '../../lib/streak.ts';
+import { shareWorkoutCard } from '../../lib/share-card.ts';
+import type { ShareCardData } from '../../lib/share-card.ts';
 import '../../styles/done-screen.css';
 import '../../styles/weekly-goal.css';
 import '../../styles/badge-grid.css';
@@ -29,6 +32,42 @@ export function DoneScreen() {
   const weeklyGoal = getWeeklyGoal();
   const weeklySessionCount = useWeeklySessionCount();
   const { newBadges, markAllSeen } = useBadges();
+  const { data: allSessions } = useSessions('all');
+
+  // Detect personal records by comparing current session against history
+  const records = useMemo(() => {
+    if (!lastSummary || !allSessions || !saveSession.isSuccess) return [];
+    // Exclude the just-saved session (it's already in allSessions after invalidation)
+    // Compare against previous sessions only
+    const previous = allSessions.slice(1); // allSessions is sorted desc, [0] is the latest
+    if (previous.length === 0) return [];
+
+    const result: string[] = [];
+
+    const prevMaxDuration = Math.max(...previous.map((s) => s.duration_sec));
+    if (lastSummary.totalSeconds > prevMaxDuration) {
+      result.push('Neuer Rekord: Längste Session!');
+    }
+
+    const prevMaxStations = Math.max(...previous.map((s) => s.station_count));
+    const currentStations = lastSummary.stationsDone;
+    if (currentStations > prevMaxStations) {
+      result.push('Neuer Rekord: Meiste Übungen!');
+    }
+
+    const prevMaxRounds = Math.max(...previous.map((s) => s.rounds));
+    if (lastSummary.roundsDone > prevMaxRounds) {
+      result.push('Neuer Rekord: Meiste Runden!');
+    }
+
+    return result;
+  }, [lastSummary, allSessions, saveSession.isSuccess]);
+
+  // Calculate current streak
+  const streak = useMemo(() => {
+    if (!allSessions || !saveSession.isSuccess) return 0;
+    return calculateStreak(allSessions);
+  }, [allSessions, saveSession.isSuccess]);
 
   // Mark new badges as seen after displaying them
   useEffect(() => {
@@ -102,6 +141,26 @@ export function DoneScreen() {
     navigate('/history');
   }
 
+  function handleShare() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('de-DE', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const cardData: ShareCardData = {
+      title: 'Training abgeschlossen!',
+      duration: formatDuration(lastSummary!.totalSeconds),
+      exercises: lastSummary!.stationsDone,
+      rounds: lastSummary!.roundsDone,
+      streak: streak > 1 ? streak : undefined,
+      date: dateStr,
+    };
+    shareWorkoutCard(cardData).catch(() => {
+      toast.error('Teilen fehlgeschlagen');
+    });
+  }
+
   return (
     <div className="done-screen">
       <Confetti active={showConfetti} />
@@ -149,6 +208,23 @@ export function DoneScreen() {
           </div>
         )}
 
+        {records.length > 0 && (
+          <div className="done-records">
+            {records.map((r) => (
+              <div key={r} className="done-record">
+                <span className="done-record-icon">🏅</span>
+                <span className="done-record-text">{r}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {saveSession.isSuccess && streak > 0 && (
+          <p className="done-streak">
+            {streak === 1 ? 'Streak gestartet! 🔥' : `Streak: 🔥 ${streak} Tage`}
+          </p>
+        )}
+
         {saveSession.isError && (
           <p style={{ color: 'var(--color-rest)', fontSize: 'var(--text-sm)', marginBottom: 16 }}>
             Session konnte nicht gespeichert werden.
@@ -161,6 +237,9 @@ export function DoneScreen() {
           </button>
           <button className="done-btn done-btn--secondary" onClick={handleHistory}>
             VERLAUF
+          </button>
+          <button className="done-btn done-btn--secondary" onClick={handleShare}>
+            📤 TEILEN
           </button>
         </div>
       </div>

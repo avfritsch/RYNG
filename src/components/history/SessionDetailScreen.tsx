@@ -5,6 +5,9 @@ import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
 import { unlockAudio } from '../../lib/timer-engine.ts';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
+import { shareWorkoutCard } from '../../lib/share-card.ts';
+import type { ShareCardData } from '../../lib/share-card.ts';
+import { toast } from '../../stores/toast-store.ts';
 import type { TimerConfig, StationConfig } from '../../types/timer.ts';
 import '../../styles/session-detail.css';
 
@@ -77,6 +80,19 @@ export function SessionDetailScreen() {
     startTimer();
   }
 
+  function handleShare() {
+    const cardData: ShareCardData = {
+      title: 'Training abgeschlossen!',
+      duration: durationStr,
+      exercises: session!.station_count,
+      rounds: session!.rounds,
+      date: dateStr,
+    };
+    shareWorkoutCard(cardData).catch(() => {
+      toast.error('Teilen fehlgeschlagen');
+    });
+  }
+
   // Group entries by round
   const rounds = new Map<number, typeof entries>();
   for (const e of entries ?? []) {
@@ -142,6 +158,9 @@ export function SessionDetailScreen() {
       <div className="session-detail-actions">
         <button className="session-repeat-btn" onClick={handleRepeat}>
           WIEDERHOLEN
+        </button>
+        <button className="session-share-btn" onClick={handleShare}>
+          📤 TEILEN
         </button>
         <button className="session-delete-btn" onClick={() => setShowDeleteConfirm(true)}>
           LÖSCHEN

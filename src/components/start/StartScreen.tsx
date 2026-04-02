@@ -14,6 +14,7 @@ import type { TimerConfig, StationConfig } from '../../types/timer.ts';
 import type { PlanExercise } from '../../types/plan.ts';
 import { supabase } from '../../lib/supabase.ts';
 import { WeeklyGoalRing } from '../ui/WeeklyGoalRing.tsx';
+import { FeatureHint } from '../ui/FeatureHint.tsx';
 import { useWeeklySessionCount } from '../../hooks/useWeeklySessionCount.ts';
 import '../../styles/start-screen.css';
 
@@ -255,6 +256,10 @@ export function StartScreen() {
           <span className="start-mode-sub">Sätze &amp; Gewichte</span>
         </button>
       </div>
+
+      <FeatureHint hintId="mode-toggle">
+        Zirkel = zeitbasiertes Intervalltraining. Gym = freies Training mit Sätzen und Gewichten.
+      </FeatureHint>
 
       {/* Circuit mode */}
       {mode === 'circuit' && (
