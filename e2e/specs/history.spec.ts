@@ -10,14 +10,14 @@ test.beforeEach(async ({ page }) => {
 test('history screen shows session list', async ({ page }) => {
   await page.goto('/history');
   // Verify the history title
-  await expect(page.getByText('Verlauf')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Verlauf' })).toBeVisible({ timeout: 10000 });
   // Verify session card is visible (shows duration "Dauer")
   await expect(page.getByText('Dauer').first()).toBeVisible();
 });
 
 test('history shows stats panel', async ({ page }) => {
   await page.goto('/history');
-  await expect(page.getByText('Verlauf')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Verlauf' })).toBeVisible({ timeout: 10000 });
   // StatsPanel and TrainingCalendar are rendered
   await expect(page.locator('.stats-panel')).toBeVisible();
 });
