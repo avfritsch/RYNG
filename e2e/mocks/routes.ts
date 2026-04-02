@@ -158,10 +158,15 @@ export async function setupRoutes(page: Page) {
 
     // Catch-all for mutations
     if (method === 'POST') {
+      const prefer = route.request().headers()['prefer'] ?? '';
+      // When .select().single() is used, return a single object instead of an array
+      const isSingle = prefer.includes('return=representation');
       return route.fulfill({
         status: 201,
         contentType: 'application/json',
-        body: JSON.stringify([{ id: 'new-id' }]),
+        body: isSingle
+          ? JSON.stringify({ id: 'new-id' })
+          : JSON.stringify([{ id: 'new-id' }]),
       });
     }
     if (method === 'PATCH') {
