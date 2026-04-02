@@ -90,6 +90,10 @@
   margin-bottom: 32px;
 }
 
+.start-card-wrapper {
+  position: relative;
+}
+
 .start-card {
   display: flex;
   align-items: center;
@@ -145,6 +149,10 @@
 }
 
 .start-card-adjust {
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 32px;
   height: 32px;
   display: flex;
@@ -154,7 +162,6 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   color: var(--text-secondary);
-  margin-right: 8px;
   cursor: pointer;
   transition: background var(--duration-normal);
 }

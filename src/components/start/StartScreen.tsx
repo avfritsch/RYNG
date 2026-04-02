@@ -269,41 +269,39 @@ export function StartScreen() {
           ) : (
             <div className="start-suggestions">
               {suggestions.map((s, i) => (
-                <button
-                  key={`${s.type}-${i}`}
-                  className={`start-card card card--interactive ${i === 0 ? 'start-card--primary' : ''}`}
-                  onClick={() => handleSuggestionAction(s)}
-                >
-                  <div className="start-card-content">
-                    <span className="start-card-title">{s.title}</span>
-                    <span className="start-card-desc">{s.description}</span>
-                  </div>
-                  <div className="start-card-action">
-                    {(s.type === 'repeat' || s.type === 'repeat-week') && s.sessionId && (
-                      <button
-                        className="start-card-adjust"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAdjustRepeat(s.sessionId!);
-                        }}
-                        aria-label="Anpassen & Starten"
-                      >
-                        <Icon name="settings" size={16} />
-                      </button>
-                    )}
-                    <span className="start-card-action-icon">
-                      {s.type === 'create' || s.type === 'get-started' ? (
-                        <Icon name="plus" size={20} />
-                      ) : s.type === 'random' ? (
-                        <Icon name="refresh" size={20} />
-                      ) : s.type === 'repeat' || s.type === 'repeat-week' ? (
-                        <Icon name="repeat" size={20} />
-                      ) : (
-                        <Icon name="play" size={20} />
-                      )}
-                    </span>
-                  </div>
-                </button>
+                <div key={`${s.type}-${i}`} className={`start-card-wrapper ${i === 0 ? 'start-card--primary' : ''}`}>
+                  <button
+                    className={`start-card card card--interactive ${i === 0 ? 'start-card--primary' : ''}`}
+                    onClick={() => handleSuggestionAction(s)}
+                  >
+                    <div className="start-card-content">
+                      <span className="start-card-title">{s.title}</span>
+                      <span className="start-card-desc">{s.description}</span>
+                    </div>
+                    <div className="start-card-action">
+                      <span className="start-card-action-icon">
+                        {s.type === 'create' || s.type === 'get-started' ? (
+                          <Icon name="plus" size={20} />
+                        ) : s.type === 'random' ? (
+                          <Icon name="refresh" size={20} />
+                        ) : s.type === 'repeat' || s.type === 'repeat-week' ? (
+                          <Icon name="repeat" size={20} />
+                        ) : (
+                          <Icon name="play" size={20} />
+                        )}
+                      </span>
+                    </div>
+                  </button>
+                  {(s.type === 'repeat' || s.type === 'repeat-week') && s.sessionId && (
+                    <button
+                      className="start-card-adjust"
+                      onClick={() => handleAdjustRepeat(s.sessionId!)}
+                      aria-label="Anpassen & Starten"
+                    >
+                      <Icon name="settings" size={16} />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}

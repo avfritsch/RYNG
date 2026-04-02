@@ -60,6 +60,7 @@ export function PlanListScreen() {
                 <button
                   className="plan-card-delete"
                   onClick={() => setPlanToDelete(plan.id)}
+                  aria-label={`${plan.name} löschen`}
                 >
                   <Icon name="trash" size={14} />
                 </button>
