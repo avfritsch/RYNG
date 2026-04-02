@@ -5,7 +5,12 @@ import { useSaveSession } from '../../hooks/useSessions.ts';
 import { toast } from '../../stores/toast-store.ts';
 import { useNavigate } from 'react-router-dom';
 import { Confetti } from '../ui/Confetti.tsx';
+import { getWeeklyGoal } from '../../lib/weekly-goal.ts';
+import { useWeeklySessionCount } from '../../hooks/useWeeklySessionCount.ts';
+import { useBadges } from '../../hooks/useBadges.ts';
 import '../../styles/done-screen.css';
+import '../../styles/weekly-goal.css';
+import '../../styles/badge-grid.css';
 
 const MIN_DURATION_SEC = 60;
 
@@ -21,6 +26,17 @@ export function DoneScreen() {
   const navigate = useNavigate();
   const skippedRef = useRef(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const weeklyGoal = getWeeklyGoal();
+  const weeklySessionCount = useWeeklySessionCount();
+  const { newBadges, markAllSeen } = useBadges();
+
+  // Mark new badges as seen after displaying them
+  useEffect(() => {
+    if (saveSession.isSuccess && newBadges.length > 0) {
+      const timer = setTimeout(() => markAllSeen(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveSession.isSuccess, newBadges.length, markAllSeen]);
 
   // Auto-save session when done (skip if < 60s)
   useEffect(() => {
@@ -106,6 +122,32 @@ export function DoneScreen() {
             <span className="done-stat-label">Dauer</span>
           </div>
         </div>
+
+        {weeklyGoal !== null && (
+          weeklySessionCount >= weeklyGoal ? (
+            <p className="done-weekly-goal done-weekly-goal--reached">
+              Wochenziel erreicht! 🎉
+            </p>
+          ) : (
+            <p className="done-weekly-goal">
+              Wochenziel: {weeklySessionCount}/{weeklyGoal} Trainings
+            </p>
+          )
+        )}
+
+        {saveSession.isSuccess && newBadges.length > 0 && (
+          <div className="done-new-badges">
+            {newBadges.map((badge) => (
+              <div key={badge.id} className="done-new-badge">
+                <span className="done-new-badge-icon">{badge.icon}</span>
+                <div className="done-new-badge-text">
+                  <span className="done-new-badge-label">Neuer Erfolg!</span>
+                  <span className="done-new-badge-name">{badge.name}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {saveSession.isError && (
           <p style={{ color: 'var(--color-rest)', fontSize: 'var(--text-sm)', marginBottom: 16 }}>

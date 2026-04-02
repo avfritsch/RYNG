@@ -1,0 +1,127 @@
+/* ── Weekly Goal Ring ─────────────────────────────────── */
+
+.weekly-goal-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.weekly-goal-ring svg {
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
+}
+
+.weekly-goal-ring__track {
+  fill: none;
+  stroke: var(--bg-elevated);
+  stroke-width: 5;
+}
+
+.weekly-goal-ring__progress {
+  fill: none;
+  stroke: var(--color-work);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
+}
+
+.weekly-goal-ring__progress--done {
+  stroke: #22c55e;
+}
+
+.weekly-goal-ring__text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--text-primary);
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+
+.weekly-goal-ring__checkmark {
+  font-size: 16px;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+
+/* ── Weekly Goal Stepper (ProfileScreen) ─────────────── */
+
+.weekly-goal-section {
+  margin-bottom: 24px;
+}
+
+.weekly-goal-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.weekly-goal-stepper__label {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.weekly-goal-stepper__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weekly-goal-stepper__btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--duration-normal), color var(--duration-normal);
+}
+
+.weekly-goal-stepper__btn:active:not(:disabled) {
+  border-color: var(--color-work);
+  color: var(--color-work);
+}
+
+.weekly-goal-stepper__btn:disabled {
+  opacity: 0.35;
+}
+
+.weekly-goal-stepper__value {
+  min-width: 32px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.weekly-goal-hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ── Done Screen goal progress ───────────────────────── */
+
+.done-weekly-goal {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.done-weekly-goal--reached {
+  color: #22c55e;
+  font-weight: 700;
+  font-size: var(--text-lg);
+}

@@ -10,6 +10,7 @@ import { BottomNav } from './components/ui/BottomNav.tsx';
 import { StartScreen } from './components/start/StartScreen.tsx';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx';
 import { ToastContainer } from './components/ui/ToastContainer.tsx';
+import { InstallBanner } from './components/ui/InstallBanner.tsx';
 
 // Lazy-loaded overlay screens (only loaded when training is active)
 const TimerScreen = lazy(() => import('./components/timer/TimerScreen.tsx').then(m => ({ default: m.TimerScreen })));
@@ -97,6 +98,7 @@ function AppContent() {
           Offline — Daten werden lokal gespeichert
         </div>
       )}
+      <InstallBanner />
       <main style={{ flex: 1, overflow: 'auto' }}>
         <Suspense fallback={<LazyFallback />}>
           <Routes>

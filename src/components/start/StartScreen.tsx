@@ -13,6 +13,8 @@ import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import type { TimerConfig, StationConfig } from '../../types/timer.ts';
 import type { PlanExercise } from '../../types/plan.ts';
 import { supabase } from '../../lib/supabase.ts';
+import { WeeklyGoalRing } from '../ui/WeeklyGoalRing.tsx';
+import { useWeeklySessionCount } from '../../hooks/useWeeklySessionCount.ts';
 import '../../styles/start-screen.css';
 
 type StartMode = 'circuit' | 'gym';
@@ -28,6 +30,7 @@ export function StartScreen() {
   const gymActive = useGymStore((s) => s.isActive);
   const startGym = useGymStore((s) => s.start);
   const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
+  const weeklySessionCount = useWeeklySessionCount();
 
   // Gym mode: plan/day selection
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -230,7 +233,10 @@ export function StartScreen() {
 
   return (
     <div className="start-screen">
-      <h2 className="start-title">Bereit?</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 className="start-title" style={{ marginBottom: 0 }}>Bereit?</h2>
+        <WeeklyGoalRing weekCount={weeklySessionCount} />
+      </div>
 
       {/* Mode toggle */}
       <div className="start-mode-toggle">

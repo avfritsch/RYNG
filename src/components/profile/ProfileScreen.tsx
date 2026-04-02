@@ -8,22 +8,31 @@ import {
   isSpotifyConnected, startSpotifyAuth, disconnectSpotify,
 } from '../../lib/spotify.ts';
 import { getTheme, setTheme, type Theme } from '../../lib/theme.ts';
+import { getWeeklyGoal, setWeeklyGoal } from '../../lib/weekly-goal.ts';
 import { toast } from '../../stores/toast-store.ts';
+import { useInstallStore } from '../../stores/install-store.ts';
 import { useAuth } from '../../hooks/useAuth.ts';
 import { MesocycleWidget } from './MesocycleWidget.tsx';
 import { MesocycleEditor } from './MesocycleEditor.tsx';
+import { BadgeGrid } from '../ui/BadgeGrid.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
+import { useBadges } from '../../hooks/useBadges.ts';
 import '../../styles/profile-screen.css';
+import '../../styles/weekly-goal.css';
 
 export function ProfileScreen() {
   const { user } = useAuth();
+  const canInstall = useInstallStore((s) => s.canInstall);
+  const installApp = useInstallStore((s) => s.install);
   const [showEditor, setShowEditor] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<Theme>(getTheme());
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const hr = useHeartRate();
+  const badges = useBadges();
   const [spotifyId, setSpotifyId] = useState(getSpotifyClientId());
   const [spotifyConnected, setSpotifyConnected] = useState(isSpotifyConnected());
+  const [weeklyGoal, setWeeklyGoalState] = useState<number | null>(getWeeklyGoal());
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [message, setMessage] = useState('');
@@ -69,6 +78,52 @@ export function ProfileScreen() {
       ) : (
         <MesocycleWidget onEdit={() => setShowEditor(true)} />
       )}
+
+      <div className="profile-section">
+        <h3 className="profile-section-title">Erfolge</h3>
+        {badges.isLoading ? (
+          <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>Laden...</p>
+        ) : (
+          <BadgeGrid earned={badges.earned} nextBadge={badges.nextBadge} stats={badges.stats} />
+        )}
+      </div>
+
+      <div className="profile-section weekly-goal-section">
+        <h3 className="profile-section-title">Wochenziel</h3>
+        <div className="weekly-goal-stepper">
+          <span className="weekly-goal-stepper__label">Trainings pro Woche</span>
+          <div className="weekly-goal-stepper__controls">
+            <button
+              className="weekly-goal-stepper__btn"
+              disabled={weeklyGoal === null}
+              onClick={() => {
+                const next = weeklyGoal === 1 ? null : (weeklyGoal ?? 1) - 1;
+                setWeeklyGoalState(next);
+                setWeeklyGoal(next);
+              }}
+            >
+              −
+            </button>
+            <span className="weekly-goal-stepper__value">
+              {weeklyGoal === null ? 'Aus' : weeklyGoal}
+            </span>
+            <button
+              className="weekly-goal-stepper__btn"
+              disabled={weeklyGoal === 7}
+              onClick={() => {
+                const next = weeklyGoal === null ? 1 : Math.min(weeklyGoal + 1, 7);
+                setWeeklyGoalState(next);
+                setWeeklyGoal(next);
+              }}
+            >
+              +
+            </button>
+          </div>
+        </div>
+        {weeklyGoal === null && (
+          <p className="weekly-goal-hint">Setze ein Wochenziel für mehr Motivation</p>
+        )}
+      </div>
 
       <div className="profile-section">
         <h3 className="profile-section-title">Darstellung</h3>
@@ -195,6 +250,19 @@ export function ProfileScreen() {
           <p className="profile-message">{message}</p>
         )}
       </div>
+
+      {canInstall && (
+        <div className="profile-section">
+          <h3 className="profile-section-title">App</h3>
+          <button
+            className="profile-backup-btn"
+            style={{ width: '100%' }}
+            onClick={installApp}
+          >
+            App installieren
+          </button>
+        </div>
+      )}
 
       <button className="profile-signout" onClick={() => signOut()}>
         Abmelden

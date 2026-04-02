@@ -1,0 +1,125 @@
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.badge-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 4px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  text-align: center;
+  transition: border-color var(--duration-normal);
+}
+
+.badge-cell--earned {
+  opacity: 1;
+}
+
+.badge-cell--locked {
+  opacity: 0.35;
+}
+
+.badge-cell--next {
+  border-color: var(--color-work);
+  opacity: 0.7;
+}
+
+.badge-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.badge-icon--locked {
+  filter: grayscale(1);
+}
+
+.badge-name {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.badge-cell--locked .badge-name {
+  color: var(--text-secondary);
+}
+
+.badge-progress {
+  width: 100%;
+  height: 3px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.badge-progress-fill {
+  height: 100%;
+  background: var(--color-work);
+  border-radius: 2px;
+  transition: width var(--duration-normal);
+}
+
+/* New badge celebration on DoneScreen */
+.done-new-badges {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.done-new-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--color-work);
+  border-radius: var(--radius-lg);
+  animation: badge-pop 0.5s ease-out;
+}
+
+.done-new-badge-icon {
+  font-size: 1.5rem;
+}
+
+.done-new-badge-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.done-new-badge-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-work);
+  font-weight: 700;
+}
+
+.done-new-badge-name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@keyframes badge-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
