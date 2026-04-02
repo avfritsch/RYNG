@@ -44,3 +44,39 @@ self.addEventListener('install', (event) => {
     caches.open('offline-fallback').then((cache) => cache.add('/offline.html')),
   );
 });
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  const data = event.data.json();
+  const { title, body, icon, url } = data;
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: icon || '/ryng-r-192.png',
+      badge: '/ryng-r-48.png',
+      data: { url: url || '/' },
+    }),
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then((clients) => {
+      // Focus existing window if open
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open new window
+      return self.clients.openWindow(url);
+    }),
+  );
+});

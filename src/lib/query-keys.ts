@@ -42,6 +42,9 @@ export const queryKeys = {
   // ── Mesocycle ──────────────────────────────────────────
   mesocycle: () => ['mesocycle'] as const,
 
+  // ── Notifications ──────────────────────────────────────
+  notificationPrefs: () => ['notification_prefs'] as const,
+
   // ── Presets ────────────────────────────────────────────
   presets: () => ['presets'] as const,
 } as const;

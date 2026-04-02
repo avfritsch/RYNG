@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { signOut, deleteAccount } from '../../lib/auth.ts';
 import { exportBackup, downloadBackup, importBackup } from '../../lib/backup.ts';
 import { isSpeechAvailable, isSpeechEnabled, setSpeechEnabled } from '../../lib/speech.ts';
@@ -18,6 +18,8 @@ import { BadgeGrid } from '../ui/BadgeGrid.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { useBadges } from '../../hooks/useBadges.ts';
 import { FeatureHint } from '../ui/FeatureHint.tsx';
+import { useNotificationPrefs, useUpdateNotificationPrefs } from '../../hooks/useNotificationPrefs.ts';
+import { subscribeToPush, isPushSubscribed } from '../../lib/push.ts';
 import '../../styles/profile-screen.css';
 import '../../styles/weekly-goal.css';
 
@@ -38,6 +40,13 @@ export function ProfileScreen() {
   const [importing, setImporting] = useState(false);
   const [message, setMessage] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const notifPrefs = useNotificationPrefs();
+  const updateNotifPrefs = useUpdateNotificationPrefs();
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+
+  useEffect(() => {
+    isPushSubscribed().then(setPushSubscribed);
+  }, []);
 
   async function handleExport() {
     setExporting(true);
@@ -128,6 +137,89 @@ export function ProfileScreen() {
         {weeklyGoal === null && (
           <p className="weekly-goal-hint">Setze ein Wochenziel für mehr Motivation</p>
         )}
+      </div>
+
+      <div className="profile-section">
+        <h3 className="profile-section-title">Benachrichtigungen</h3>
+        <label className="profile-toggle">
+          <span>Trainings-Erinnerung</span>
+          <input
+            type="checkbox"
+            checked={notifPrefs.data?.reminder_enabled ?? false}
+            onChange={async (e) => {
+              const enabled = e.target.checked;
+              if (enabled && !pushSubscribed) {
+                const ok = await subscribeToPush();
+                if (!ok) {
+                  toast.error('Push-Benachrichtigungen konnten nicht aktiviert werden');
+                  return;
+                }
+                setPushSubscribed(true);
+              }
+              updateNotifPrefs.mutate({ reminder_enabled: enabled });
+            }}
+          />
+        </label>
+        {notifPrefs.data?.reminder_enabled && (
+          <label className="profile-toggle" style={{ marginTop: 8 }}>
+            <span>Uhrzeit</span>
+            <select
+              value={notifPrefs.data?.reminder_time?.slice(0, 5) ?? '18:00'}
+              onChange={(e) => updateNotifPrefs.mutate({ reminder_time: e.target.value })}
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
+                padding: '6px 10px',
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {Array.from({ length: 17 }, (_, i) => {
+                const h = String(i + 6).padStart(2, '0');
+                return <option key={h} value={`${h}:00`}>{`${h}:00`}</option>;
+              })}
+            </select>
+          </label>
+        )}
+        <label className="profile-toggle">
+          <span>Wochen-Zusammenfassung</span>
+          <input
+            type="checkbox"
+            checked={notifPrefs.data?.recap_enabled ?? true}
+            onChange={async (e) => {
+              const enabled = e.target.checked;
+              if (enabled && !pushSubscribed) {
+                const ok = await subscribeToPush();
+                if (!ok) {
+                  toast.error('Push-Benachrichtigungen konnten nicht aktiviert werden');
+                  return;
+                }
+                setPushSubscribed(true);
+              }
+              updateNotifPrefs.mutate({ recap_enabled: enabled });
+            }}
+          />
+        </label>
+        <label className="profile-toggle">
+          <span>Comeback-Erinnerung</span>
+          <input
+            type="checkbox"
+            checked={notifPrefs.data?.comeback_enabled ?? true}
+            onChange={async (e) => {
+              const enabled = e.target.checked;
+              if (enabled && !pushSubscribed) {
+                const ok = await subscribeToPush();
+                if (!ok) {
+                  toast.error('Push-Benachrichtigungen konnten nicht aktiviert werden');
+                  return;
+                }
+                setPushSubscribed(true);
+              }
+              updateNotifPrefs.mutate({ comeback_enabled: enabled });
+            }}
+          />
+        </label>
       </div>
 
       <div className="profile-section">
