@@ -3,13 +3,10 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { usePlans, usePlanDays, usePlanExercises } from '../../hooks/usePlans.ts';
 import { usePublishPlan } from '../../hooks/usePlanLibrary.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { useSessionStore } from '../../stores/session-store.ts';
-import { unlockAudio } from '../../lib/timer-engine.ts';
+import { planDayToConfig } from '../../lib/workout-loader.ts';
 import { ExerciseCard } from './ExerciseCard.tsx';
 import { ShareModal } from '../ui/ShareModal.tsx';
 import { Icon } from '../ui/Icon.tsx';
-import type { TimerConfig, StationConfig } from '../../types/timer.ts';
-import type { PlanExercise } from '../../types/plan.ts';
 import '../../styles/plan-detail.css';
 
 export function PlanDetailScreen() {
@@ -24,9 +21,7 @@ export function PlanDetailScreen() {
   const [showShare, setShowShare] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const publishPlan = usePublishPlan();
-  const loadConfig = useTimerStore((s) => s.loadConfig);
-  const startTimer = useTimerStore((s) => s.start);
-  const startSession = useSessionStore((s) => s.start);
+  const startWorkout = useTimerStore((s) => s.startWorkout);
 
   const plan = plans?.find((p) => p.id === planId);
   const selectedDay = days?.[selectedDayIndex];
@@ -38,29 +33,8 @@ export function PlanDetailScreen() {
   }
 
   function loadWorkout() {
-    if (!selectedDay || !exercises) return;
-
-    const stations: StationConfig[] = exercises.map((ex: PlanExercise) => ({
-      name: ex.name,
-      speechName: ex.speech_name ?? undefined,
-      workSeconds: ex.work_seconds,
-      pauseSeconds: ex.pause_seconds,
-      isWarmup: ex.is_warmup,
-      howto: ex.howto ?? '',
-      illustrationKey: ex.illustration_key ?? undefined,
-      trackWeight: ex.track_weight ?? false,
-    }));
-
-    const config: TimerConfig = {
-      stations,
-      rounds: selectedDay.rounds,
-      roundPause: selectedDay.round_pause,
-    };
-
-    unlockAudio();
-    loadConfig(config);
-    startSession();
-    startTimer();
+    if (!selectedDay || !exercises || exercises.length === 0) return;
+    startWorkout(planDayToConfig(selectedDay, exercises));
   }
 
   const warmupExercises = exercises?.filter((e) => e.is_warmup) ?? [];
@@ -171,18 +145,7 @@ export function PlanDetailScreen() {
       {showShare && exercises && selectedDay && (
         <ShareModal
           name={`${plan.name} — ${selectedDay.label}`}
-          config={{
-            rounds: selectedDay.rounds,
-            roundPause: selectedDay.round_pause,
-            stations: exercises.map((ex: PlanExercise) => ({
-              name: ex.name,
-              speechName: ex.speech_name ?? undefined,
-              workSeconds: ex.work_seconds,
-              pauseSeconds: ex.pause_seconds,
-              isWarmup: ex.is_warmup,
-              howto: ex.howto ?? '',
-            })),
-          }}
+          config={planDayToConfig(selectedDay, exercises)}
           onClose={() => setShowShare(false)}
         />
       )}

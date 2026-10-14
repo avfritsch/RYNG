@@ -5,12 +5,10 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import type { StationConfig, TimerConfig } from '../../types/timer.ts';
 import type { Preset } from '../../types/database.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { useSessionStore } from '../../stores/session-store.ts';
 import { useNavigationStore } from '../../stores/navigation-store.ts';
 import { useSavePreset, presetToConfig } from '../../hooks/usePresets.ts';
 import { useMesocycle } from '../../hooks/useMesocycle.ts';
 import { applyProgression, getMesocycleSummary } from '../../lib/mesocycle.ts';
-import { unlockAudio } from '../../lib/timer-engine.ts';
 import { analyzeTraining } from '../../lib/training-rules.ts';
 import { saveGeneratedPlan } from '../../lib/ai-planner.ts';
 import { toast } from '../../stores/toast-store.ts';
@@ -49,8 +47,7 @@ export function ConfigScreen() {
   const [presetName, setPresetName] = useState('');
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
 
-  const loadConfig = useTimerStore((s) => s.loadConfig);
-  const start = useTimerStore((s) => s.start);
+  const startWorkout = useTimerStore((s) => s.startWorkout);
   const timerPhase = useTimerStore((s) => s.state.phase);
   const savePreset = useSavePreset();
   const { data: mesocycle } = useMesocycle();
@@ -179,30 +176,20 @@ export function ConfigScreen() {
     return `${min}:${sec.toString().padStart(2, '0')}`;
   }
 
-  const startSession = useSessionStore((s) => s.start);
-
-  async function handleSaveAndStart() {
+  function handleSaveAndStart() {
     if (stations.length === 0) return;
-    // Save as plan
-    try {
-      const name = stations.filter(s => !s.isWarmup).map(s => s.name).slice(0, 3).join(', ') || 'Training';
-      await saveGeneratedPlan({
-        name,
-        description: `${stations.length} Übungen · ${rounds} Runden`,
-        stations,
-        rounds,
-        roundPause,
-      });
-    } catch {
-      // Save failed — still start the timer
-    }
+    // Start first: audio must be unlocked inside the tap, before any await.
+    startWorkout({ stations, rounds, roundPause });
 
-    // Start timer
-    unlockAudio();
-    const config: TimerConfig = { stations, rounds, roundPause };
-    loadConfig(config);
-    startSession();
-    start();
+    // Save as plan in the background
+    const name = stations.filter(s => !s.isWarmup).map(s => s.name).slice(0, 3).join(', ') || 'Training';
+    saveGeneratedPlan({
+      name,
+      description: `${stations.length} Übungen · ${rounds} Runden`,
+      stations,
+      rounds,
+      roundPause,
+    }).catch(() => toast.error('Training läuft, aber der Plan konnte nicht gespeichert werden'));
   }
 
   function handleSaveOnly() {

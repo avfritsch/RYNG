@@ -3,15 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSuggestions, type Suggestion } from '../../hooks/useSuggestions.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { useSessionStore } from '../../stores/session-store.ts';
 import { useNavigationStore } from '../../stores/navigation-store.ts';
-import { useGymStore, type GymExercise } from '../../stores/gym-store.ts';
+import { useGymStore } from '../../stores/gym-store.ts';
 import { usePlans, usePlanDays } from '../../hooks/usePlans.ts';
-import { unlockAudio } from '../../lib/timer-engine.ts';
+import { loadPlanDayConfig, loadPlanDayGymExercises, loadSessionRepeatConfig } from '../../lib/workout-loader.ts';
+import { toast } from '../../stores/toast-store.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { SkeletonCard } from '../ui/SkeletonCard.tsx';
-import type { TimerConfig, StationConfig } from '../../types/timer.ts';
-import type { PlanExercise } from '../../types/plan.ts';
 import { supabase } from '../../lib/supabase.ts';
 import { WeeklyGoalRing } from '../ui/WeeklyGoalRing.tsx';
 import { FeatureHint } from '../ui/FeatureHint.tsx';
@@ -25,9 +23,8 @@ export function StartScreen() {
   const [mode, setMode] = useState<StartMode>('circuit');
   const { suggestions, isLoading } = useSuggestions();
   const timerPhase = useTimerStore((s) => s.state.phase);
-  const loadConfig = useTimerStore((s) => s.loadConfig);
-  const startTimer = useTimerStore((s) => s.start);
-  const startSession = useSessionStore((s) => s.start);
+  const startWorkout = useTimerStore((s) => s.startWorkout);
+  const [busy, setBusy] = useState(false);
   const gymActive = useGymStore((s) => s.isActive);
   const startGym = useGymStore((s) => s.start);
   const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
@@ -63,161 +60,40 @@ export function StartScreen() {
   if (timerPhase !== 'idle' && timerPhase !== 'done') return null;
   if (gymActive) return null;
 
+  /** Run a loader, show a toast instead of silently doing nothing on failure. */
+  async function withLoading<T>(load: () => Promise<T>): Promise<T | null> {
+    if (busy) return null;
+    setBusy(true);
+    try {
+      return await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Training konnte nicht geladen werden');
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleStartDay(dayId: string) {
-    const [{ data: exercises }, { data: day }] = await Promise.all([
-      supabase
-        .from('plan_exercises')
-        .select('*')
-        .eq('day_id', dayId)
-        .order('sort_order'),
-      supabase
-        .from('plan_days')
-        .select('*')
-        .eq('id', dayId)
-        .single(),
-    ]);
-
-    if (!exercises || exercises.length === 0) return;
-
-    const stations: StationConfig[] = exercises.map((e: PlanExercise) => ({
-      name: e.name,
-      speechName: e.speech_name ?? undefined,
-      workSeconds: e.work_seconds,
-      pauseSeconds: e.pause_seconds,
-      isWarmup: e.is_warmup,
-      howto: e.howto ?? '',
-      illustrationKey: e.illustration_key ?? undefined,
-      trackWeight: e.track_weight ?? false,
-    }));
-
-    const config: TimerConfig = {
-      stations,
-      rounds: day?.rounds ?? 3,
-      roundPause: day?.round_pause ?? 90,
-    };
-
-    unlockAudio();
-    loadConfig(config);
-    startSession();
-    startTimer();
+    const config = await withLoading(() => loadPlanDayConfig(dayId));
+    if (config) startWorkout(config);
   }
 
   async function handleRepeatSession(sessionId: string) {
-    const [{ data: entries }, { data: session }] = await Promise.all([
-      supabase
-        .from('session_entries')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('round_number')
-        .order('station_index'),
-      supabase
-        .from('sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .single(),
-    ]);
-
-    if (!entries || entries.length === 0 || !session) return;
-
-    // Deduplicate stations (entries have one per round)
-    const seen = new Set<string>();
-    const stations: StationConfig[] = [];
-    for (const e of entries) {
-      const key = `${e.station_index}-${e.station_name}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        stations.push({
-          name: e.station_name,
-          workSeconds: e.work_seconds,
-          pauseSeconds: 30,
-          isWarmup: e.is_warmup,
-          howto: '',
-        });
-      }
-    }
-
-    const config: TimerConfig = {
-      stations,
-      rounds: session.rounds,
-      roundPause: 90,
-    };
-
-    unlockAudio();
-    loadConfig(config);
-    startSession();
-    startTimer();
+    const config = await withLoading(() => loadSessionRepeatConfig(sessionId));
+    if (config) startWorkout(config);
   }
 
   async function handleAdjustRepeat(sessionId: string) {
-    const [{ data: entries }, { data: session }] = await Promise.all([
-      supabase
-        .from('session_entries')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('round_number')
-        .order('station_index'),
-      supabase
-        .from('sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .single(),
-    ]);
-
-    if (!entries || entries.length === 0 || !session) return;
-
-    const seen = new Set<string>();
-    const stations: StationConfig[] = [];
-    for (const e of entries) {
-      const key = `${e.station_index}-${e.station_name}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        stations.push({
-          name: e.station_name,
-          workSeconds: e.work_seconds,
-          pauseSeconds: 30,
-          isWarmup: e.is_warmup,
-          howto: '',
-        });
-      }
-    }
-
-    const config: TimerConfig = {
-      stations,
-      rounds: session.rounds,
-      roundPause: 90,
-    };
-
+    const config = await withLoading(() => loadSessionRepeatConfig(sessionId));
+    if (!config) return;
     setPendingConfig(config);
     navigate('/plans/quick');
   }
 
   async function handleStartGymDay(dayId: string) {
-    const { data: exercises } = await supabase
-      .from('plan_exercises')
-      .select('*')
-      .eq('day_id', dayId)
-      .order('sort_order');
-
-    if (!exercises || exercises.length === 0) return;
-
-    const gymExercises: GymExercise[] = exercises
-      .filter((e: PlanExercise) => !e.is_warmup)
-      .map((e: PlanExercise) => ({
-        name: e.name,
-        speechName: e.speech_name ?? undefined,
-        illustrationKey: e.illustration_key ?? undefined,
-        sets: [
-          { weight_kg: null, reps: null, done: false },
-          { weight_kg: null, reps: null, done: false },
-          { weight_kg: null, reps: null, done: false },
-        ],
-        restSeconds: e.pause_seconds || 90,
-        isWarmup: false,
-        trackWeight: e.track_weight ?? false,
-      }));
-
-    if (gymExercises.length === 0) return;
-    startGym(gymExercises);
+    const exercises = await withLoading(() => loadPlanDayGymExercises(dayId));
+    if (exercises) startGym(exercises);
   }
 
   function handleSuggestionAction(s: Suggestion) {

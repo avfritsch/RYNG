@@ -52,6 +52,13 @@ test('history screen', async ({ page }) => {
 });
 
 test('profile screen', async ({ page }) => {
+  // The heart-rate section only renders when Web Bluetooth exists, which
+  // differs between headed Chromium and the CI headless shell. Pin it.
+  await page.addInitScript(() => {
+    if (!('bluetooth' in navigator)) {
+      Object.defineProperty(Navigator.prototype, 'bluetooth', { value: {}, configurable: true });
+    }
+  });
   await page.goto('/profile');
   await page.getByText('Profil').first().waitFor({ timeout: 10000 });
   await waitForStable(page);

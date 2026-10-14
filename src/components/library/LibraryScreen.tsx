@@ -6,8 +6,6 @@ import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
 import { usePublicPlans, useCopyPlan } from '../../hooks/usePlanLibrary.ts';
 import { usePlans } from '../../hooks/usePlans.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { useSessionStore } from '../../stores/session-store.ts';
-import { unlockAudio } from '../../lib/timer-engine.ts';
 import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
 import type { TimerConfig } from '../../types/timer.ts';
@@ -36,9 +34,7 @@ export function LibraryScreen() {
   const [deleteExercise, setDeleteExercise] = useState<LibraryExercise | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const deleteLibExercise = useDeleteLibraryExercise();
-  const loadConfig = useTimerStore((s) => s.loadConfig);
-  const startTimer = useTimerStore((s) => s.start);
-  const startSession = useSessionStore((s) => s.start);
+  const startWorkout = useTimerStore((s) => s.startWorkout);
   const [addToPlanExercise, setAddToPlanExercise] = useState<LibraryExercise | null>(null);
   const { data: userPlans } = usePlans();
   const { data: publicPlans, isLoading: plansLoading } = usePublicPlans();
@@ -88,16 +84,15 @@ export function LibraryScreen() {
         pauseSeconds: 30,
         isWarmup: ex.category === 'warmup',
         howto: ex.howto ?? '',
+        illustrationKey: ex.illustration_key ?? undefined,
+        trackWeight: ex.track_weight ?? false,
       }],
       rounds: 3,
       roundPause: 90,
     };
-    unlockAudio();
-    loadConfig(config);
-    startSession();
-    startTimer();
-    navigate('/timer');
-  }, [loadConfig, startSession, startTimer, navigate]);
+    // The timer is a fullscreen overlay; no navigation needed.
+    startWorkout(config);
+  }, [startWorkout]);
 
   const handleSelect = useCallback((ex: LibraryExercise) => {
     setSelected((prev) => prev?.id === ex.id ? null : ex);

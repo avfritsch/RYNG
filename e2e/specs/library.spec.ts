@@ -11,7 +11,7 @@ test('library shows exercises tab by default', async ({ page }) => {
   await page.goto('/library');
 
   // Title visible
-  await expect(page.getByText('Bibliothek')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Bibliothek' })).toBeVisible({ timeout: 10000 });
 
   // Exercises tab should be active
   const exercisesTab = page.locator('.library-tab--active');
@@ -25,7 +25,7 @@ test('library shows exercises tab by default', async ({ page }) => {
 
 test('search filters exercises', async ({ page }) => {
   await page.goto('/library');
-  await expect(page.getByText('Bibliothek')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Bibliothek' })).toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Liegestütze').first()).toBeVisible({ timeout: 10000 });
 
   // Type in search
@@ -41,7 +41,7 @@ test('search filters exercises', async ({ page }) => {
 
 test('switching to Trainings tab shows plans', async ({ page }) => {
   await page.goto('/library');
-  await expect(page.getByText('Bibliothek')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Bibliothek' })).toBeVisible({ timeout: 10000 });
 
   // Click Trainings tab
   await page.locator('.library-tab', { hasText: 'Trainings' }).click();
@@ -56,7 +56,7 @@ test('switching to Trainings tab shows plans', async ({ page }) => {
 
 test('clicking exercise expands details', async ({ page }) => {
   await page.goto('/library');
-  await expect(page.getByText('Bibliothek')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Bibliothek' })).toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Liegestütze').first()).toBeVisible({ timeout: 10000 });
 
   // Click on the exercise row
@@ -76,7 +76,7 @@ test('clicking exercise expands details', async ({ page }) => {
 
 test('quick-start button starts timer', async ({ page }) => {
   await page.goto('/library');
-  await expect(page.getByText('Bibliothek')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Bibliothek' })).toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Liegestütze').first()).toBeVisible({ timeout: 10000 });
 
   // Expand exercise

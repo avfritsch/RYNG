@@ -15,6 +15,8 @@ export interface TimerConfig {
   stations: StationConfig[];
   rounds: number;
   roundPause: number;
+  /** Plan day this workout was started from — saved with the session, used for "repeat" */
+  planDayId?: string;
 }
 
 export type TimerPhase = 'work' | 'warmup' | 'pause' | 'roundPause' | 'idle' | 'done';

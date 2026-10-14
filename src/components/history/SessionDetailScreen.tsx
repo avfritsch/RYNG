@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSession, useSessionEntries, useDeleteSession } from '../../hooks/useSessions.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { useSessionStore } from '../../stores/session-store.ts';
-import { unlockAudio } from '../../lib/timer-engine.ts';
+import { loadSessionRepeatConfig } from '../../lib/workout-loader.ts';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { shareWorkoutCard } from '../../lib/share-card.ts';
 import type { ShareCardData } from '../../lib/share-card.ts';
 import { toast } from '../../stores/toast-store.ts';
-import type { TimerConfig, StationConfig } from '../../types/timer.ts';
 import '../../styles/session-detail.css';
 
 export function SessionDetailScreen() {
@@ -17,9 +15,7 @@ export function SessionDetailScreen() {
   const { data: session, isLoading } = useSession(sessionId);
   const { data: entries } = useSessionEntries(sessionId);
   const deleteSession = useDeleteSession();
-  const loadConfig = useTimerStore((s) => s.loadConfig);
-  const startTimer = useTimerStore((s) => s.start);
-  const startSession = useSessionStore((s) => s.start);
+  const startWorkout = useTimerStore((s) => s.startWorkout);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading || !session) {
@@ -48,36 +44,13 @@ export function SessionDetailScreen() {
     ? kraftEntries.slice(0, 3).map((e) => e.station_name).join(', ')
     : entries?.slice(0, 3).map((e) => e.station_name).join(', ') ?? 'Training';
 
-  function handleRepeat() {
-    if (!entries || entries.length === 0 || !session) return;
-
-    const uniqueStations = new Map<number, typeof entries[0]>();
-    for (const e of entries) {
-      if (!uniqueStations.has(e.station_index)) {
-        uniqueStations.set(e.station_index, e);
-      }
+  async function handleRepeat() {
+    if (!sessionId) return;
+    try {
+      startWorkout(await loadSessionRepeatConfig(sessionId));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Training konnte nicht geladen werden');
     }
-
-    const stations: StationConfig[] = Array.from(uniqueStations.values())
-      .sort((a, b) => a.station_index - b.station_index)
-      .map((e) => ({
-        name: e.station_name,
-        workSeconds: e.work_seconds,
-        pauseSeconds: 30,
-        isWarmup: e.is_warmup,
-        howto: '',
-      }));
-
-    const config: TimerConfig = {
-      stations,
-      rounds: session.rounds,
-      roundPause: 90,
-    };
-
-    unlockAudio();
-    loadConfig(config);
-    startSession();
-    startTimer();
   }
 
   function handleShare() {

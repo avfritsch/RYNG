@@ -96,12 +96,13 @@ test.describe('User journeys', () => {
     // Verify the set is marked as done (checked icon)
     await expect(page.locator('.gym-set-row--done').first()).toBeVisible();
 
-    // 7. Click Beenden — in the E2E environment, the session is very short (< 60s),
-    // so the app considers it too short and resets to the start screen.
-    // We verify the full flow: gym screen -> interaction -> Beenden -> back to start.
+    // 7. Finish: completed sets are saved and the summary is shown
     await page.locator('.gym-header-finish').click();
+    await expect(page.locator('.gym-done')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.gym-done').getByText('Sätze')).toBeVisible();
 
-    // 8. Verify we're back on the start screen (short session auto-resets)
+    // 8. Close the summary → back on the start screen
+    await page.locator('.gym-done-btn').click();
     await expect(page.locator('text=Bereit?')).toBeVisible({ timeout: 10000 });
   });
 

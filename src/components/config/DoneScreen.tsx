@@ -96,7 +96,7 @@ export function DoneScreen() {
         duration_sec: lastSummary.totalSeconds,
         rounds: lastSummary.roundsDone,
         station_count: lastSummary.stationsDone,
-        plan_day_id: null,
+        plan_day_id: config.planDayId ?? null,
         mesocycle_week: null,
       },
       entries: sessionEntries,

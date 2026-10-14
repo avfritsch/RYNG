@@ -41,6 +41,8 @@ interface TimerStore {
   savedSummaryId: string | null;
 
   loadConfig: (config: TimerConfig) => void;
+  /** Load a config and start it right away (must be called from a user gesture for audio). */
+  startWorkout: (config: TimerConfig) => void;
   start: () => void;
   pause: () => void;
   resume: () => void;
@@ -148,6 +150,14 @@ export const useTimerStore = create<TimerStore>((set, get) => {
       const engine = createTimerEngine(config);
       attach(config, engine);
       set({ config, engine, lastSummary: null, savedSummaryId: null, state: engine.getState() });
+    },
+
+    startWorkout: (config) => {
+      if (get().state.isRunning) return; // ignore double taps
+      unlockAudio();
+      get().loadConfig(config);
+      useSessionStore.getState().start();
+      get().engine?.start();
     },
 
     start: () => {

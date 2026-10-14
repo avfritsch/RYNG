@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
  */
 async function startTimerViaLibrary(page: import('@playwright/test').Page) {
   await page.goto('/library');
-  await expect(page.getByText('Bibliothek')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Bibliothek' })).toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Liegestütze').first()).toBeVisible({ timeout: 10000 });
 
   // Expand and quick-start
@@ -79,9 +79,10 @@ test('stop ends training and shows done screen', async ({ page }) => {
   await expect(page.getByText('Training abgeschlossen!')).toBeVisible({ timeout: 10000 });
 
   // Stats should be visible
-  await expect(page.getByText('Runden')).toBeVisible();
-  await expect(page.getByText('Übungen')).toBeVisible();
-  await expect(page.getByText('Dauer')).toBeVisible();
+  const done = page.locator('.done-screen');
+  await expect(done.getByText('Runden')).toBeVisible();
+  await expect(done.getByText('Übungen')).toBeVisible();
+  await expect(done.getByText('Dauer')).toBeVisible();
 });
 
 test('done screen shows NOCHMAL and VERLAUF buttons', async ({ page }) => {
