@@ -13,7 +13,7 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ name, config, onClose }: ShareModalProps) {
-  const trapRef = useFocusTrap<HTMLDivElement>();
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
   const [qrUrl, setQrUrl] = useState('');
   const encoded = encodeWorkout(name, config);
 
@@ -76,7 +76,7 @@ interface ImportModalProps {
 }
 
 export function ImportModal({ onImport, onClose }: ImportModalProps) {
-  const trapRef = useFocusTrap<HTMLDivElement>();
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
 

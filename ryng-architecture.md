@@ -1,5 +1,7 @@
 # Ryng — Architektur-Blueprint
 
+> **Hinweis:** Ursprünglicher Entwurf aus der Migrationsphase (React 18, Offline-Queue-Konzept usw.). Der aktuelle Stand ist im README und im Code beschrieben.
+
 ## Projektübersicht
 
 Ryng ist eine Zirkeltraining-Timer-App mit integriertem Trainingsplan, Session-Tracking und progressiver Overload-Logik. Migration von einer Single-HTML-Datei zu einer vollwertigen React-Anwendung.

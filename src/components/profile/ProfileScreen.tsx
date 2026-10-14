@@ -313,7 +313,7 @@ export function ProfileScreen() {
               className="hr-connect-btn hr-connect-btn--connect"
               style={{ width: '100%', padding: 12 }}
               onClick={() => {
-                try { startSpotifyAuth(); } catch (err) { toast.error(err instanceof Error ? err.message : 'Fehler'); }
+                startSpotifyAuth().catch((err) => toast.error(err instanceof Error ? err.message : 'Fehler'));
               }}
               disabled={!spotifyId.trim()}
             >

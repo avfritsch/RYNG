@@ -34,7 +34,7 @@ if (sentryDsn) {
 }
 
 // Handle Spotify OAuth callback
-handleSpotifyCallback();
+void handleSpotifyCallback();
 
 // Apply saved theme
 applyTheme(getTheme());

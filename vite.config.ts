@@ -43,7 +43,8 @@ export default defineConfig({
           { src: '/ryng-r-128.png', sizes: '128x128', type: 'image/png' },
           { src: '/ryng-r-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: '/ryng-r-256.png', sizes: '256x256', type: 'image/png' },
-          { src: '/ryng-r-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/ryng-r-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/ryng-r-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),
@@ -52,11 +53,14 @@ export default defineConfig({
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
         authToken: process.env.SENTRY_AUTH_TOKEN,
+        // Upload to Sentry, then remove so source isn't served publicly
+        sourcemaps: { filesToDeleteAfterUpload: ['dist/**/*.map'] },
       }),
     ] : []),
   ],
   build: {
-    sourcemap: true, // needed for Sentry
+    // Only build source maps when they go to Sentry (and are deleted afterwards)
+    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
     rollupOptions: {
       output: {
         manualChunks,

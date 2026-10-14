@@ -16,7 +16,7 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
   const isCreate = !exercise;
   const isSystem = exercise?.created_by === null;
 
-  const trapRef = useFocusTrap<HTMLDivElement>();
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
   const [name, setName] = useState(exercise?.name ?? '');
   const [muscleGroups, setMuscleGroups] = useState<string[]>(exercise?.muscle_groups ?? []);
   const [category, setCategory] = useState<ExerciseCategory>(exercise?.category ?? 'strength');

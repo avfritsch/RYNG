@@ -23,7 +23,7 @@ const FOCUS_OPTIONS = [
 ];
 
 export function AiPlannerModal({ onApply, onClose }: AiPlannerModalProps) {
-  const trapRef = useFocusTrap<HTMLDivElement>();
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
   const [focus, setFocus] = useState('Ganzkörper');
   const [equipment, setEquipment] = useState<string[]>(['Bodyweight']);
   const [duration, setDuration] = useState(20);

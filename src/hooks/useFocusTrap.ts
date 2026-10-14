@@ -1,17 +1,26 @@
 import { useEffect, useRef } from 'react';
 
+/** Open traps, innermost last — only the top one reacts to Escape/Tab. */
+const stack: object[] = [];
+
 /**
- * Traps focus inside a modal/dialog element.
+ * Traps focus inside a modal/dialog element and closes it on Escape.
  * Returns a ref to attach to the dialog container.
  */
-export function useFocusTrap<T extends HTMLElement = HTMLDivElement>() {
+export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(onEscape?: () => void) {
   const ref = useRef<T>(null);
+  const escapeRef = useRef(onEscape);
+  useEffect(() => {
+    escapeRef.current = onEscape;
+  });
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
+    const token = {};
+    stack.push(token);
 
     // Focus the first focusable element
     const focusables = getFocusables(el);
@@ -22,7 +31,14 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>() {
     }
 
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') return; // let parent handle Escape
+      if (stack[stack.length - 1] !== token) return; // a nested dialog is on top
+      if (e.key === 'Escape') {
+        if (escapeRef.current) {
+          e.preventDefault();
+          escapeRef.current();
+        }
+        return;
+      }
       if (e.key !== 'Tab') return;
 
       const focusables = getFocusables(el!);
@@ -48,6 +64,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>() {
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      stack.splice(stack.indexOf(token), 1);
       previouslyFocused?.focus();
     };
   }, []);

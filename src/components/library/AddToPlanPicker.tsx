@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import { Icon } from '../ui/Icon.tsx';
 import type { Plan } from '../../types/plan.ts';
@@ -10,13 +9,7 @@ interface AddToPlanPickerProps {
 }
 
 export function AddToPlanPicker({ plans, onPick, onClose }: AddToPlanPickerProps) {
-  const trapRef = useFocusTrap<HTMLDivElement>();
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
 
   return (
     <div className="picker-overlay" onClick={onClose}>

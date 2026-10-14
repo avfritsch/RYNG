@@ -13,7 +13,7 @@ interface LibraryPickerProps {
 }
 
 export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: LibraryPickerProps) {
-  const trapRef = useFocusTrap<HTMLDivElement>();
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
   const [category, setCategory] = useState<ExerciseCategory | ''>('');
   const [search, setSearch] = useState('');
   const [muscleGroups, setMuscleGroups] = useState<string[]>([]);

@@ -25,28 +25,6 @@ describe('spotify: token TTL logic', () => {
     expect(getSpotifyToken()).toBeNull();
   });
 
-  it('returns token after handleSpotifyCallback stores it', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-01-15T12:00:00Z'));
-
-    // Simulate Spotify redirect with access_token in hash
-    Object.defineProperty(window, 'location', {
-      value: {
-        ...window.location,
-        hash: '#access_token=abc123&token_type=Bearer&expires_in=3600',
-        pathname: '/',
-        origin: 'http://localhost:3000',
-      },
-      writable: true,
-      configurable: true,
-    });
-    window.history.replaceState = vi.fn();
-
-    const result = handleSpotifyCallback();
-    expect(result).toBe(true);
-    expect(getSpotifyToken()).toBe('abc123');
-  });
-
   it('token expires after the effective TTL', () => {
     vi.useFakeTimers();
     const start = new Date('2026-01-15T12:00:00Z');
@@ -144,23 +122,48 @@ describe('spotify: client ID', () => {
 });
 
 describe('spotify: startSpotifyAuth', () => {
-  it('throws when client ID is not set', () => {
-    expect(() => startSpotifyAuth()).toThrow('Spotify Client ID nicht gesetzt');
+  it('rejects when client ID is not set', async () => {
+    await expect(startSpotifyAuth()).rejects.toThrow('Spotify Client ID nicht gesetzt');
   });
 });
 
-describe('spotify: handleSpotifyCallback', () => {
-  it('returns false when hash has no access_token', () => {
+describe('spotify: handleSpotifyCallback (PKCE)', () => {
+  function setUrl(href: string) {
     Object.defineProperty(window, 'location', {
-      value: {
-        ...window.location,
-        hash: '',
-        pathname: '/',
-        origin: 'http://localhost:3000',
-      },
+      value: { ...window.location, href, origin: 'http://localhost:3000', pathname: '/' },
       writable: true,
       configurable: true,
     });
-    expect(handleSpotifyCallback()).toBe(false);
+    window.history.replaceState = vi.fn();
+  }
+
+  beforeEach(() => sessionStorage.clear());
+
+  it('ignores URLs without a code', async () => {
+    setUrl('http://localhost:3000/');
+    expect(await handleSpotifyCallback()).toBe(false);
+  });
+
+  it('ignores a callback whose state does not match (forged redirect)', async () => {
+    sessionStorage.setItem('ryng_spotify_pkce', JSON.stringify({ verifier: 'v', state: 'expected' }));
+    setUrl('http://localhost:3000/?code=abc&state=attacker');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    expect(await handleSpotifyCallback()).toBe(false);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
+  it('exchanges the code for a token when state matches', async () => {
+    setSpotifyClientId('cid');
+    sessionStorage.setItem('ryng_spotify_pkce', JSON.stringify({ verifier: 'v', state: 's1' }));
+    setUrl('http://localhost:3000/?code=abc&state=s1');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600, refresh_token: 'ref' }), { status: 200 }),
+    );
+    expect(await handleSpotifyCallback()).toBe(true);
+    expect(getSpotifyToken()).toBe('tok');
+    const body = fetchSpy.mock.calls[0][1]?.body as URLSearchParams;
+    expect(body.get('code_verifier')).toBe('v');
+    fetchSpy.mockRestore();
   });
 });

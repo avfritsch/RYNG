@@ -13,7 +13,7 @@ interface QuickLibraryPickerProps {
 const allCategories: ExerciseCategory[] = ['warmup', 'strength', 'core', 'cardio', 'stretch'];
 
 export function QuickLibraryPicker({ onAdd, onClose }: QuickLibraryPickerProps) {
-  const trapRef = useFocusTrap<HTMLDivElement>();
+  const trapRef = useFocusTrap<HTMLDivElement>(onClose);
   const [search, setSearch] = useState('');
   const [categories, setCategories] = useState<ExerciseCategory[]>([]);
   const [muscleGroups, setMuscleGroups] = useState<string[]>([]);
