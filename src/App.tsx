@@ -95,7 +95,7 @@ function AppContent() {
           fontWeight: 700,
           flexShrink: 0,
         }}>
-          Offline — Daten werden lokal gespeichert
+          Offline — Trainings werden gespeichert und später synchronisiert
         </div>
       )}
       <InstallBanner />

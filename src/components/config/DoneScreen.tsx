@@ -224,9 +224,17 @@ export function DoneScreen() {
         )}
 
         {saveSession.isError && (
-          <p style={{ color: 'var(--color-rest)', fontSize: 'var(--text-sm)', marginBottom: 16 }}>
-            Session konnte nicht gespeichert werden.
-          </p>
+          <div style={{ marginBottom: 16, textAlign: 'center' }}>
+            <p style={{ color: 'var(--color-rest)', fontSize: 'var(--text-sm)', marginBottom: 8 }}>
+              Session konnte nicht gespeichert werden.
+            </p>
+            <button
+              className="done-btn done-btn--secondary"
+              onClick={() => saveSession.variables && saveSession.mutate(saveSession.variables)}
+            >
+              ERNEUT VERSUCHEN
+            </button>
+          </div>
         )}
 
         <div className="done-actions">

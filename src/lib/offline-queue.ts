@@ -1,27 +1,37 @@
 import { openDB } from 'idb';
 import { supabase } from './supabase.ts';
 import { logger } from './logger.ts';
+import type { Session, SessionEntry } from '../types/session.ts';
+
+/**
+ * Outbox for finished workouts that couldn't be saved (offline, flaky network).
+ *
+ * Each item is a complete session with client-generated ids, so syncing is an
+ * idempotent upsert: a retry after a half-finished attempt never duplicates
+ * data, and entries can't arrive before their session.
+ */
 
 const DB_NAME = 'ryng_offline_queue';
-const STORE_NAME = 'mutations';
-const DB_VERSION = 1;
-const MAX_RETRIES = 3;
+const STORE_NAME = 'sessions';
+const DB_VERSION = 2;
 
-const ALLOWED_TABLES = ['plans', 'plan_days', 'plan_exercises', 'presets', 'sessions', 'session_entries', 'mesocycle_config'] as const;
+export type NewSession = Omit<Session, 'created_at'>;
+export type NewSessionEntry = Omit<SessionEntry, 'session_id'> & { session_id: string };
 
-export interface QueuedMutation {
+export interface PendingSession {
   id: string;
-  table: string;
-  operation: 'insert' | 'update' | 'delete';
-  data: Record<string, unknown>;
-  match?: Record<string, unknown>;
-  timestamp: number;
-  retries?: number;
+  session: NewSession;
+  entries: NewSessionEntry[];
+  queuedAt: number;
+  attempts: number;
+  lastError?: string;
 }
 
 function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
+      // v1 held a generic mutation store that was never used — drop it.
+      if (db.objectStoreNames.contains('mutations')) db.deleteObjectStore('mutations');
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
@@ -29,106 +39,77 @@ function getDB() {
   });
 }
 
-/**
- * Enqueue a mutation for later execution.
- */
-export async function enqueue(mutation: Omit<QueuedMutation, 'id' | 'timestamp' | 'retries'>) {
-  if (!ALLOWED_TABLES.includes(mutation.table as typeof ALLOWED_TABLES[number])) {
-    logger.error(`Offline queue: invalid table "${mutation.table}"`);
-    return;
+/** True for errors that mean "no connection", as opposed to a rejected request. */
+export function isNetworkError(err: unknown): boolean {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+  const msg = err instanceof Error ? err.message : typeof err === 'object' && err && 'message' in err ? String((err as { message: unknown }).message) : String(err);
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|timeout/i.test(msg);
+}
+
+/** Write one session and its entries. Idempotent thanks to client-side ids. */
+export async function pushSession(session: NewSession, entries: NewSessionEntry[]): Promise<void> {
+  const { error: sessionError } = await supabase.from('sessions').upsert(session, { onConflict: 'id' });
+  if (sessionError) throw sessionError;
+
+  if (entries.length > 0) {
+    const { error: entriesError } = await supabase.from('session_entries').upsert(entries, { onConflict: 'id' });
+    if (entriesError) throw entriesError;
   }
-  try {
-    const db = await getDB();
-    const entry: QueuedMutation = {
-      ...mutation,
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      retries: 0,
-    };
-    await db.put(STORE_NAME, entry);
-  } catch (e) {
-    logger.warn('Offline queue enqueue error', { error: String(e) });
-  }
+
+  // Best-effort; counts once per session server-side.
+  supabase.rpc('increment_exercise_usage_for_session', { p_session_id: session.id })
+    .then(null, (e) => logger.warn('Usage increment failed', { error: String(e) }));
+}
+
+export async function queueSession(session: NewSession, entries: NewSessionEntry[], error?: unknown): Promise<void> {
+  const db = await getDB();
+  const item: PendingSession = {
+    id: session.id,
+    session,
+    entries,
+    queuedAt: Date.now(),
+    attempts: 0,
+    lastError: error ? String(error instanceof Error ? error.message : error) : undefined,
+  };
+  await db.put(STORE_NAME, item);
 }
 
 /**
- * Flush all queued mutations to Supabase.
- * Skips permanently failed mutations instead of blocking the entire queue.
+ * Try to sync every queued session. Items are kept (never discarded) until
+ * they succeed, so no workout is silently lost. Returns the number synced.
  */
 export async function flush(): Promise<number> {
-  let flushed = 0;
+  let synced = 0;
+  let db;
   try {
-    const db = await getDB();
-    const all = await db.getAll(STORE_NAME);
-    // Sort by timestamp (oldest first)
-    all.sort((a, b) => a.timestamp - b.timestamp);
-
-    for (const mutation of all) {
-      try {
-        await executeMutation(mutation);
-        await db.delete(STORE_NAME, mutation.id);
-        flushed++;
-      } catch (e) {
-        const retries = (mutation.retries ?? 0) + 1;
-        if (retries >= MAX_RETRIES) {
-          // Permanently failed — discard to avoid blocking the queue
-          logger.warn(`Offline queue: discarding mutation after ${MAX_RETRIES} retries`, { table: mutation.table, operation: mutation.operation, error: String(e) });
-          await db.delete(STORE_NAME, mutation.id);
-        } else {
-          // Increment retry count and continue with next mutation
-          await db.put(STORE_NAME, { ...mutation, retries });
-          logger.warn(`Offline queue: retry ${retries}/${MAX_RETRIES}`, { table: mutation.table, operation: mutation.operation });
-        }
-        // Continue processing remaining mutations instead of stopping
-      }
-    }
+    db = await getDB();
   } catch (e) {
-    logger.warn('Offline queue flush error', { error: String(e) });
+    logger.warn('Offline queue unavailable', { error: String(e) });
+    return 0;
   }
-  return flushed;
-}
 
-async function executeMutation(m: QueuedMutation) {
-  switch (m.operation) {
-    case 'insert': {
-      const { error } = await supabase.from(m.table).upsert(m.data);
-      if (error) throw error;
-      break;
-    }
-    case 'update': {
-      let query = supabase.from(m.table).update(m.data);
-      if (m.match) {
-        for (const [key, value] of Object.entries(m.match)) {
-          query = query.eq(key, value as string);
-        }
-      }
-      const { error } = await query;
-      if (error) throw error;
-      break;
-    }
-    case 'delete': {
-      let query = supabase.from(m.table).delete();
-      if (m.match) {
-        for (const [key, value] of Object.entries(m.match)) {
-          query = query.eq(key, value as string);
-        }
-      }
-      const { error } = await query;
-      if (error) throw error;
-      break;
+  const all = (await db.getAll(STORE_NAME)) as PendingSession[];
+  all.sort((a, b) => a.queuedAt - b.queuedAt);
+
+  for (const item of all) {
+    try {
+      await pushSession(item.session, item.entries);
+      await db.delete(STORE_NAME, item.id);
+      synced++;
+    } catch (e) {
+      await db.put(STORE_NAME, { ...item, attempts: item.attempts + 1, lastError: String(e instanceof Error ? e.message : e) });
+      if (isNetworkError(e)) break; // still offline — try again later
+      logger.warn('Offline queue: session sync failed', { id: item.id, attempts: item.attempts + 1, error: String(e) });
     }
   }
+  return synced;
 }
 
-/**
- * Get number of pending mutations.
- */
 export async function pendingCount(): Promise<number> {
   try {
     const db = await getDB();
     return await db.count(STORE_NAME);
-  } catch (e) {
-    logger.warn('Offline queue count error', { error: String(e) });
+  } catch {
     return 0;
   }
 }

@@ -2,18 +2,25 @@ import { useState, useEffect } from 'react';
 import { flush } from '../lib/offline-queue.ts';
 import { toast } from '../stores/toast-store.ts';
 
+/** Sync workouts that were saved while offline. */
+async function syncPending() {
+  try {
+    const count = await flush();
+    if (count > 0) {
+      toast.success(count === 1 ? 'Offline-Training synchronisiert' : `${count} Offline-Trainings synchronisiert`);
+    }
+  } catch {
+    // flush logs errors internally
+  }
+}
+
 export function useOffline() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    async function handleOnline() {
+    function handleOnline() {
       setIsOnline(true);
-      try {
-        const count = await flush();
-        if (count > 0) toast.success(`${count} Änderungen synchronisiert`);
-      } catch {
-        // flush logs errors internally
-      }
+      void syncPending();
     }
 
     function handleOffline() {
@@ -23,10 +30,7 @@ export function useOffline() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Try flushing on mount if online
-    if (navigator.onLine) {
-      flush().catch(() => {});
-    }
+    if (navigator.onLine) void syncPending();
 
     return () => {
       window.removeEventListener('online', handleOnline);

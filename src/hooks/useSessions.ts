@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
 import { queryKeys } from '../lib/query-keys.ts';
-import { logger } from '../lib/logger.ts';
+import { pushSession, queueSession, isNetworkError, type NewSession, type NewSessionEntry } from '../lib/offline-queue.ts';
 import type { Session, SessionEntry } from '../types/session.ts';
 
 export type SessionFilter = 'week' | 'month' | 'all';
@@ -80,50 +80,44 @@ export function useSessionEntries(sessionId: string | undefined) {
 export function useSaveSession() {
   const qc = useQueryClient();
   return useMutation({
+    /**
+     * Saves online when possible. If the network is unavailable the workout is
+     * put in the offline outbox and synced later — it is never lost.
+     * Resolves to `{ queued: true }` in that case.
+     */
     mutationFn: async (payload: {
       session: Omit<Session, 'id' | 'created_at' | 'user_id'> & { user_id?: string };
       entries: Omit<SessionEntry, 'id' | 'session_id'>[];
-    }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+    }): Promise<{ id: string; queued: boolean }> => {
+      // Local session lookup — works offline, unlike auth.getUser().
+      const { data: { session: auth } } = await supabase.auth.getSession();
+      const userId = auth?.user.id;
+      if (!userId) throw new Error('Nicht angemeldet');
 
-      // Insert session
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('sessions')
-        .insert({ ...payload.session, user_id: user.id })
-        .select()
-        .single();
-      if (sessionError) throw sessionError;
+      const sessionId = crypto.randomUUID();
+      const session: NewSession = { ...payload.session, id: sessionId, user_id: userId };
+      const entries: NewSessionEntry[] = payload.entries.map((e) => ({
+        ...e,
+        id: crypto.randomUUID(),
+        session_id: sessionId,
+      }));
 
-      // Insert entries
-      if (payload.entries.length > 0) {
-        const entries = payload.entries.map((e) => ({
-          ...e,
-          session_id: sessionData.id,
-        }));
-        try {
-          const { error: entriesError } = await supabase
-            .from('session_entries')
-            .insert(entries);
-          if (entriesError) throw entriesError;
-        } catch (entriesErr) {
-          // Clean up orphaned session before re-throwing
-          try { await supabase.from('sessions').delete().eq('id', sessionData.id); } catch { /* best-effort cleanup */ }
-          throw entriesErr;
-        }
+      try {
+        await pushSession(session, entries);
+        return { id: sessionId, queued: false };
+      } catch (err) {
+        if (!isNetworkError(err)) throw err;
+        await queueSession(session, entries, err);
+        return { id: sessionId, queued: true };
       }
-
-      // Increment usage count for all exercises performed (best-effort)
-      if (payload.entries.length > 0) {
-        supabase.rpc('increment_exercise_usage_for_session', { p_session_id: sessionData.id })
-          .then(null, (e) => logger.warn('Usage increment failed', { error: String(e) }));
-      }
-
-      return sessionData as Session;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: queryKeys.sessions() });
-      toast.success('Session gespeichert');
+      if (result.queued) {
+        toast.info('Offline gespeichert — wird synchronisiert, sobald du online bist');
+      } else {
+        toast.success('Session gespeichert');
+      }
     },
   });
 }

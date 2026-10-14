@@ -1,12 +1,18 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute } from 'workbox-precaching';
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, NetworkFirst, NetworkOnly } from 'workbox-strategies';
+import { StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
+import { clientsClaim } from 'workbox-core';
 
 declare let self: ServiceWorkerGlobalScope;
 
-// Precache Vite-generated assets
+// registerType 'autoUpdate': activate a new version immediately
+self.skipWaiting();
+clientsClaim();
+
+// Precache Vite-generated assets; drop caches from older builds
 precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
 
 // Google Fonts: stale-while-revalidate
 registerRoute(
@@ -23,19 +29,14 @@ registerRoute(
   }),
 );
 
-// Offline fallback for navigation requests
-const navigationHandler = new NetworkOnly();
-const navigationRoute = new NavigationRoute(navigationHandler, {
-  // Use offline.html as fallback when network fails and no cache exists
-});
-
+// SPA navigation: every route is served from the precached app shell, so
+// deep links (/history, /plans/…) work offline. offline.html is the last resort.
+const appShell = createHandlerBoundToURL('/index.html');
+const navigationRoute = new NavigationRoute(appShell);
 navigationRoute.setCatchHandler(async () => {
   const cache = await caches.open('offline-fallback');
-  const cached = await cache.match('/offline.html');
-  if (cached) return cached;
-  return Response.error();
+  return (await cache.match('/offline.html')) ?? Response.error();
 });
-
 registerRoute(navigationRoute);
 
 // Pre-cache offline.html on install
