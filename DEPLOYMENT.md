@@ -68,11 +68,12 @@ Migration `021_notification_cron.sql` sets up:
 ## CI/CD Pipeline
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push:
-1. Security audit (`npm audit`)
-2. Type check (`tsc --noEmit`)
-3. Unit tests (Vitest, 174 tests)
-4. Build (Vite)
-5. E2E tests (Playwright, 90 tests)
+1. Security audit of production dependencies (`npm audit --omit=dev --audit-level=high`)
+2. Type check (`tsc -b` — follows project references)
+3. Lint (`npm run lint`)
+4. Unit tests (Vitest)
+5. Build (Vite)
+6. E2E tests (Playwright, Supabase fully mocked)
 
 ## Release Process
 

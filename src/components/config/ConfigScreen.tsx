@@ -61,9 +61,12 @@ export function ConfigScreen() {
   const clearPendingConfig = useNavigationStore((s) => s.clearPendingConfig);
 
   // Load config from navigation store (when coming from PlanDetailScreen, Library, etc.)
+  // This syncs a one-shot value from an external store into local form state,
+  // which is what an effect is for here.
   useEffect(() => {
     if (!pendingConfig) return;
     if (mesocycle) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStations(pendingConfig.stations.map((s) => {
         const { work, pause } = applyProgression(s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle);
         return { ...s, workSeconds: work, pauseSeconds: pause };
@@ -74,7 +77,7 @@ export function ConfigScreen() {
     setRounds(pendingConfig.rounds);
     setRoundPause(pendingConfig.roundPause);
     clearPendingConfig();
-  }, [pendingConfig, mesocycle]);
+  }, [pendingConfig, mesocycle, clearPendingConfig]);
 
   function applyConfigFromPlan(config: TimerConfig) {
     setRounds(config.rounds);

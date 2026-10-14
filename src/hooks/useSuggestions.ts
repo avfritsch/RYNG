@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { queryKeys } from '../lib/query-keys.ts';
@@ -70,12 +70,15 @@ export function useSuggestions() {
   const { data: sessions, isLoading: sessionsLoading } = useRecentSessions();
   const { data: plansWithDays, isLoading: plansLoading } = usePlansWithDays();
 
+  // Captured once per mount so the memo stays pure and suggestions stable.
+  const [now] = useState(() => Date.now());
+  const [randomSeed] = useState(() => Math.random());
+
   const suggestions = useMemo(() => {
     if (!sessions || !plansWithDays) return [];
 
     const result: Suggestion[] = [];
     const lastSession = sessions[0];
-    const now = Date.now();
     const allDays = plansWithDays.flatMap(({ plan, days }) =>
       days.map((d) => ({ plan, day: d })),
     );
@@ -146,7 +149,7 @@ export function useSuggestions() {
 
     // 5. Random training from a random plan day
     if (allDays.length > 0) {
-      const random = allDays[Math.floor(Math.random() * allDays.length)];
+      const random = allDays[Math.floor(randomSeed * allDays.length)];
       result.push({
         type: 'random',
         title: `${random.day.label} — ${random.day.focus || random.plan.name}`,
@@ -197,7 +200,7 @@ export function useSuggestions() {
     }
 
     return result;
-  }, [sessions, plansWithDays]);
+  }, [sessions, plansWithDays, now, randomSeed]);
 
   return { suggestions, isLoading: sessionsLoading || plansLoading };
 }
