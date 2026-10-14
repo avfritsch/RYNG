@@ -84,7 +84,9 @@ export function GymSessionScreen() {
 
   // Last weights lookup — memoize so the array reference is stable for useLastWeights
   const exerciseNames = useMemo(
-    () => exercises.filter((e) => e.trackWeight).map((e) => e.name),
+    () => exercises
+      .filter((e) => e.trackWeight)
+      .map((e) => ({ name: e.name, libraryExerciseId: e.libraryExerciseId })),
     [exercises],
   );
   const { data: lastWeights } = useLastWeights(exerciseNames);
@@ -137,6 +139,7 @@ export function GymSessionScreen() {
         reps: s.reps,
         notes: null,
         round_number: setIdx + 1,
+        library_exercise_id: ex.libraryExerciseId ?? null,
       })),
     );
 
@@ -208,6 +211,7 @@ export function GymSessionScreen() {
   }
 
   const activeEx = exercises[activeIndex];
+  const lastWeight = activeEx ? lastWeights?.get(activeEx) : undefined;
   return (
     <div className="gym-session">
       {/* Header */}
@@ -253,10 +257,10 @@ export function GymSessionScreen() {
           <ExerciseIllustration illustrationKey={activeEx.illustrationKey} size="preview" />
           <h2 className="gym-exercise-name">{activeEx.name}</h2>
 
-          {lastWeights?.has(activeEx.name) && (
+          {lastWeight && (
             <p className="gym-exercise-last">
-              Zuletzt: {lastWeights.get(activeEx.name)!.weight_kg} kg
-              {lastWeights.get(activeEx.name)!.reps != null && ` × ${lastWeights.get(activeEx.name)!.reps}`}
+              Zuletzt: {lastWeight.weight_kg} kg
+              {lastWeight.reps != null && ` × ${lastWeight.reps}`}
             </p>
           )}
 

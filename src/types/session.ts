@@ -23,4 +23,5 @@ export interface SessionEntry {
   reps: number | null;
   notes: string | null;
   round_number: number;
+  library_exercise_id?: string | null;
 }

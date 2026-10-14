@@ -14,6 +14,7 @@ function ex(overrides: Partial<PlanExercise> = {}): PlanExercise {
     muscle_groups: ['Brust'],
     howto: 'Flach liegen',
     illustration_key: 'db-bench',
+    library_exercise_id: 'lib-1',
     animation_key: null,
     is_warmup: false,
     work_seconds: 45,
@@ -37,6 +38,7 @@ describe('workout-loader', () => {
       howto: 'Flach liegen',
       illustrationKey: 'db-bench',
       trackWeight: true,
+      libraryExerciseId: 'lib-1',
     });
   });
 

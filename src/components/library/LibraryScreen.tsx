@@ -88,6 +88,7 @@ export function LibraryScreen() {
         howto: ex.howto ?? '',
         illustrationKey: ex.illustration_key ?? undefined,
         trackWeight: ex.track_weight ?? false,
+        libraryExerciseId: ex.id,
       }],
       rounds: 3,
       roundPause: 90,

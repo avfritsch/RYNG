@@ -106,6 +106,7 @@ export const useTimerStore = create<TimerStore>((set, get) => {
         reps: null,
         notes: null,
         round_number: e.round,
+        library_exercise_id: station.libraryExerciseId ?? null,
       });
     });
 

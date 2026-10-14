@@ -32,6 +32,7 @@ export interface PlanExercise {
   muscle_groups: string[];
   howto: string | null;
   illustration_key: string | null;
+  library_exercise_id: string | null;
   animation_key: string | null;
   is_warmup: boolean;
   work_seconds: number;

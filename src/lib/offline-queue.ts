@@ -88,7 +88,13 @@ export async function flush(): Promise<number> {
     return 0;
   }
 
-  const all = (await db.getAll(STORE_NAME)) as PendingSession[];
+  // Only sync the signed-in user's workouts; others wait until they log in again.
+  const { data: { session: auth } } = await supabase.auth.getSession();
+  const userId = auth?.user.id;
+  if (!userId) return 0;
+
+  const all = ((await db.getAll(STORE_NAME)) as PendingSession[])
+    .filter((item) => item.session.user_id === userId);
   all.sort((a, b) => a.queuedAt - b.queuedAt);
 
   for (const item of all) {

@@ -15,6 +15,7 @@ export interface GymExercise {
   restSeconds: number;
   isWarmup: boolean;
   trackWeight: boolean;
+  libraryExerciseId?: string;
 }
 
 export interface GymSummary {

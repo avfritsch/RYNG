@@ -18,7 +18,11 @@ export interface GeneratedPlan {
 }
 
 interface LibraryExercise {
+  id: string;
   name: string;
+  speech_name: string | null;
+  illustration_key: string | null;
+  track_weight: boolean | null;
   category: string;
   muscle_groups: string[];
   equipment: string[];
@@ -29,8 +33,8 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
   // 1. Fetch exercise library to send as context
   const { data: library } = await supabase
     .from('exercise_library')
-    .select('name, category, muscle_groups, equipment, howto')
-    .eq('is_public', true)
+    .select('id, name, speech_name, illustration_key, track_weight, category, muscle_groups, equipment, howto')
+    .or('is_public.eq.true,created_by.is.null')
     .order('usage_count', { ascending: false })
     .limit(150);
 
@@ -66,6 +70,10 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
       pauseSeconds: Number(s.pauseSeconds) || 30,
       isWarmup: Boolean(s.isWarmup),
       howto: match?.howto ?? '',
+      speechName: match?.speech_name ?? undefined,
+      illustrationKey: match?.illustration_key ?? undefined,
+      trackWeight: match?.track_weight ?? false,
+      libraryExerciseId: match?.id,
     };
   });
 
@@ -110,6 +118,10 @@ export async function saveGeneratedPlan(plan: GeneratedPlan): Promise<string> {
     name: s.name,
     muscle_groups: s.muscleGroups ?? [],
     howto: s.howto || null,
+    speech_name: s.speechName ?? null,
+    illustration_key: s.illustrationKey ?? null,
+    track_weight: s.trackWeight ?? false,
+    library_exercise_id: s.libraryExerciseId ?? null,
     is_warmup: s.isWarmup,
     work_seconds: s.workSeconds,
     pause_seconds: s.pauseSeconds,

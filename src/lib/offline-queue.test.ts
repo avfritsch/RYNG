@@ -24,6 +24,7 @@ vi.mock('./supabase.ts', () => ({
       },
     }),
     rpc: () => Promise.resolve({ error: null }),
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'u1' } } } }) },
   },
 }));
 
@@ -99,6 +100,13 @@ describe('offline-queue', () => {
     expect(await flush()).toBe(0);
     expect(calls).toHaveLength(1);
     expect(await pendingCount()).toBe(3);
+  });
+
+  it('only syncs workouts of the signed-in user', async () => {
+    const other = makeSession('s9');
+    await queueSession({ ...other.session, user_id: 'someone-else' }, other.entries);
+    expect(await flush()).toBe(0);
+    expect(await pendingCount()).toBe(1);
   });
 
   it('detects network errors', () => {

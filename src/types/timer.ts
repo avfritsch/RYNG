@@ -9,6 +9,7 @@ export interface StationConfig {
   illustrationKey?: string;
   animationKey?: string;
   trackWeight?: boolean;
+  libraryExerciseId?: string;
 }
 
 export interface TimerConfig {

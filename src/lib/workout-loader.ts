@@ -20,6 +20,7 @@ export function planExerciseToStation(e: PlanExercise): StationConfig {
     howto: e.howto ?? '',
     illustrationKey: e.illustration_key ?? undefined,
     trackWeight: e.track_weight ?? false,
+    libraryExerciseId: e.library_exercise_id ?? undefined,
   };
 }
 
@@ -35,6 +36,7 @@ export function planExerciseToGymExercise(e: PlanExercise): GymExercise {
     restSeconds: e.pause_seconds || DEFAULT_GYM_REST,
     isWarmup: e.is_warmup,
     trackWeight: e.track_weight ?? false,
+    libraryExerciseId: e.library_exercise_id ?? undefined,
   };
 }
 

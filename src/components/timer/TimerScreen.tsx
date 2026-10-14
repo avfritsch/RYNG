@@ -37,7 +37,9 @@ export function TimerScreen() {
   // Fetch last-used weights for all trackWeight stations
   const weightStationNames = useMemo(() => {
     if (!config) return [];
-    return config.stations.filter((s) => s.trackWeight && !s.isWarmup).map((s) => s.name);
+    return config.stations
+      .filter((s) => s.trackWeight && !s.isWarmup)
+      .map((s) => ({ name: s.name, libraryExerciseId: s.libraryExerciseId }));
   }, [config]);
   const { data: lastWeights } = useLastWeights(weightStationNames);
 
@@ -166,7 +168,7 @@ export function TimerScreen() {
           <WeightInput
             stationIndex={state.station - 1}
             roundNumber={state.round}
-            lastWeight={lastWeights?.get(currentStation.name)}
+            lastWeight={lastWeights?.get(currentStation)}
           />
         )}
 
