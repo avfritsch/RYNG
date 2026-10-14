@@ -9,13 +9,15 @@
 
 // deno-lint-ignore-file no-explicit-any
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { sendToUser, type PushPayload } from '../_shared/web-push.ts';
+import { sendToUser } from '../_shared/web-push.ts';
+import { adminClient, isServiceCall } from '../_shared/auth.ts';
 
 Deno.serve(async (req) => {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const supabase = createClient(supabaseUrl, serviceKey);
+  // Only pg_cron (which sends the service-role key) may trigger broadcasts.
+  if (!isServiceCall(req)) {
+    return jsonResponse({ error: 'Forbidden' }, 403);
+  }
+  const supabase = adminClient();
 
   let body: { type: string };
   try {

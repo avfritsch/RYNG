@@ -33,7 +33,13 @@ npx supabase db push
 ```bash
 npx supabase functions deploy generate-plan
 npx supabase functions deploy send-notification
+npx supabase functions deploy delete-account
 ```
+
+All functions authorize the caller themselves:
+- `generate-plan`, `delete-account`: require a signed-in user's JWT. `generate-plan`
+  is limited to `AI_PLANS_PER_DAY` (default 10) calls per user per day.
+- `send-notification`: only accepts the service-role key (sent by pg_cron).
 
 ### Secrets
 ```bash

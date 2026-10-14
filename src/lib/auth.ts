@@ -23,12 +23,11 @@ export async function resetPassword(email: string) {
 }
 
 export async function deleteAccount() {
-  // Delete profile (cascades to all user data via foreign keys)
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Nicht eingeloggt');
+  // Server-side deletion of the auth user; all user data cascades from there.
+  const { data, error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+  if (error) throw new Error(error.message || 'Konto konnte nicht gelöscht werden');
+  if (data?.error) throw new Error(data.error);
 
-  const { error } = await supabase.from('profiles').delete().eq('id', user.id);
-  if (error) throw error;
-
-  await supabase.auth.signOut();
+  // Session is already invalid server-side; clear it locally.
+  await supabase.auth.signOut({ scope: 'local' });
 }

@@ -114,9 +114,8 @@ export function useSaveSession() {
       }
 
       // Increment usage count for all exercises performed (best-effort)
-      const exerciseNames = [...new Set(payload.entries.map((e) => e.station_name))];
-      if (exerciseNames.length > 0) {
-        supabase.rpc('increment_exercise_usage_by_names', { exercise_names: exerciseNames })
+      if (payload.entries.length > 0) {
+        supabase.rpc('increment_exercise_usage_for_session', { p_session_id: sessionData.id })
           .then(null, (e) => logger.warn('Usage increment failed', { error: String(e) }));
       }
 

@@ -38,7 +38,7 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
 
   // 2. Call Claude with the library as context
   const { data, error } = await supabase.functions.invoke('generate-plan', {
-    body: { ...request, exercises },
+    body: request,
   });
 
   if (error) throw new Error(error.message || 'Fehler bei der Plan-Generierung');

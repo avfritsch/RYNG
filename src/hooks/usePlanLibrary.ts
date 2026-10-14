@@ -170,7 +170,7 @@ export function useCopyPlan() {
       }
 
       // Increment copy count
-      await supabase.from('plans').update({ copy_count: (plan.copy_count ?? 0) + 1 }).eq('id', planId);
+      await supabase.rpc('increment_plan_copy_count', { p_plan_id: planId });
 
       return newPlan;
     },
