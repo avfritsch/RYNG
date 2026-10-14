@@ -5,7 +5,7 @@ HOOK=".git/hooks/pre-push"
 
 cat > "$HOOK" << 'EOF'
 #!/bin/sh
-# Pre-push hook: type check + lint + unit tests + E2E tests
+# Pre-push hook: type check + lint + format + unit tests + E2E tests
 # Skip with: git push --no-verify
 
 echo "🔍 Type check..."
@@ -13,6 +13,9 @@ npx tsc -b || exit 1
 
 echo "🧹 Lint..."
 npm run lint || exit 1
+
+echo "🎨 Format check..."
+npm run format:check || { echo "Run: npm run format"; exit 1; }
 
 echo "🧪 Unit tests..."
 npm test || exit 1

@@ -71,9 +71,10 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push:
 1. Security audit of production dependencies (`npm audit --omit=dev --audit-level=high`)
 2. Type check (`tsc -b` — follows project references)
 3. Lint (`npm run lint`)
-4. Unit tests (Vitest)
-5. Build (Vite)
-6. E2E tests (Playwright, Supabase fully mocked)
+4. Format check (`npm run format:check`)
+5. Unit tests (Vitest)
+6. Build (Vite)
+7. E2E tests (Playwright, Supabase fully mocked)
 
 ## Release Process
 
