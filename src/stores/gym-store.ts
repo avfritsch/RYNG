@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface GymSet {
   weight_kg: number | null;
@@ -16,101 +17,91 @@ export interface GymExercise {
   trackWeight: boolean;
 }
 
+export interface GymSummary {
+  exercises: number;
+  sets: number;
+  totalSeconds: number;
+}
+
 interface GymStore {
+  /** Overlay is shown (workout running or its summary visible) */
   isActive: boolean;
   exercises: GymExercise[];
   startedAt: number | null;
   activeExerciseIndex: number;
-
-  // Rest timer
-  restSeconds: number | null;
-  restRunning: boolean;
+  /** Absolute end time of the current rest, or null */
+  restEndsAt: number | null;
+  /** Set once the session has been saved — the summary screen is shown */
+  summary: GymSummary | null;
 
   start: (exercises: GymExercise[]) => void;
   setActiveExercise: (index: number) => void;
   addSet: (exerciseIndex: number) => void;
   updateSet: (exerciseIndex: number, setIndex: number, patch: Partial<GymSet>) => void;
-  removeSet: (exerciseIndex: number, setIndex: number) => void;
   markSetDone: (exerciseIndex: number, setIndex: number) => void;
   startRest: (seconds: number) => void;
   clearRest: () => void;
-  tickRest: () => void;
-  finish: () => void;
+  finish: (summary: GymSummary) => void;
   reset: () => void;
 }
 
-export const useGymStore = create<GymStore>((set) => ({
+const empty = {
   isActive: false,
-  exercises: [],
+  exercises: [] as GymExercise[],
   startedAt: null,
   activeExerciseIndex: 0,
-  restSeconds: null,
-  restRunning: false,
+  restEndsAt: null,
+  summary: null,
+};
 
-  start: (exercises) => set({
-    isActive: true,
-    exercises,
-    startedAt: Date.now(),
-    activeExerciseIndex: 0,
-    restSeconds: null,
-    restRunning: false,
-  }),
+function patchSet(
+  exercises: GymExercise[],
+  exerciseIndex: number,
+  setIndex: number,
+  patch: Partial<GymSet>,
+): GymExercise[] {
+  return exercises.map((ex, i) =>
+    i !== exerciseIndex
+      ? ex
+      : { ...ex, sets: ex.sets.map((s, j) => (j === setIndex ? { ...s, ...patch } : s)) },
+  );
+}
 
-  setActiveExercise: (index) => set({ activeExerciseIndex: index, restSeconds: null, restRunning: false }),
+export const useGymStore = create<GymStore>()(
+  persist(
+    (set) => ({
+      ...empty,
 
-  addSet: (exerciseIndex) => set((s) => {
-    const exercises = [...s.exercises];
-    const ex = { ...exercises[exerciseIndex] };
-    const lastSet = ex.sets[ex.sets.length - 1];
-    ex.sets = [...ex.sets, {
-      weight_kg: lastSet?.weight_kg ?? null,
-      reps: lastSet?.reps ?? null,
-      done: false,
-    }];
-    exercises[exerciseIndex] = ex;
-    return { exercises };
-  }),
+      start: (exercises) => set({ ...empty, isActive: true, exercises, startedAt: Date.now() }),
 
-  updateSet: (exerciseIndex, setIndex, patch) => set((s) => {
-    const exercises = [...s.exercises];
-    const ex = { ...exercises[exerciseIndex] };
-    ex.sets = [...ex.sets];
-    ex.sets[setIndex] = { ...ex.sets[setIndex], ...patch };
-    exercises[exerciseIndex] = ex;
-    return { exercises };
-  }),
+      setActiveExercise: (index) => set({ activeExerciseIndex: index }),
 
-  removeSet: (exerciseIndex, setIndex) => set((s) => {
-    const exercises = [...s.exercises];
-    const ex = { ...exercises[exerciseIndex] };
-    ex.sets = ex.sets.filter((_, i) => i !== setIndex);
-    exercises[exerciseIndex] = ex;
-    return { exercises };
-  }),
+      addSet: (exerciseIndex) => set((s) => ({
+        exercises: s.exercises.map((ex, i) => {
+          if (i !== exerciseIndex) return ex;
+          const last = ex.sets[ex.sets.length - 1];
+          return {
+            ...ex,
+            sets: [...ex.sets, { weight_kg: last?.weight_kg ?? null, reps: last?.reps ?? null, done: false }],
+          };
+        }),
+      })),
 
-  markSetDone: (exerciseIndex, setIndex) => set((s) => {
-    const exercises = [...s.exercises];
-    const ex = { ...exercises[exerciseIndex] };
-    ex.sets = [...ex.sets];
-    ex.sets[setIndex] = { ...ex.sets[setIndex], done: true };
-    exercises[exerciseIndex] = ex;
-    return { exercises };
-  }),
+      updateSet: (exerciseIndex, setIndex, patch) =>
+        set((s) => ({ exercises: patchSet(s.exercises, exerciseIndex, setIndex, patch) })),
 
-  startRest: (seconds) => set({ restSeconds: seconds, restRunning: true }),
-  clearRest: () => set({ restSeconds: null, restRunning: false }),
-  tickRest: () => set((s) => {
-    if (s.restSeconds === null || s.restSeconds <= 0) return { restSeconds: null, restRunning: false };
-    return { restSeconds: s.restSeconds - 1 };
-  }),
+      markSetDone: (exerciseIndex, setIndex) =>
+        set((s) => ({ exercises: patchSet(s.exercises, exerciseIndex, setIndex, { done: true }) })),
 
-  finish: () => set({ isActive: false }),
-  reset: () => set({
-    isActive: false,
-    exercises: [],
-    startedAt: null,
-    activeExerciseIndex: 0,
-    restSeconds: null,
-    restRunning: false,
-  }),
-}));
+      startRest: (seconds) => set({ restEndsAt: Date.now() + seconds * 1000 }),
+      clearRest: () => set({ restEndsAt: null }),
+
+      finish: (summary) => set({ summary, restEndsAt: null }),
+      reset: () => set({ ...empty }),
+    }),
+    {
+      name: 'ryng_active_gym',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);

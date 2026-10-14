@@ -432,3 +432,127 @@ describe('timer-engine countdown beeps', () => {
     expect(states[states.length - 1].phase).toBe('done');
   });
 });
+
+// ============================================
+// Wall-clock, entries, pause accounting, restore
+// ============================================
+
+describe('timer-engine wall clock', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  it('records an entry for every completed work phase, including the last one', () => {
+    const engine = createTimerEngine(makeConfig({
+      stations: [
+        { name: 'A', workSeconds: 2, pauseSeconds: 1, isWarmup: false, howto: '' },
+        { name: 'B', workSeconds: 2, pauseSeconds: 1, isWarmup: false, howto: '' },
+      ],
+      rounds: 2,
+      roundPause: 1,
+    }));
+    const entries: { stationIndex: number; round: number; actualSeconds: number }[] = [];
+    engine.onEntry((e) => entries.push(e));
+    engine.start();
+    // A2 P1 B2 RP1 A2 P1 B2 = 11s
+    vi.advanceTimersByTime(11_000);
+
+    expect(engine.getState().phase).toBe('done');
+    expect(entries.map((e) => `${e.stationIndex}-${e.round}`)).toEqual(['0-1', '1-1', '0-2', '1-2']);
+    expect(entries.every((e) => e.actualSeconds === 2)).toBe(true);
+    expect(engine.getCompletionSummary()).toMatchObject({ stationsDone: 2, roundsDone: 2 });
+  });
+
+  it('catches up correctly when ticks were suspended (backgrounded tab)', () => {
+    const engine = createTimerEngine(makeConfig({
+      stations: [
+        { name: 'A', workSeconds: 10, pauseSeconds: 5, isWarmup: false, howto: '' },
+        { name: 'B', workSeconds: 10, pauseSeconds: 5, isWarmup: false, howto: '' },
+      ],
+      rounds: 1,
+      roundPause: 0,
+    }));
+    engine.start();
+    // Simulate the browser not firing intervals for 17s: move the clock only.
+    vi.setSystemTime(Date.now() + 17_000);
+    engine.sync();
+
+    const s = engine.getState();
+    expect(s.phase).toBe('work');
+    expect(s.station).toBe(2);
+    expect(s.currentSec).toBe(8);
+  });
+
+  it('excludes paused time from the session duration', () => {
+    const engine = createTimerEngine(makeConfig({
+      stations: [{ name: 'A', workSeconds: 60, pauseSeconds: 0, isWarmup: false, howto: '' }],
+      rounds: 1,
+      roundPause: 0,
+    }));
+    engine.start();
+    vi.advanceTimersByTime(10_000);
+    engine.pause();
+    vi.advanceTimersByTime(300_000);
+    engine.resume();
+    vi.advanceTimersByTime(5_000);
+    const summary = engine.stop();
+    expect(summary.totalSeconds).toBe(15);
+    expect(summary.stationsDone).toBe(1);
+  });
+
+  it('records a partial entry on skip forward but not on skip back', () => {
+    const engine = createTimerEngine(makeConfig({
+      stations: [
+        { name: 'A', workSeconds: 30, pauseSeconds: 0, isWarmup: false, howto: '' },
+        { name: 'B', workSeconds: 30, pauseSeconds: 0, isWarmup: false, howto: '' },
+      ],
+      rounds: 1,
+      roundPause: 0,
+    }));
+    const entries: { stationIndex: number; actualSeconds: number }[] = [];
+    engine.onEntry((e) => entries.push(e));
+    engine.start();
+    vi.advanceTimersByTime(12_000);
+    engine.skipForward();
+    expect(entries).toEqual([expect.objectContaining({ stationIndex: 0, actualSeconds: 12 })]);
+    engine.skipBack();
+    expect(entries).toHaveLength(1);
+  });
+
+  it('exposes the next station, including across rounds', () => {
+    const engine = createTimerEngine(makeConfig({
+      stations: [
+        { name: 'A', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
+        { name: 'B', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
+      ],
+      rounds: 2,
+      roundPause: 3,
+    }));
+    engine.start();
+    expect(engine.getState()).toMatchObject({ station: 1, nextStation: 2, nextIsNewRound: false });
+    vi.advanceTimersByTime(2_000);
+    expect(engine.getState()).toMatchObject({ station: 2, nextStation: 1, nextIsNewRound: true });
+  });
+
+  it('restores from a snapshot paused, counting downtime as pause', () => {
+    const config = makeConfig({
+      stations: [{ name: 'A', workSeconds: 60, pauseSeconds: 0, isWarmup: false, howto: '' }],
+      rounds: 1,
+      roundPause: 0,
+    });
+    const first = createTimerEngine(config);
+    first.start();
+    vi.advanceTimersByTime(20_000);
+    const snap = first.snapshot()!;
+    first.dispose();
+
+    vi.advanceTimersByTime(600_000); // app was closed for 10 min
+    const restored = createTimerEngine(config, snap);
+    expect(restored.getState()).toMatchObject({ isRunning: true, isPaused: true, currentSec: 40 });
+
+    restored.resume();
+    vi.advanceTimersByTime(5_000);
+    expect(restored.getState().currentSec).toBe(35);
+    expect(restored.stop().totalSeconds).toBe(25);
+  });
+});

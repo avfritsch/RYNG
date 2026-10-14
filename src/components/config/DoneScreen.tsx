@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTimerStore } from '../../stores/timer-store.ts';
 import { useSessionStore } from '../../stores/session-store.ts';
 import { useSaveSession, useSessions } from '../../hooks/useSessions.ts';
@@ -22,12 +22,12 @@ export function DoneScreen() {
   const config = useTimerStore((s) => s.config);
   const lastSummary = useTimerStore((s) => s.lastSummary);
   const reset = useTimerStore((s) => s.reset);
+  const claimSave = useTimerStore((s) => s.claimSave);
   const sessionEntries = useSessionStore((s) => s.entries);
   const sessionStartedAt = useSessionStore((s) => s.startedAt);
   const resetSession = useSessionStore((s) => s.reset);
   const saveSession = useSaveSession();
   const navigate = useNavigate();
-  const skippedRef = useRef(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const weeklyGoal = getWeeklyGoal();
   const weeklySessionCount = useWeeklySessionCount();
@@ -77,12 +77,12 @@ export function DoneScreen() {
     }
   }, [saveSession.isSuccess, newBadges.length, markAllSeen]);
 
-  // Auto-save session when done (skip if < 60s)
+  // Auto-save once per finished workout (skip if < 60s). claimSave() makes
+  // this idempotent, so StrictMode double-effects or re-renders can't save twice.
   useEffect(() => {
     if (!lastSummary || !config) return;
     if (state.phase !== 'done' && state.phase !== 'idle') return;
-    if (saveSession.isPending || saveSession.isSuccess) return;
-    if (skippedRef.current) return;
+    if (!claimSave()) return;
 
     const now = new Date().toISOString();
     const startedAt = sessionStartedAt
@@ -95,16 +95,15 @@ export function DoneScreen() {
         finished_at: now,
         duration_sec: lastSummary.totalSeconds,
         rounds: lastSummary.roundsDone,
-        station_count: lastSummary.stationsDone || new Set(sessionEntries.map((e) => e.station_name)).size,
+        station_count: lastSummary.stationsDone,
         plan_day_id: null,
         mesocycle_week: null,
       },
       entries: sessionEntries,
     };
 
-    if (lastSummary.totalSeconds < MIN_DURATION_SEC) {
+    if (lastSummary.totalSeconds < MIN_DURATION_SEC || lastSummary.stationsDone === 0) {
       // Too short — don't save, but offer the option
-      skippedRef.current = true;
       toast.undo('Training unter 1 Min — nicht gespeichert', () => {
         saveSession.mutate(sessionPayload);
       });
@@ -113,8 +112,9 @@ export function DoneScreen() {
 
     saveSession.mutate(sessionPayload);
     setShowConfetti(true);
+  // Runs when a new summary appears; claimSave guards repeats.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastSummary, state.phase, config, sessionEntries, sessionStartedAt]);
+  }, [lastSummary?.id, state.phase]);
 
   if (state.phase !== 'done' && !lastSummary) return null;
   if (state.phase !== 'done' && state.phase !== 'idle') return null;
@@ -127,14 +127,12 @@ export function DoneScreen() {
   }
 
   function handleAgain() {
-    skippedRef.current = false;
     saveSession.reset();
     resetSession();
     reset();
   }
 
   function handleHistory() {
-    skippedRef.current = false;
     saveSession.reset();
     resetSession();
     reset();

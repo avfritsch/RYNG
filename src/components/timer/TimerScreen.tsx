@@ -1,8 +1,7 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { useSessionStore } from '../../stores/session-store.ts';
 import { useLastWeights } from '../../hooks/useLastWeights.ts';
-import { speakStation, speakPause, speakRoundPause, speakDone } from '../../lib/speech.ts';
+import { speakStation, speakPause, speakRoundPause } from '../../lib/speech.ts';
 import { onHeartRate, getLastBpm } from '../../lib/heartrate.ts';
 import { RING_VIZ_MAX_STATIONS } from '../../lib/constants.ts';
 import { RingViz } from './RingViz.tsx';
@@ -34,7 +33,6 @@ export function TimerScreen() {
   const skipForward = useTimerStore((s) => s.skipForward);
   const skipBack = useTimerStore((s) => s.skipBack);
   const stop = useTimerStore((s) => s.stop);
-  const addEntry = useSessionStore((s) => s.addEntry);
 
   // Fetch last-used weights for all trackWeight stations
   const weightStationNames = useMemo(() => {
@@ -42,37 +40,6 @@ export function TimerScreen() {
     return config.stations.filter((s) => s.trackWeight && !s.isWarmup).map((s) => s.name);
   }, [config]);
   const { data: lastWeights } = useLastWeights(weightStationNames);
-
-  const prevRef = useRef<{ station: number; phase: string; round: number } | null>(null);
-
-  useEffect(() => {
-    if (!config || !state.isRunning) return;
-
-    const prev = prevRef.current;
-    prevRef.current = { station: state.station, phase: state.phase, round: state.round };
-
-    if (
-      prev &&
-      (prev.phase === 'work' || prev.phase === 'warmup') &&
-      (prev.station !== state.station || prev.round !== state.round || state.phase === 'done')
-    ) {
-      const stationIndex = prev.station - 1;
-      const stationConfig = config.stations[stationIndex];
-      if (stationConfig) {
-        addEntry({
-          station_index: stationIndex,
-          station_name: stationConfig.name,
-          is_warmup: stationConfig.isWarmup,
-          work_seconds: stationConfig.workSeconds,
-          actual_seconds: stationConfig.workSeconds,
-          weight_kg: null,
-          reps: null,
-          notes: null,
-          round_number: prev.round,
-        });
-      }
-    }
-  }, [state.station, state.phase, state.round, state.isRunning, config, addEntry]);
 
   // Speech announcements on phase changes
   const speechRef = useRef<string>('');
@@ -86,24 +53,12 @@ export function TimerScreen() {
     if (state.phase === 'work' || state.phase === 'warmup') {
       if (station) speakStation(station.name, state.phaseDuration, station.speechName);
     } else if (state.phase === 'pause') {
-      // Find next exercise for speech announcement
-      const warmups = config.stations.filter((s) => s.isWarmup);
-      const krafts = config.stations.filter((s) => !s.isWarmup);
-      let nextSt: typeof station | undefined;
-      if (station?.isWarmup) {
-        const idx = warmups.indexOf(station);
-        nextSt = warmups[idx + 1] ?? krafts[0];
-      } else if (station) {
-        const idx = krafts.indexOf(station);
-        nextSt = krafts[idx + 1] ?? (state.round < config.rounds ? krafts[0] : undefined);
-      }
+      const nextSt = state.nextStation ? config.stations[state.nextStation - 1] : undefined;
       speakPause(state.phaseDuration, nextSt?.name, nextSt?.speechName);
     } else if (state.phase === 'roundPause') {
       speakRoundPause(state.round, config.rounds, state.phaseDuration);
-    } else if (state.phase === 'done') {
-      speakDone();
     }
-  }, [state.phase, state.station, state.round, state.isRunning, config, state.phaseDuration]);
+  }, [state.phase, state.station, state.round, state.isRunning, state.nextStation, config, state.phaseDuration]);
 
   // Compute current set stations (warmup set OR kraft set for current round)
   const { setStations, activeStationInSet, setLabel } = useMemo(() => {
@@ -144,32 +99,11 @@ export function TimerScreen() {
 
   const isWarmup = currentStation?.isWarmup ?? false;
 
-  // Find next station for preview
-  let nextStation: typeof currentStation | null = null;
-  let nextLabel = '';
-  {
-    const warmupStations = config.stations.filter((s) => s.isWarmup);
-    const kraftStations = config.stations.filter((s) => !s.isWarmup);
-    const isInWarmup = currentStation?.isWarmup ?? false;
-
-    if (isInWarmup) {
-      const idx = warmupStations.indexOf(currentStation!);
-      const next = warmupStations[idx + 1];
-      if (next) { nextStation = next; nextLabel = `Nächste Übung: ${next.name}`; }
-      else if (kraftStations.length > 0) { nextStation = kraftStations[0]; nextLabel = `Nächste Übung: ${kraftStations[0].name}`; }
-    } else {
-      const idx = kraftStations.indexOf(currentStation!);
-      const next = kraftStations[idx + 1];
-      if (next) { nextStation = next; nextLabel = `Nächste Übung: ${next.name}`; }
-      else if (state.round < config.rounds && kraftStations.length > 0) { nextStation = kraftStations[0]; nextLabel = `Nächste Runde: ${kraftStations[0].name}`; }
-      else if (state.round >= config.rounds && idx >= kraftStations.length - 1) { nextLabel = 'Letzte Übung'; }
-    }
-
-    if (state.phase === 'roundPause' && kraftStations.length > 0) {
-      nextStation = kraftStations[0];
-      nextLabel = `Nächste Runde: ${kraftStations[0].name}`;
-    }
-  }
+  // Next station comes from the engine's own sequence
+  const nextStation = state.nextStation ? config.stations[state.nextStation - 1] : null;
+  const nextLabel = nextStation
+    ? `${state.nextIsNewRound ? 'Nächste Runde' : 'Nächste Übung'}: ${nextStation.name}`
+    : 'Letzte Übung';
 
   // Howto: during work/warmup show current, during pause show NEXT exercise howto
   let howtoText = '';
@@ -228,7 +162,7 @@ export function TimerScreen() {
           </>
         )}
 
-        {state.phase === 'pause' && currentStation?.trackWeight && !currentStation.isWarmup && (
+        {(state.phase === 'pause' || state.phase === 'roundPause') && currentStation?.trackWeight && !currentStation.isWarmup && (
           <WeightInput
             stationIndex={state.station - 1}
             roundNumber={state.round}

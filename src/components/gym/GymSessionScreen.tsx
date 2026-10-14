@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useMemo, memo } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState, memo } from 'react';
 import { useGymStore } from '../../stores/gym-store.ts';
 import { useLastWeights } from '../../hooks/useLastWeights.ts';
 import { useSaveSession } from '../../hooks/useSessions.ts';
@@ -10,7 +10,6 @@ import { Icon } from '../ui/Icon.tsx';
 import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
 import { Confetti } from '../ui/Confetti.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
-import { useState } from 'react';
 import type { GymSet } from '../../stores/gym-store.ts';
 import '../../styles/gym-session.css';
 
@@ -57,7 +56,7 @@ const GymSetRow = memo(function GymSetRow({ activeIndex, setIdx, set: s, trackWe
         disabled={s.done}
         aria-label={s.done ? 'Erledigt' : 'Satz abschließen'}
       >
-        <Icon name={s.done ? 'check' : 'check'} size={16} />
+        <Icon name="check" size={16} />
       </button>
     </div>
   );
@@ -68,23 +67,20 @@ export function GymSessionScreen() {
   const exercises = useGymStore((s) => s.exercises);
   const activeIndex = useGymStore((s) => s.activeExerciseIndex);
   const startedAt = useGymStore((s) => s.startedAt);
-  const restSeconds = useGymStore((s) => s.restSeconds);
-  const restRunning = useGymStore((s) => s.restRunning);
+  const restEndsAt = useGymStore((s) => s.restEndsAt);
+  const summary = useGymStore((s) => s.summary);
   const setActiveExercise = useGymStore((s) => s.setActiveExercise);
   const addSet = useGymStore((s) => s.addSet);
   const updateSet = useGymStore((s) => s.updateSet);
   const markSetDone = useGymStore((s) => s.markSetDone);
   const startRest = useGymStore((s) => s.startRest);
   const clearRest = useGymStore((s) => s.clearRest);
-  const tickRest = useGymStore((s) => s.tickRest);
   const finish = useGymStore((s) => s.finish);
   const resetGym = useGymStore((s) => s.reset);
 
   const saveSession = useSaveSession();
   const resetSession = useSessionStore((s) => s.reset);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [isDone, setIsDone] = useState(false);
 
   // Last weights lookup — memoize so the array reference is stable for useLastWeights
   const exerciseNames = useMemo(
@@ -93,47 +89,43 @@ export function GymSessionScreen() {
   );
   const { data: lastWeights } = useLastWeights(exerciseNames);
 
-  // Rest timer interval
-  const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Rest countdown, derived from an absolute end time so it survives
+  // backgrounding and reloads.
+  const [now, setNow] = useState(() => Date.now());
+  const lastBeepRef = useRef<number | null>(null);
   useEffect(() => {
-    if (restRunning && restSeconds !== null && restSeconds > 0) {
-      restRef.current = setInterval(() => {
-        tickRest();
-      }, 1000);
-      return () => { if (restRef.current) clearInterval(restRef.current); };
-    }
-    if (restSeconds !== null && restSeconds <= 0) {
-      beep(880, 200);
-      clearRest();
-    }
-    return () => { if (restRef.current) clearInterval(restRef.current); };
-  }, [restRunning, restSeconds, tickRest, clearRest]);
+    if (restEndsAt === null) return;
+    const id = setInterval(() => {
+      const t = Date.now();
+      const left = Math.ceil((restEndsAt - t) / 1000);
+      if (left <= 0) {
+        if (left > -3) beep(880, 200);
+        clearRest();
+        return;
+      }
+      if (left <= 3 && lastBeepRef.current !== left) beep(660, 100);
+      lastBeepRef.current = left;
+      setNow(t);
+    }, 250);
+    return () => clearInterval(id);
+  }, [restEndsAt, clearRest]);
+  const restLeft = restEndsAt !== null ? Math.max(1, Math.ceil((restEndsAt - now) / 1000)) : null;
 
-  // Beep at 3, 2, 1
-  useEffect(() => {
-    if (restSeconds !== null && restSeconds <= 3 && restSeconds > 0) {
-      beep(660, 100);
-    }
-  }, [restSeconds]);
-
+  // Stable callback (reads exercises from the store) so memoized rows don't re-render on every keystroke.
   const handleDoneSet = useCallback((exIdx: number, setIdx: number) => {
     markSetDone(exIdx, setIdx);
-    const ex = exercises[exIdx];
-    if (ex.restSeconds > 0) {
+    const ex = useGymStore.getState().exercises[exIdx];
+    if (ex && ex.restSeconds > 0) {
+      setNow(Date.now());
       startRest(ex.restSeconds);
     }
-  }, [exercises, markSetDone, startRest]);
+  }, [markSetDone, startRest]);
 
   function handleFinish() {
-    if (!startedAt) return;
+    if (!startedAt || saveSession.isPending) return;
     const totalSeconds = Math.round((Date.now() - startedAt) / 1000);
-    if (totalSeconds < 60) {
-      // Too short, just reset
-      resetGym();
-      return;
-    }
 
-    // Build session entries from gym exercises
+    // One entry per completed set; round_number = set number
     const entries = exercises.flatMap((ex, exIdx) =>
       ex.sets.filter((s) => s.done).map((s, setIdx) => ({
         station_index: exIdx,
@@ -148,16 +140,21 @@ export function GymSessionScreen() {
       })),
     );
 
-    const now = new Date().toISOString();
-    const doneSetCount = exercises.reduce((acc, ex) => acc + ex.sets.filter((s) => s.done).length, 0);
+    if (entries.length === 0) {
+      toast.info('Noch keine Sätze abgehakt — nichts gespeichert');
+      resetGym();
+      return;
+    }
+
+    const exercisesDone = new Set(entries.map((e) => e.station_index)).size;
 
     saveSession.mutate({
       session: {
         started_at: new Date(startedAt).toISOString(),
-        finished_at: now,
+        finished_at: new Date().toISOString(),
         duration_sec: totalSeconds,
         rounds: 1,
-        station_count: doneSetCount,
+        station_count: exercisesDone,
         plan_day_id: null,
         mesocycle_week: null,
       },
@@ -166,45 +163,37 @@ export function GymSessionScreen() {
       onSuccess: () => {
         beepDone();
         speakDone();
-        setShowConfetti(true);
-        setIsDone(true);
-        finish();
+        finish({ exercises: exercisesDone, sets: entries.length, totalSeconds });
       },
       onError: () => {
-        toast.error('Session konnte nicht gespeichert werden.');
+        toast.error('Session konnte nicht gespeichert werden. Bitte erneut versuchen.');
       },
     });
   }
 
   function handleClose() {
-    setShowConfetti(false);
-    setIsDone(false);
     resetGym();
     resetSession();
     saveSession.reset();
   }
 
-  if (!isActive && !isDone) return null;
+  if (!isActive) return null;
 
-  const activeEx = exercises[activeIndex];
-  const totalDone = exercises.reduce((acc, ex) => acc + ex.sets.filter((s) => s.done).length, 0);
-
-  if (isDone) {
-    const totalSeconds = startedAt ? Math.round((Date.now() - startedAt) / 1000) : 0;
-    const min = Math.floor(totalSeconds / 60);
-    const sec = totalSeconds % 60;
+  if (summary) {
+    const min = Math.floor(summary.totalSeconds / 60);
+    const sec = summary.totalSeconds % 60;
     return (
       <div className="gym-session">
-        <Confetti active={showConfetti} />
+        <Confetti active />
         <div className="gym-done">
           <h1 className="gym-done-title">Training abgeschlossen!</h1>
           <div className="gym-done-stats">
             <div className="gym-done-stat">
-              <span className="gym-done-stat-value">{exercises.length}</span>
+              <span className="gym-done-stat-value">{summary.exercises}</span>
               <span className="gym-done-stat-label">Übungen</span>
             </div>
             <div className="gym-done-stat">
-              <span className="gym-done-stat-value">{totalDone}</span>
+              <span className="gym-done-stat-value">{summary.sets}</span>
               <span className="gym-done-stat-label">Sätze</span>
             </div>
             <div className="gym-done-stat">
@@ -218,6 +207,7 @@ export function GymSessionScreen() {
     );
   }
 
+  const activeEx = exercises[activeIndex];
   return (
     <div className="gym-session">
       {/* Header */}
@@ -226,8 +216,8 @@ export function GymSessionScreen() {
           <Icon name="x-close" size={18} />
         </button>
         <span className="gym-header-title">Gym Training</span>
-        <button className="gym-header-finish" onClick={handleFinish}>
-          Beenden
+        <button className="gym-header-finish" onClick={handleFinish} disabled={saveSession.isPending}>
+          {saveSession.isPending ? 'Speichern…' : 'Beenden'}
         </button>
       </div>
 
@@ -249,10 +239,10 @@ export function GymSessionScreen() {
       </div>
 
       {/* Rest timer overlay */}
-      {restRunning && restSeconds !== null && (
+      {restLeft !== null && (
         <div className="gym-rest">
           <span className="gym-rest-label">Pause</span>
-          <span className="gym-rest-time">{restSeconds}</span>
+          <span className="gym-rest-time">{restLeft}</span>
           <button className="gym-rest-skip" onClick={clearRest}>Überspringen</button>
         </div>
       )}

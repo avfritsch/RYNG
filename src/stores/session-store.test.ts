@@ -145,4 +145,26 @@ describe('session-store', () => {
     expect(state.entries).toEqual([]);
     expect(state.startedAt).toBeNull();
   });
+
+  it('addEntry() replaces the entry for the same station and round, keeping logged weight', () => {
+    const base = {
+      station_index: 0,
+      station_name: 'Squats',
+      is_warmup: false,
+      work_seconds: 45,
+      actual_seconds: 20,
+      weight_kg: null,
+      reps: null,
+      notes: null,
+      round_number: 1,
+    };
+    useSessionStore.getState().addEntry(base);
+    useSessionStore.getState().updateLastEntry(0, 1, { weight_kg: 30 });
+    useSessionStore.getState().addEntry({ ...base, actual_seconds: 45 });
+
+    const entries = useSessionStore.getState().entries;
+    expect(entries).toHaveLength(1);
+    expect(entries[0].actual_seconds).toBe(45);
+    expect(entries[0].weight_kg).toBe(30);
+  });
 });

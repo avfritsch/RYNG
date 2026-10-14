@@ -27,5 +27,8 @@ export interface TimerState {
   phaseDuration: number;
   isRunning: boolean;
   isPaused: boolean;
-  exerciseStartTime: number | null;
+  /** 1-based index of the next work/warmup station, 0 if none */
+  nextStation: number;
+  /** True if the next station starts a new round */
+  nextIsNewRound: boolean;
 }
