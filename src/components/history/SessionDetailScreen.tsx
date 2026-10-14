@@ -40,9 +40,16 @@ export function SessionDetailScreen() {
 
   // Derive training name from entries
   const kraftEntries = entries?.filter((e) => !e.is_warmup) ?? [];
-  const trainingName = kraftEntries.length > 0
-    ? kraftEntries.slice(0, 3).map((e) => e.station_name).join(', ')
-    : entries?.slice(0, 3).map((e) => e.station_name).join(', ') ?? 'Training';
+  const trainingName =
+    kraftEntries.length > 0
+      ? kraftEntries
+          .slice(0, 3)
+          .map((e) => e.station_name)
+          .join(', ')
+      : (entries
+          ?.slice(0, 3)
+          .map((e) => e.station_name)
+          .join(', ') ?? 'Training');
 
   async function handleRepeat() {
     if (!sessionId) return;
@@ -81,7 +88,9 @@ export function SessionDetailScreen() {
           &larr; Zurück
         </button>
         <h2 className="session-detail-title">{trainingName}</h2>
-        <p className="session-detail-date">{dateStr}, {timeStr}</p>
+        <p className="session-detail-date">
+          {dateStr}, {timeStr}
+        </p>
       </div>
 
       <div className="session-detail-stats">
@@ -104,10 +113,7 @@ export function SessionDetailScreen() {
           <h3 className="session-round-label">Runde {roundNum}</h3>
           <div className="session-entries">
             {roundEntries?.map((entry, i) => (
-              <div
-                key={i}
-                className={`session-entry ${entry.is_warmup ? 'session-entry--warmup' : ''}`}
-              >
+              <div key={i} className={`session-entry ${entry.is_warmup ? 'session-entry--warmup' : ''}`}>
                 <span className="session-entry-name">{entry.station_name}</span>
                 {(entry.weight_kg != null || entry.reps != null) && (
                   <span className="session-entry-weight">

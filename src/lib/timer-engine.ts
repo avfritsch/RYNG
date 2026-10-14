@@ -95,7 +95,10 @@ export function beep(freq = 880, duration = 150) {
     // After an app switch the context can be 'suspended' or (iOS) 'interrupted'.
     // Wait for resume, otherwise the tone is silently dropped.
     if (ctx.state !== 'running') {
-      ctx.resume().then(() => playTone(ctx, freq, duration), () => {});
+      ctx.resume().then(
+        () => playTone(ctx, freq, duration),
+        () => {},
+      );
       return;
     }
     playTone(ctx, freq, duration);
@@ -124,7 +127,9 @@ export async function requestWakeLock() {
   try {
     if ('wakeLock' in navigator && !wakeLock) {
       wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener?.('release', () => { wakeLock = null; });
+      wakeLock.addEventListener?.('release', () => {
+        wakeLock = null;
+      });
     }
   } catch {
     // Wake Lock not available
@@ -509,8 +514,12 @@ export function createTimerEngine(config: TimerConfig, restore?: EngineSnapshot)
     skipForward,
     skipBack,
     stop,
-    onTick: (fn) => { tickListeners.push(fn); },
-    onEntry: (fn) => { entryListeners.push(fn); },
+    onTick: (fn) => {
+      tickListeners.push(fn);
+    },
+    onEntry: (fn) => {
+      entryListeners.push(fn);
+    },
     getState: () => ({ ...state }),
     getCompletionSummary: () => completionSummary,
     snapshot,

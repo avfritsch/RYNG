@@ -11,14 +11,20 @@ export function PlanLibraryScreen() {
   const toggleVote = useTogglePlanVote();
   const copyPlan = useCopyPlan();
 
-  if (isLoading) return <div className="plan-lib"><h2 className="plan-lib-title">Plan-Bibliothek</h2><SkeletonCard count={4} /></div>;
+  if (isLoading)
+    return (
+      <div className="plan-lib">
+        <h2 className="plan-lib-title">Plan-Bibliothek</h2>
+        <SkeletonCard count={4} />
+      </div>
+    );
 
   return (
     <div className="plan-lib">
       <h2 className="plan-lib-title">Plan-Bibliothek</h2>
       <p className="plan-lib-desc">Öffentliche Trainingspläne der Community. Kopiere einen Plan, um ihn anzupassen.</p>
 
-      {(!plans || plans.length === 0) ? (
+      {!plans || plans.length === 0 ? (
         <p className="plan-lib-empty">Noch keine öffentlichen Pläne vorhanden.</p>
       ) : (
         <div className="plan-lib-list">
@@ -45,7 +51,10 @@ export function PlanLibraryScreen() {
                   <button className="library-action-btn" onClick={() => navigate(`/plans/${plan.id}`)}>
                     <Icon name="eye" size={14} /> Ansehen
                   </button>
-                  <button className="library-action-btn library-action-btn--primary" onClick={() => copyPlan.mutate(plan.id)}>
+                  <button
+                    className="library-action-btn library-action-btn--primary"
+                    onClick={() => copyPlan.mutate(plan.id)}
+                  >
                     <Icon name="copy" size={14} /> Kopieren
                   </button>
                 </div>

@@ -8,12 +8,11 @@ export function useVotes() {
     queryKey: queryKeys.votes(),
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<Set<string>> => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return new Set();
-      const { data, error } = await supabase
-        .from('exercise_votes')
-        .select('exercise_id')
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.from('exercise_votes').select('exercise_id').eq('user_id', user.id);
       if (error) throw error;
       return new Set(data.map((v: { exercise_id: string }) => v.exercise_id));
     },
@@ -25,15 +24,17 @@ export function useToggleVote() {
   return useMutation({
     mutationFn: async ({ exerciseId, hasVoted }: { exerciseId: string; hasVoted: boolean }) => {
       checkRateLimit('vote', 20, 60_000);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       if (hasVoted) {
-        await supabase.from('exercise_votes').delete()
-          .eq('user_id', user.id).eq('exercise_id', exerciseId);
+        await supabase.from('exercise_votes').delete().eq('user_id', user.id).eq('exercise_id', exerciseId);
       } else {
         await supabase.from('exercise_votes').insert({
-          user_id: user.id, exercise_id: exerciseId,
+          user_id: user.id,
+          exercise_id: exerciseId,
         });
       }
       return { exerciseId, hasVoted };
@@ -43,7 +44,11 @@ export function useToggleVote() {
       const previous = qc.getQueryData<Set<string>>(queryKeys.votes());
       qc.setQueryData<Set<string>>(queryKeys.votes(), (old) => {
         const next = new Set(old);
-        if (hasVoted) { next.delete(exerciseId); } else { next.add(exerciseId); }
+        if (hasVoted) {
+          next.delete(exerciseId);
+        } else {
+          next.add(exerciseId);
+        }
         return next;
       });
       return { previous };

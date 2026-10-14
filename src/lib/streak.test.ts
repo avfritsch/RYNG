@@ -58,11 +58,7 @@ describe('calculateStreak', () => {
   });
 
   it('returns correct count for consecutive days ending today', () => {
-    const sessions = [
-      makeSession(sessionOnDay(0)),
-      makeSession(sessionOnDay(1)),
-      makeSession(sessionOnDay(2)),
-    ];
+    const sessions = [makeSession(sessionOnDay(0)), makeSession(sessionOnDay(1)), makeSession(sessionOnDay(2))];
     expect(calculateStreak(sessions)).toBe(3);
   });
 
@@ -98,11 +94,7 @@ describe('calculateStreak', () => {
   });
 
   it('counts streak starting from yesterday when no session today', () => {
-    const sessions = [
-      makeSession(sessionOnDay(1)),
-      makeSession(sessionOnDay(2)),
-      makeSession(sessionOnDay(3)),
-    ];
+    const sessions = [makeSession(sessionOnDay(1)), makeSession(sessionOnDay(2)), makeSession(sessionOnDay(3))];
     expect(calculateStreak(sessions)).toBe(3);
   });
 
@@ -112,19 +104,12 @@ describe('calculateStreak', () => {
   });
 
   it('returns 0 when most recent session is 2+ days ago', () => {
-    const sessions = [
-      makeSession(sessionOnDay(3)),
-      makeSession(sessionOnDay(4)),
-    ];
+    const sessions = [makeSession(sessionOnDay(3)), makeSession(sessionOnDay(4))];
     expect(calculateStreak(sessions)).toBe(0);
   });
 
   it('returns 0 for old sessions with no recent ones', () => {
-    const sessions = [
-      makeSession(sessionOnDay(30)),
-      makeSession(sessionOnDay(31)),
-      makeSession(sessionOnDay(32)),
-    ];
+    const sessions = [makeSession(sessionOnDay(30)), makeSession(sessionOnDay(31)), makeSession(sessionOnDay(32))];
     expect(calculateStreak(sessions)).toBe(0);
   });
 
@@ -134,11 +119,7 @@ describe('calculateStreak', () => {
   });
 
   it('handles sessions in non-chronological order', () => {
-    const sessions = [
-      makeSession(sessionOnDay(2)),
-      makeSession(sessionOnDay(0)),
-      makeSession(sessionOnDay(1)),
-    ];
+    const sessions = [makeSession(sessionOnDay(2)), makeSession(sessionOnDay(0)), makeSession(sessionOnDay(1))];
     expect(calculateStreak(sessions)).toBe(3);
   });
 
@@ -150,10 +131,7 @@ describe('calculateStreak', () => {
     anchor.setDate(anchor.getDate() - 1);
     const yesterdayDate = anchor.toISOString().slice(0, 10);
 
-    const sessions = [
-      makeSession(`${todayDate}T23:50:00.000Z`),
-      makeSession(`${yesterdayDate}T00:10:00.000Z`),
-    ];
+    const sessions = [makeSession(`${todayDate}T23:50:00.000Z`), makeSession(`${yesterdayDate}T00:10:00.000Z`)];
     expect(calculateStreak(sessions)).toBe(2);
   });
 });

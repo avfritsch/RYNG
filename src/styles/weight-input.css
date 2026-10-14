@@ -49,7 +49,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color var(--duration-normal), color var(--duration-normal);
+  transition:
+    border-color var(--duration-normal),
+    color var(--duration-normal);
 }
 
 .weight-stepper-btn:active {

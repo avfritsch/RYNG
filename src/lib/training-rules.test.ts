@@ -9,24 +9,21 @@ function station(name: string, isWarmup = false, workSeconds = 45): StationConfi
 describe('training-rules: analyzeTraining', () => {
   it('returns empty warnings for a well-structured plan', () => {
     const stations = [
-      station('Jumping Jacks', true),    // warmup: covers beine (jump)
-      station('Arm Circles', true),       // warmup: covers push (schultern)
-      station('Bodyweight Rows', true),   // warmup: covers pull
-      station('Dead Bug', true),          // warmup: covers core
-      station('Kniebeugen'),              // beine
-      station('Liegestütze'),             // push
-      station('Klimmzüge'),              // pull
-      station('Plank'),                   // core
+      station('Jumping Jacks', true), // warmup: covers beine (jump)
+      station('Arm Circles', true), // warmup: covers push (schultern)
+      station('Bodyweight Rows', true), // warmup: covers pull
+      station('Dead Bug', true), // warmup: covers core
+      station('Kniebeugen'), // beine
+      station('Liegestütze'), // push
+      station('Klimmzüge'), // pull
+      station('Plank'), // core
     ];
     const warnings = analyzeTraining(stations);
     expect(warnings).toEqual([]);
   });
 
   it('warns about missing warmup', () => {
-    const stations = [
-      station('Kniebeugen'),
-      station('Liegestütze'),
-    ];
+    const stations = [station('Kniebeugen'), station('Liegestütze')];
     const warnings = analyzeTraining(stations);
     expect(warnings.some((w) => w.type === 'warning' && w.message.includes('Aufwärmen'))).toBe(true);
   });
@@ -34,7 +31,7 @@ describe('training-rules: analyzeTraining', () => {
   it('warns about consecutive same-region exercises', () => {
     const stations = [
       station('Jumping Jacks', true),
-      station('Liegestütze'),      // push: brust, schultern, trizeps
+      station('Liegestütze'), // push: brust, schultern, trizeps
       station('KH-Schulterdrücken'), // push: schultern
     ];
     const warnings = analyzeTraining(stations);
@@ -44,10 +41,10 @@ describe('training-rules: analyzeTraining', () => {
   it('does NOT warn about consecutive in a deliberate push split', () => {
     const stations = [
       station('Jumping Jacks', true),
-      station('Liegestütze'),        // push
+      station('Liegestütze'), // push
       station('KH-Schulterdrücken'), // push
-      station('Dips'),               // push
-      station('Trizeps Pushdown'),   // push
+      station('Dips'), // push
+      station('Trizeps Pushdown'), // push
     ];
     const warnings = analyzeTraining(stations);
     // All exercises are push → deliberate split, no consecutive region warning
@@ -57,17 +54,15 @@ describe('training-rules: analyzeTraining', () => {
 
   it('warns about uncovered warmup regions', () => {
     const stations = [
-      station('Arm Circles', true),   // warms up schultern (push)
-      station('Kniebeugen'),           // needs beine warmup
+      station('Arm Circles', true), // warms up schultern (push)
+      station('Kniebeugen'), // needs beine warmup
     ];
     const warnings = analyzeTraining(stations);
     expect(warnings.some((w) => w.message.includes('Nicht aufgewärmt') && w.message.includes('Beine'))).toBe(true);
   });
 
   it('warns about very short work time (<15s)', () => {
-    const stations = [
-      station('Squats', false, 10),
-    ];
+    const stations = [station('Squats', false, 10)];
     const warnings = analyzeTraining(stations);
     expect(warnings.some((w) => w.message.includes('10s') && w.message.includes('sehr kurz'))).toBe(true);
   });
@@ -86,10 +81,7 @@ describe('training-rules: analyzeTraining', () => {
   });
 
   it('returns empty for no kraft stations', () => {
-    const stations = [
-      station('Jumping Jacks', true),
-      station('Arm Circles', true),
-    ];
+    const stations = [station('Jumping Jacks', true), station('Arm Circles', true)];
     expect(analyzeTraining(stations)).toEqual([]);
   });
 
@@ -109,12 +101,7 @@ describe('training-rules: analyzeTraining', () => {
 
   it('handles core exercises without consecutive warning', () => {
     // Core is excluded from consecutive region checks
-    const stations = [
-      station('Jumping Jacks', true),
-      station('Plank'),
-      station('Russian Twists'),
-      station('Dead Bug'),
-    ];
+    const stations = [station('Jumping Jacks', true), station('Plank'), station('Russian Twists'), station('Dead Bug')];
     const warnings = analyzeTraining(stations);
     const regionWarnings = warnings.filter((w) => w.message.includes('belasten beide'));
     expect(regionWarnings.length).toBe(0);

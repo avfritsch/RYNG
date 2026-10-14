@@ -22,10 +22,12 @@ export function useLibraryFilters() {
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     searchTimer.current = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
-    return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
+    return () => {
+      if (searchTimer.current) clearTimeout(searchTimer.current);
+    };
   }, [search]);
 
-  const toggleFilter = useCallback(<T,>(arr: T[], val: T, setter: (v: T[]) => void) => {
+  const toggleFilter = useCallback(<T>(arr: T[], val: T, setter: (v: T[]) => void) => {
     setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
   }, []);
 
@@ -38,18 +40,28 @@ export function useLibraryFilters() {
 
   return {
     // Filter values
-    categories, setCategories,
-    equipmentSel, setEquipmentSel,
-    muscleGroups, setMuscleGroups,
-    search, setSearch,
-    showFavoritesOnly, setShowFavoritesOnly,
-    showOwnOnly, setShowOwnOnly,
-    sortBy, setSortBy,
+    categories,
+    setCategories,
+    equipmentSel,
+    setEquipmentSel,
+    muscleGroups,
+    setMuscleGroups,
+    search,
+    setSearch,
+    showFavoritesOnly,
+    setShowFavoritesOnly,
+    showOwnOnly,
+    setShowOwnOnly,
+    sortBy,
+    setSortBy,
 
     // Panel open state
-    catOpen, setCatOpen,
-    mgOpen, setMgOpen,
-    eqOpen, setEqOpen,
+    catOpen,
+    setCatOpen,
+    mgOpen,
+    setMgOpen,
+    eqOpen,
+    setEqOpen,
 
     // Helpers
     toggleFilter,

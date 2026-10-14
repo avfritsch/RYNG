@@ -62,7 +62,9 @@ export function MesocycleEditor({ onClose }: MesocycleEditorProps) {
     <div className="meso-editor">
       <div className="meso-editor-header">
         <h3>Mesozyklus konfigurieren</h3>
-        <button className="meso-editor-close" onClick={onClose}><Icon name="x-close" size={18} /></button>
+        <button className="meso-editor-close" onClick={onClose}>
+          <Icon name="x-close" size={18} />
+        </button>
       </div>
 
       <div className="meso-editor-current">
@@ -80,15 +82,15 @@ export function MesocycleEditor({ onClose }: MesocycleEditorProps) {
           const weekNum = parseInt(weekKey.replace('week', ''));
 
           return (
-            <div key={weekKey} className={`meso-editor-week ${config.current_week === weekNum ? 'meso-editor-week--current' : ''}`}>
+            <div
+              key={weekKey}
+              className={`meso-editor-week ${config.current_week === weekNum ? 'meso-editor-week--current' : ''}`}
+            >
               <span className="meso-editor-week-label">Woche {weekNum}</span>
               <div className="meso-editor-week-fields">
                 <label>
                   <span>Label</span>
-                  <DebouncedInput
-                    value={wc.label}
-                    onCommit={(v) => handleUpdateWeek(weekKey, 'label', v)}
-                  />
+                  <DebouncedInput value={wc.label} onCommit={(v) => handleUpdateWeek(weekKey, 'label', v)} />
                 </label>
                 <label>
                   <span>Work &times;</span>
@@ -118,11 +120,7 @@ export function MesocycleEditor({ onClose }: MesocycleEditorProps) {
         })}
       </div>
 
-      <button
-        className="meso-editor-delete"
-        onClick={handleDelete}
-        disabled={deleting}
-      >
+      <button className="meso-editor-delete" onClick={handleDelete} disabled={deleting}>
         {deleting ? 'Wird deaktiviert...' : 'Mesozyklus deaktivieren'}
       </button>
 

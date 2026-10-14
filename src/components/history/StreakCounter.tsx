@@ -11,12 +11,8 @@ export function StreakCounter({ sessions }: StreakCounterProps) {
 
   return (
     <div className="streak-counter">
-      <span className={`streak-value ${streak > 0 ? 'streak-value--active' : 'streak-value--zero'}`}>
-        {streak}
-      </span>
-      <span className="streak-label">
-        {streak === 1 ? 'Tag in Folge' : 'Tage in Folge'}
-      </span>
+      <span className={`streak-value ${streak > 0 ? 'streak-value--active' : 'streak-value--zero'}`}>{streak}</span>
+      <span className="streak-label">{streak === 1 ? 'Tag in Folge' : 'Tage in Folge'}</span>
     </div>
   );
 }

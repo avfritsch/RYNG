@@ -15,27 +15,27 @@
 }
 
 .phase-badge--work {
-  background: #7FFF0033;
-  border: 1px solid #7FFF0066;
-  color: #7FFF00;
+  background: #7fff0033;
+  border: 1px solid #7fff0066;
+  color: #7fff00;
 }
 
 .phase-badge--pause {
-  background: #FF3B3B33;
-  border: 1px solid #FF3B3B66;
-  color: #FF3B3B;
+  background: #ff3b3b33;
+  border: 1px solid #ff3b3b66;
+  color: #ff3b3b;
 }
 
 .phase-badge--roundpause {
-  background: #FFE60033;
-  border: 1px solid #FFE60066;
-  color: #FFE600;
+  background: #ffe60033;
+  border: 1px solid #ffe60066;
+  color: #ffe600;
 }
 
 .phase-badge--warmup {
-  background: #FFE60033;
-  border: 1px solid #FFE60066;
-  color: #FFE600;
+  background: #ffe60033;
+  border: 1px solid #ffe60066;
+  color: #ffe600;
 }
 
 .phase-station-name {

@@ -27,7 +27,9 @@ export function SessionCard({ session, name, onClick }: SessionCardProps) {
     <button className="card card--interactive session-card" onClick={onClick}>
       <div className="session-card-date">
         {name && <span className="session-card-name">{name}</span>}
-        <span className="session-card-day">{dateStr}, {timeStr}</span>
+        <span className="session-card-day">
+          {dateStr}, {timeStr}
+        </span>
       </div>
       <div className="session-card-stats">
         <span className="session-card-stat">

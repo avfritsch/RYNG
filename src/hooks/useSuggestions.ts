@@ -54,7 +54,10 @@ function usePlansWithDays() {
       const { data: days, error: dErr } = await supabase
         .from('plan_days')
         .select('*')
-        .in('plan_id', plans.map((p: Plan) => p.id))
+        .in(
+          'plan_id',
+          plans.map((p: Plan) => p.id),
+        )
         .order('sort_order');
       if (dErr) throw dErr;
 
@@ -79,9 +82,7 @@ export function useSuggestions() {
 
     const result: Suggestion[] = [];
     const lastSession = sessions[0];
-    const allDays = plansWithDays.flatMap(({ plan, days }) =>
-      days.map((d) => ({ plan, day: d })),
-    );
+    const allDays = plansWithDays.flatMap(({ plan, days }) => days.map((d) => ({ plan, day: d })));
 
     // 1. Continue plan — next day after last session
     if (lastSession?.plan_day_id) {
@@ -117,7 +118,10 @@ export function useSuggestions() {
     // 3. Different training — a plan day the user hasn't done recently
     if (allDays.length > 0) {
       const recentDayIds = new Set(
-        sessions.slice(0, 5).map((s) => s.plan_day_id).filter(Boolean),
+        sessions
+          .slice(0, 5)
+          .map((s) => s.plan_day_id)
+          .filter(Boolean),
       );
       const unseen = allDays.find(({ day }) => !recentDayIds.has(day.id));
       if (unseen) {
@@ -175,15 +179,17 @@ export function useSuggestions() {
         const newcomerSuggestions: Suggestion[] = systemPlans.slice(0, 3).flatMap(({ plan, days }) => {
           const firstDay = days[0];
           if (!firstDay) return [];
-          return [{
-            type: 'next-day' as const,
-            title: `${plan.name} — ${firstDay.label}`,
-            description: 'Starte mit einem fertigen Plan',
-            planId: plan.id,
-            planName: plan.name,
-            dayId: firstDay.id,
-            dayLabel: firstDay.label,
-          }];
+          return [
+            {
+              type: 'next-day' as const,
+              title: `${plan.name} — ${firstDay.label}`,
+              description: 'Starte mit einem fertigen Plan',
+              planId: plan.id,
+              planName: plan.name,
+              dayId: firstDay.id,
+              dayLabel: firstDay.label,
+            },
+          ];
         });
         newcomerSuggestions.push({
           type: 'create',
@@ -192,11 +198,13 @@ export function useSuggestions() {
         });
         return newcomerSuggestions;
       }
-      return [{
-        type: 'get-started' as const,
-        title: 'Los geht\'s!',
-        description: 'Erstelle dein erstes Training oder wähle einen Plan.',
-      }];
+      return [
+        {
+          type: 'get-started' as const,
+          title: "Los geht's!",
+          description: 'Erstelle dein erstes Training oder wähle einen Plan.',
+        },
+      ];
     }
 
     return result;

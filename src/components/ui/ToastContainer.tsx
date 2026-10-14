@@ -23,16 +23,15 @@ export function ToastContainer() {
           {t.onUndo && (
             <button
               className="toast-undo"
-              onClick={() => { t.onUndo!(); dismiss(t.id); }}
+              onClick={() => {
+                t.onUndo!();
+                dismiss(t.id);
+              }}
             >
               Rückgängig
             </button>
           )}
-          <button
-            className="toast-dismiss"
-            onClick={() => dismiss(t.id)}
-            aria-label="Schließen"
-          >
+          <button className="toast-dismiss" onClick={() => dismiss(t.id)} aria-label="Schließen">
             <Icon name="x-close" size={14} />
           </button>
         </div>

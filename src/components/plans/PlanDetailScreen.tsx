@@ -47,9 +47,7 @@ export function PlanDetailScreen() {
           &larr; Zurück
         </button>
         <h2 className="plan-detail-title">{plan.name}</h2>
-        {plan.description && (
-          <p className="plan-detail-desc">{plan.description}</p>
-        )}
+        {plan.description && <p className="plan-detail-desc">{plan.description}</p>}
       </div>
 
       {daysLoading ? (
@@ -110,18 +108,12 @@ export function PlanDetailScreen() {
                 </button>
                 <div className="plan-detail-row">
                   {exercises && exercises.length > 0 && selectedDay && (
-                    <button
-                      className="plan-share-btn"
-                      onClick={() => setShowShare(true)}
-                    >
+                    <button className="plan-share-btn" onClick={() => setShowShare(true)}>
                       <Icon name="share" size={16} /> TEILEN
                     </button>
                   )}
                   {!plan.is_system && (
-                    <button
-                      className="plan-edit-btn"
-                      onClick={() => navigate(`/plans/${plan.id}/edit`)}
-                    >
+                    <button className="plan-edit-btn" onClick={() => navigate(`/plans/${plan.id}/edit`)}>
                       BEARBEITEN
                     </button>
                   )}

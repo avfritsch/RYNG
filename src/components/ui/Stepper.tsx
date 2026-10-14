@@ -25,7 +25,8 @@ export function Stepper({ label, value, min = 1, max = 99, step = 1, unit, onCha
           <Icon name="minus" size={16} />
         </button>
         <span className="stepper-value" aria-live="polite">
-          {value}{unit && <span className="stepper-unit">{unit}</span>}
+          {value}
+          {unit && <span className="stepper-unit">{unit}</span>}
         </span>
         <button
           className="stepper-btn"

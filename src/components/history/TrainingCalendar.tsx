@@ -10,8 +10,18 @@ interface TrainingCalendarProps {
 
 const DAY_LABELS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MONTH_NAMES = [
-  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
 ];
 
 function toDateKey(d: Date): string {
@@ -27,7 +37,6 @@ function getMonthDays(year: number, month: number): Date[] {
   }
   return days;
 }
-
 
 export function TrainingCalendar({ sessions, onDayClick }: TrainingCalendarProps) {
   const today = new Date();
@@ -114,7 +123,9 @@ export function TrainingCalendar({ sessions, onDayClick }: TrainingCalendarProps
       {/* Day labels */}
       <div className="cal-grid" role="group" aria-label="Trainingskalender">
         {DAY_LABELS.map((l) => (
-          <div key={l} className="cal-day-label">{l}</div>
+          <div key={l} className="cal-day-label">
+            {l}
+          </div>
         ))}
 
         {/* Empty cells before first day */}

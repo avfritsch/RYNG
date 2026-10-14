@@ -19,14 +19,12 @@ export function useNotificationPrefs() {
   return useQuery({
     queryKey: ['notification_prefs'],
     queryFn: async (): Promise<NotificationPrefs> => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return defaults;
 
-      const { data } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      const { data } = await supabase.from('notification_preferences').select('*').eq('user_id', user.id).single();
 
       return data ?? defaults;
     },
@@ -37,7 +35,9 @@ export function useUpdateNotificationPrefs() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (prefs: Partial<NotificationPrefs>) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       await supabase.from('notification_preferences').upsert({

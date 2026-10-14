@@ -11,19 +11,32 @@ interface FilterAccordionProps {
 }
 
 /** Collapsible multi-select chip filter (muscle groups, equipment, …). */
-export function FilterAccordion({ label, options, selected, open, onToggleOpen, onToggle, onReset }: FilterAccordionProps) {
+export function FilterAccordion({
+  label,
+  options,
+  selected,
+  open,
+  onToggleOpen,
+  onToggle,
+  onReset,
+}: FilterAccordionProps) {
   const count = selected.length;
   return (
     <>
       <button className="library-filter-header" onClick={onToggleOpen} aria-expanded={open}>
-        <span>{label}{count > 0 ? ` (${count})` : ''}</span>
+        <span>
+          {label}
+          {count > 0 ? ` (${count})` : ''}
+        </span>
         {count > 0 && <span className="library-filter-count">{count} aktiv</span>}
         <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} />
       </button>
       {open && (
         <div className="library-chip-wrap">
           {count > 0 && (
-            <button className="library-chip library-chip--reset" onClick={onReset}>Zurücksetzen</button>
+            <button className="library-chip library-chip--reset" onClick={onReset}>
+              Zurücksetzen
+            </button>
           )}
           {options.map((opt) => (
             <button

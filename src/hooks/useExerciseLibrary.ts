@@ -58,7 +58,9 @@ export function useCreateLibraryExercise() {
       is_public?: boolean;
     }) => {
       checkRateLimit('create-exercise', 5, 60_000);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase

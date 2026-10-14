@@ -50,7 +50,9 @@ export function AuthScreen() {
         <p className="auth-subtitle">Zirkeltraining Timer</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <label htmlFor="auth-email" className="sr-only">E-Mail-Adresse</label>
+          <label htmlFor="auth-email" className="sr-only">
+            E-Mail-Adresse
+          </label>
           <input
             id="auth-email"
             type="email"
@@ -63,7 +65,9 @@ export function AuthScreen() {
           />
           {mode !== 'reset' && (
             <>
-              <label htmlFor="auth-password" className="sr-only">Passwort</label>
+              <label htmlFor="auth-password" className="sr-only">
+                Passwort
+              </label>
               <input
                 id="auth-password"
                 type="password"
@@ -77,20 +81,14 @@ export function AuthScreen() {
               />
             </>
           )}
-          {error && <p className="auth-error" role="alert">{error}</p>}
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
           {success && <p className="auth-success-msg">{success}</p>}
-          <button
-            type="submit"
-            disabled={loading || !email || (mode !== 'reset' && !password)}
-            className="auth-button"
-          >
-            {loading
-              ? 'Laden...'
-              : mode === 'signup'
-                ? 'Registrieren'
-                : mode === 'reset'
-                  ? 'Link senden'
-                  : 'Anmelden'}
+          <button type="submit" disabled={loading || !email || (mode !== 'reset' && !password)} className="auth-button">
+            {loading ? 'Laden...' : mode === 'signup' ? 'Registrieren' : mode === 'reset' ? 'Link senden' : 'Anmelden'}
           </button>
         </form>
 

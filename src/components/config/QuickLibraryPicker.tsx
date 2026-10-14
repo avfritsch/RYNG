@@ -1,12 +1,23 @@
 import { useState } from 'react';
 import { useExerciseLibrary } from '../../hooks/useExerciseLibrary.ts';
-import { CATEGORY_LABELS, MUSCLE_GROUP_OPTIONS, EQUIPMENT_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
+import {
+  CATEGORY_LABELS,
+  MUSCLE_GROUP_OPTIONS,
+  EQUIPMENT_OPTIONS,
+  type ExerciseCategory,
+} from '../../types/exercise-library.ts';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import { Icon } from '../ui/Icon.tsx';
 import '../../styles/library-picker.css';
 
 interface QuickLibraryPickerProps {
-  onAdd: (exercise: { name: string; howto?: string | null; isWarmup: boolean; workSeconds: number; pauseSeconds: number }) => void;
+  onAdd: (exercise: {
+    name: string;
+    howto?: string | null;
+    isWarmup: boolean;
+    workSeconds: number;
+    pauseSeconds: number;
+  }) => void;
   onClose: () => void;
 }
 
@@ -45,7 +56,14 @@ export function QuickLibraryPicker({ onAdd, onClose }: QuickLibraryPickerProps) 
 
   return (
     <div className="picker-overlay" onClick={onClose}>
-      <div ref={trapRef} className="picker-modal" role="dialog" aria-modal="true" aria-label="Übung aus Bibliothek" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={trapRef}
+        className="picker-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Übung aus Bibliothek"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="picker-header">
           <h3>Übung hinzufügen</h3>
           <button onClick={onClose} aria-label="Schließen">
@@ -124,11 +142,7 @@ export function QuickLibraryPicker({ onAdd, onClose }: QuickLibraryPickerProps) 
             <p className="picker-empty">Keine Übungen gefunden.</p>
           ) : (
             exercises.map((ex) => (
-              <button
-                key={ex.id}
-                className="picker-item"
-                onClick={() => handleSelect(ex)}
-              >
+              <button key={ex.id} className="picker-item" onClick={() => handleSelect(ex)}>
                 <div className="picker-item-info">
                   <span className="picker-item-name">{ex.name}</span>
                   <span className="picker-item-meta">

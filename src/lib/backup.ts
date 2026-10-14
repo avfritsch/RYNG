@@ -48,13 +48,15 @@ const PresetSchema = z.object({
     stations: z.number(),
     roundPause: z.number(),
   }),
-  stations: z.array(z.object({
-    name: z.string(),
-    work: z.number(),
-    pause: z.number(),
-    howto: z.string(),
-    isWarmup: z.boolean(),
-  })),
+  stations: z.array(
+    z.object({
+      name: z.string(),
+      work: z.number(),
+      pause: z.number(),
+      howto: z.string(),
+      isWarmup: z.boolean(),
+    }),
+  ),
   created_at: z.string(),
 });
 
@@ -85,19 +87,24 @@ const SessionEntrySchema = z.object({
   round_number: z.number(),
 });
 
-const MesocycleSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string(),
-  cycle_length: z.number(),
-  current_week: z.number(),
-  cycle_start: z.string(),
-  progression: z.record(z.string(), z.object({
-    workMultiplier: z.number(),
-    pauseMultiplier: z.number(),
-    label: z.string(),
-  })),
-  updated_at: z.string(),
-}).nullable();
+const MesocycleSchema = z
+  .object({
+    id: z.string().uuid(),
+    user_id: z.string(),
+    cycle_length: z.number(),
+    current_week: z.number(),
+    cycle_start: z.string(),
+    progression: z.record(
+      z.string(),
+      z.object({
+        workMultiplier: z.number(),
+        pauseMultiplier: z.number(),
+        label: z.string(),
+      }),
+    ),
+    updated_at: z.string(),
+  })
+  .nullable();
 
 const BackupSchema = z.object({
   version: z.literal(1),
@@ -114,7 +121,9 @@ const BackupSchema = z.object({
 type BackupData = z.infer<typeof BackupSchema>;
 
 export async function exportBackup(): Promise<BackupData> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
   const [plans, presets, sessions, mesocycle] = await Promise.all([
@@ -190,7 +199,9 @@ export async function importBackup(file: File): Promise<{ imported: number }> {
     throw new Error('Ungültiges JSON');
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
   let imported = 0;

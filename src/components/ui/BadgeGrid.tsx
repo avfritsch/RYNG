@@ -51,10 +51,7 @@ export function BadgeGrid({ earned, nextBadge, stats }: BadgeGridProps) {
             <span className="badge-name">{badge.name}</span>
             {isNext && progress !== null && (
               <div className="badge-progress">
-                <div
-                  className="badge-progress-fill"
-                  style={{ width: `${Math.round(progress * 100)}%` }}
-                />
+                <div className="badge-progress-fill" style={{ width: `${Math.round(progress * 100)}%` }} />
               </div>
             )}
           </div>

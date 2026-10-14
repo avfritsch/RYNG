@@ -25,13 +25,16 @@ export class LastWeightLookup {
 
   add(row: { station_name: string; library_exercise_id: string | null } & LastWeight) {
     const value = { weight_kg: row.weight_kg, reps: row.reps };
-    if (row.library_exercise_id && !this.byId.has(row.library_exercise_id)) this.byId.set(row.library_exercise_id, value);
+    if (row.library_exercise_id && !this.byId.has(row.library_exercise_id))
+      this.byId.set(row.library_exercise_id, value);
     const key = normalizeExerciseName(row.station_name);
     if (!this.byName.has(key)) this.byName.set(key, value);
   }
 
   get(ex: WeightedExercise): LastWeight | undefined {
-    return (ex.libraryExerciseId && this.byId.get(ex.libraryExerciseId)) || this.byName.get(normalizeExerciseName(ex.name));
+    return (
+      (ex.libraryExerciseId && this.byId.get(ex.libraryExerciseId)) || this.byName.get(normalizeExerciseName(ex.name))
+    );
   }
 }
 

@@ -111,7 +111,9 @@ export function StartScreen() {
   return (
     <div className="start-screen">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 className="start-title" style={{ marginBottom: 0 }}>Bereit?</h2>
+        <h2 className="start-title" style={{ marginBottom: 0 }}>
+          Bereit?
+        </h2>
         <WeeklyGoalRing weekCount={weeklySessionCount} />
       </div>
 
@@ -191,19 +193,21 @@ export function StartScreen() {
 
           {!selectedPlanId ? (
             <div className="start-gym-plans">
-              {plans?.filter((p) => !p.is_system).map((plan) => (
-                <button
-                  key={plan.id}
-                  className="start-card card card--interactive"
-                  onClick={() => setSelectedPlanId(plan.id)}
-                >
-                  <div className="start-card-content">
-                    <span className="start-card-title">{plan.name}</span>
-                    {plan.description && <span className="start-card-desc">{plan.description}</span>}
-                  </div>
-                  <Icon name="chevron-right" size={18} />
-                </button>
-              ))}
+              {plans
+                ?.filter((p) => !p.is_system)
+                .map((plan) => (
+                  <button
+                    key={plan.id}
+                    className="start-card card card--interactive"
+                    onClick={() => setSelectedPlanId(plan.id)}
+                  >
+                    <div className="start-card-content">
+                      <span className="start-card-title">{plan.name}</span>
+                      {plan.description && <span className="start-card-desc">{plan.description}</span>}
+                    </div>
+                    <Icon name="chevron-right" size={18} />
+                  </button>
+                ))}
               {(!plans || plans.filter((p) => !p.is_system).length === 0) && (
                 <p className="start-gym-empty">Erstelle zuerst einen Plan unter Pläne.</p>
               )}
@@ -223,9 +227,7 @@ export function StartScreen() {
                     <span className="start-card-title">{day.label}</span>
                     {day.focus && <span className="start-card-desc">{day.focus}</span>}
                     {dayExercisesMap?.[day.id] && (
-                      <span className="start-card-exercises">
-                        {dayExercisesMap[day.id].join(' \u00b7 ')}
-                      </span>
+                      <span className="start-card-exercises">{dayExercisesMap[day.id].join(' \u00b7 ')}</span>
                     )}
                   </div>
                   <div className="start-card-action">

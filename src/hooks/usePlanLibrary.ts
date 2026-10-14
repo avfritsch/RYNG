@@ -34,13 +34,21 @@ export function usePublicPlans() {
           .eq('is_public', true)
           .order('vote_count', { ascending: false });
         if (fbErr) throw fbErr;
-        return (fallback as (Plan & { vote_count: number; copy_count: number; tags: string[] })[]).map((p) => ({
-          ...p, muscle_groups: [], equipment: [], author_name: null,
-        } as PublicPlan));
+        return (fallback as (Plan & { vote_count: number; copy_count: number; tags: string[] })[]).map(
+          (p) =>
+            ({
+              ...p,
+              muscle_groups: [],
+              equipment: [],
+              author_name: null,
+            }) as PublicPlan,
+        );
       }
 
       type RawPlan = Plan & {
-        vote_count: number; copy_count: number; tags: string[];
+        vote_count: number;
+        copy_count: number;
+        tags: string[];
         profiles: { display_name: string | null } | null;
         plan_days: { plan_exercises: { muscle_groups: string[] | null; equipment: string[] | null }[] }[] | null;
       };
@@ -54,7 +62,12 @@ export function usePublicPlans() {
           }
         }
         const { plan_days: _, profiles, ...rest } = p;
-        return { ...rest, muscle_groups: [...mgs], equipment: [...eqs], author_name: profiles?.display_name ?? null } as PublicPlan;
+        return {
+          ...rest,
+          muscle_groups: [...mgs],
+          equipment: [...eqs],
+          author_name: profiles?.display_name ?? null,
+        } as PublicPlan;
       });
     },
   });
@@ -65,12 +78,11 @@ export function usePlanVotes() {
     queryKey: queryKeys.planVotes(),
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<Set<string>> => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return new Set();
-      const { data, error } = await supabase
-        .from('plan_votes')
-        .select('plan_id')
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.from('plan_votes').select('plan_id').eq('user_id', user.id);
       if (error) throw error;
       return new Set(data.map((v: { plan_id: string }) => v.plan_id));
     },
@@ -82,7 +94,9 @@ export function useTogglePlanVote() {
   return useMutation({
     mutationFn: async ({ planId, hasVoted }: { planId: string; hasVoted: boolean }) => {
       checkRateLimit('plan-vote', 20, 60_000);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       if (hasVoted) {
         await supabase.from('plan_votes').delete().eq('user_id', user.id).eq('plan_id', planId);
@@ -95,12 +109,15 @@ export function useTogglePlanVote() {
       const previous = qc.getQueryData<Set<string>>(queryKeys.planVotes());
       qc.setQueryData<Set<string>>(queryKeys.planVotes(), (old) => {
         const next = new Set(old);
-        if (hasVoted) next.delete(planId); else next.add(planId);
+        if (hasVoted) next.delete(planId);
+        else next.add(planId);
         return next;
       });
       return { previous };
     },
-    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(queryKeys.planVotes(), ctx.previous); },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(queryKeys.planVotes(), ctx.previous);
+    },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.planVotes() });
       qc.invalidateQueries({ queryKey: queryKeys.publicPlans() });
@@ -112,7 +129,9 @@ export function useCopyPlan() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (planId: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       // Fetch source plan
@@ -120,32 +139,44 @@ export function useCopyPlan() {
       if (!plan) throw new Error('Plan not found');
 
       // Create copy
-      const { data: newPlan, error: planErr } = await supabase.from('plans').insert({
-        user_id: user.id,
-        name: plan.name + ' (Kopie)',
-        description: plan.description,
-        is_system: false,
-        is_public: false,
-      }).select().single();
+      const { data: newPlan, error: planErr } = await supabase
+        .from('plans')
+        .insert({
+          user_id: user.id,
+          name: plan.name + ' (Kopie)',
+          description: plan.description,
+          is_system: false,
+          is_public: false,
+        })
+        .select()
+        .single();
       if (planErr) throw planErr;
 
       // Copy days
       const { data: days } = await supabase.from('plan_days').select('*').eq('plan_id', planId).order('sort_order');
       const allExercises: Record<string, unknown>[] = [];
-      for (const day of (days ?? [])) {
-        const { data: newDay } = await supabase.from('plan_days').insert({
-          plan_id: newPlan.id,
-          label: day.label,
-          focus: day.focus,
-          sort_order: day.sort_order,
-          rounds: day.rounds,
-          round_pause: day.round_pause,
-          warmup_pause: day.warmup_pause,
-        }).select().single();
+      for (const day of days ?? []) {
+        const { data: newDay } = await supabase
+          .from('plan_days')
+          .insert({
+            plan_id: newPlan.id,
+            label: day.label,
+            focus: day.focus,
+            sort_order: day.sort_order,
+            rounds: day.rounds,
+            round_pause: day.round_pause,
+            warmup_pause: day.warmup_pause,
+          })
+          .select()
+          .single();
 
         if (newDay) {
-          const { data: exercises } = await supabase.from('plan_exercises').select('*').eq('day_id', day.id).order('sort_order');
-          for (const ex of (exercises ?? [])) {
+          const { data: exercises } = await supabase
+            .from('plan_exercises')
+            .select('*')
+            .eq('day_id', day.id)
+            .order('sort_order');
+          for (const ex of exercises ?? []) {
             allExercises.push({
               day_id: newDay.id,
               name: ex.name,

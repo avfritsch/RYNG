@@ -86,13 +86,9 @@ export function useBadges() {
     }
 
     const totalWorkouts = sessions.length;
-    const totalMinutes = Math.floor(
-      sessions.reduce((sum, s) => sum + s.duration_sec, 0) / 60,
-    );
+    const totalMinutes = Math.floor(sessions.reduce((sum, s) => sum + s.duration_sec, 0) / 60);
 
-    const dayStrings = sessions.map((s) =>
-      new Date(s.started_at).toISOString().slice(0, 10),
-    );
+    const dayStrings = sessions.map((s) => new Date(s.started_at).toISOString().slice(0, 10));
 
     const currentStreak = computeCurrentStreak(dayStrings);
     const maxStreak = computeMaxStreak(dayStrings);
@@ -111,15 +107,9 @@ export function useBadges() {
     };
   }, [sessions]);
 
-  const earned = useMemo(
-    () => BADGES.filter((b) => b.condition(stats)),
-    [stats],
-  );
+  const earned = useMemo(() => BADGES.filter((b) => b.condition(stats)), [stats]);
 
-  const nextBadge = useMemo(
-    () => BADGES.find((b) => !b.condition(stats)) ?? null,
-    [stats],
-  );
+  const nextBadge = useMemo(() => BADGES.find((b) => !b.condition(stats)) ?? null, [stats]);
 
   const newBadges = useMemo(() => {
     const seen = getSeenBadges();

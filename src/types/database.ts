@@ -33,11 +33,14 @@ export interface MesocycleConfig {
   cycle_length: number;
   current_week: number;
   cycle_start: string;
-  progression: Record<string, {
-    workMultiplier: number;
-    pauseMultiplier: number;
-    label: string;
-  }>;
+  progression: Record<
+    string,
+    {
+      workMultiplier: number;
+      pauseMultiplier: number;
+      label: string;
+    }
+  >;
   updated_at: string;
 }
 

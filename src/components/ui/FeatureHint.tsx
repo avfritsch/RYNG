@@ -19,7 +19,9 @@ export function FeatureHint({ hintId, children }: FeatureHintProps) {
 
   return (
     <div className="feature-hint">
-      <span className="feature-hint-icon" aria-hidden="true">💡</span>
+      <span className="feature-hint-icon" aria-hidden="true">
+        💡
+      </span>
       <span className="feature-hint-text">{children}</span>
       <button className="feature-hint-close" onClick={dismiss} aria-label="Hinweis schließen">
         ×

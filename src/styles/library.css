@@ -65,7 +65,9 @@
   text-align: center;
   color: var(--text-secondary);
   background: transparent;
-  transition: background var(--duration-normal), color var(--duration-normal);
+  transition:
+    background var(--duration-normal),
+    color var(--duration-normal);
 }
 
 .library-tab--active {
@@ -135,7 +137,10 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  transition: border-color var(--duration-normal), color var(--duration-normal), background var(--duration-normal);
+  transition:
+    border-color var(--duration-normal),
+    color var(--duration-normal),
+    background var(--duration-normal);
 }
 
 .library-chip--active {
@@ -601,7 +606,9 @@
   justify-content: center;
   color: var(--text-secondary);
   border: 1px solid var(--border-default);
-  transition: border-color var(--duration-normal), color var(--duration-normal);
+  transition:
+    border-color var(--duration-normal),
+    color var(--duration-normal);
 }
 
 .library-plan-row-copy:active {

@@ -12,7 +12,14 @@ interface TimerControlsProps {
   onStop: () => void;
 }
 
-export const TimerControls = memo(function TimerControls({ isPaused, onPause, onResume, onSkipBack, onSkipForward, onStop }: TimerControlsProps) {
+export const TimerControls = memo(function TimerControls({
+  isPaused,
+  onPause,
+  onResume,
+  onSkipBack,
+  onSkipForward,
+  onStop,
+}: TimerControlsProps) {
   const [showStopConfirm, setShowStopConfirm] = useState(false);
 
   return (
@@ -51,7 +58,10 @@ export const TimerControls = memo(function TimerControls({ isPaused, onPause, on
           confirmLabel="Beenden"
           danger
           onCancel={() => setShowStopConfirm(false)}
-          onConfirm={() => { setShowStopConfirm(false); onStop(); }}
+          onConfirm={() => {
+            setShowStopConfirm(false);
+            onStop();
+          }}
         />
       )}
     </>

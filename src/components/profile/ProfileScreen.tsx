@@ -4,8 +4,11 @@ import { exportBackup, downloadBackup, importBackup } from '../../lib/backup.ts'
 import { isSpeechAvailable, isSpeechEnabled, setSpeechEnabled } from '../../lib/speech.ts';
 import { useHeartRate } from '../../hooks/useHeartRate.ts';
 import {
-  getSpotifyClientId, setSpotifyClientId,
-  isSpotifyConnected, startSpotifyAuth, disconnectSpotify,
+  getSpotifyClientId,
+  setSpotifyClientId,
+  isSpotifyConnected,
+  startSpotifyAuth,
+  disconnectSpotify,
 } from '../../lib/spotify.ts';
 import { getTheme, setTheme, type Theme } from '../../lib/theme.ts';
 import { getWeeklyGoal, setWeeklyGoal } from '../../lib/weekly-goal.ts';
@@ -118,9 +121,7 @@ export function ProfileScreen() {
             >
               −
             </button>
-            <span className="weekly-goal-stepper__value">
-              {weeklyGoal === null ? 'Aus' : weeklyGoal}
-            </span>
+            <span className="weekly-goal-stepper__value">{weeklyGoal === null ? 'Aus' : weeklyGoal}</span>
             <button
               className="weekly-goal-stepper__btn"
               disabled={weeklyGoal === 7}
@@ -134,9 +135,7 @@ export function ProfileScreen() {
             </button>
           </div>
         </div>
-        {weeklyGoal === null && (
-          <p className="weekly-goal-hint">Setze ein Wochenziel für mehr Motivation</p>
-        )}
+        {weeklyGoal === null && <p className="weekly-goal-hint">Setze ein Wochenziel für mehr Motivation</p>}
       </div>
 
       <div className="profile-section">
@@ -257,9 +256,7 @@ export function ProfileScreen() {
         </div>
       )}
 
-      <FeatureHint hintId="heartrate">
-        Verbinde einen Bluetooth-Brustgurt für Live-Herzfrequenz im Timer.
-      </FeatureHint>
+      <FeatureHint hintId="heartrate">Verbinde einen Bluetooth-Brustgurt für Live-Herzfrequenz im Timer.</FeatureHint>
 
       {hr.available && (
         <div className="profile-section">
@@ -281,9 +278,7 @@ export function ProfileScreen() {
         </div>
       )}
 
-      <FeatureHint hintId="spotify">
-        Verbinde Spotify — die Musik pausiert automatisch in Trainingspausen.
-      </FeatureHint>
+      <FeatureHint hintId="spotify">Verbinde Spotify — die Musik pausiert automatisch in Trainingspausen.</FeatureHint>
 
       <div className="profile-section">
         <h3 className="profile-section-title">Spotify</h3>
@@ -291,11 +286,17 @@ export function ProfileScreen() {
           <div className="hr-widget">
             <div className="hr-widget-info">
               <span className="hr-widget-label">Spotify verbunden</span>
-              <span className="hr-widget-status hr-widget-status--connected">Musik steuert sich im Timer automatisch</span>
+              <span className="hr-widget-status hr-widget-status--connected">
+                Musik steuert sich im Timer automatisch
+              </span>
             </div>
             <button
               className="hr-connect-btn hr-connect-btn--disconnect"
-              onClick={() => { disconnectSpotify(); setSpotifyConnected(false); toast.info('Spotify getrennt'); }}
+              onClick={() => {
+                disconnectSpotify();
+                setSpotifyConnected(false);
+                toast.info('Spotify getrennt');
+              }}
             >
               Trennen
             </button>
@@ -304,10 +305,20 @@ export function ProfileScreen() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <input
               className="share-code"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: 'var(--text-base)', color: 'var(--text-primary)' }}
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
+                padding: '10px 12px',
+                fontSize: 'var(--text-base)',
+                color: 'var(--text-primary)',
+              }}
               placeholder="Spotify Client ID"
               value={spotifyId}
-              onChange={(e) => { setSpotifyId(e.target.value); setSpotifyClientId(e.target.value); }}
+              onChange={(e) => {
+                setSpotifyId(e.target.value);
+                setSpotifyClientId(e.target.value);
+              }}
             />
             <button
               className="hr-connect-btn hr-connect-btn--connect"
@@ -320,7 +331,8 @@ export function ProfileScreen() {
               Mit Spotify verbinden
             </button>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              Erstelle eine App auf developer.spotify.com und trage die Client ID ein. Redirect URI: {window.location.origin}/
+              Erstelle eine App auf developer.spotify.com und trage die Client ID ein. Redirect URI:{' '}
+              {window.location.origin}/
             </p>
           </div>
         )}
@@ -329,41 +341,21 @@ export function ProfileScreen() {
       <div className="profile-section">
         <h3 className="profile-section-title">Daten</h3>
         <div className="profile-backup-btns">
-          <button
-            className="profile-backup-btn"
-            onClick={handleExport}
-            disabled={exporting}
-          >
+          <button className="profile-backup-btn" onClick={handleExport} disabled={exporting}>
             {exporting ? 'Exportiere...' : 'JSON Export'}
           </button>
-          <button
-            className="profile-backup-btn"
-            onClick={() => fileRef.current?.click()}
-            disabled={importing}
-          >
+          <button className="profile-backup-btn" onClick={() => fileRef.current?.click()} disabled={importing}>
             {importing ? 'Importiere...' : 'JSON Import'}
           </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".json"
-            style={{ display: 'none' }}
-            onChange={handleImport}
-          />
+          <input ref={fileRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
         </div>
-        {message && (
-          <p className="profile-message">{message}</p>
-        )}
+        {message && <p className="profile-message">{message}</p>}
       </div>
 
       {canInstall && (
         <div className="profile-section">
           <h3 className="profile-section-title">App</h3>
-          <button
-            className="profile-backup-btn"
-            style={{ width: '100%' }}
-            onClick={installApp}
-          >
+          <button className="profile-backup-btn" style={{ width: '100%' }} onClick={installApp}>
             App installieren
           </button>
         </div>
@@ -373,10 +365,7 @@ export function ProfileScreen() {
         Abmelden
       </button>
 
-      <button
-        className="profile-delete-account"
-        onClick={() => setShowDeleteConfirm(true)}
-      >
+      <button className="profile-delete-account" onClick={() => setShowDeleteConfirm(true)}>
         Konto löschen
       </button>
 

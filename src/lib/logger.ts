@@ -1,7 +1,6 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 function log(level: LogLevel, message: string, data?: Record<string, unknown>) {
-
   // Console output
   const consoleFn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
   if (data) {
@@ -12,19 +11,21 @@ function log(level: LogLevel, message: string, data?: Record<string, unknown>) {
 
   // Sentry breadcrumb (non-blocking)
   if (level === 'warn' || level === 'error') {
-    import('@sentry/react').then((Sentry) => {
-      Sentry.addBreadcrumb({
-        category: 'app',
-        message,
-        level: level === 'error' ? 'error' : 'warning',
-        data,
-      });
+    import('@sentry/react')
+      .then((Sentry) => {
+        Sentry.addBreadcrumb({
+          category: 'app',
+          message,
+          level: level === 'error' ? 'error' : 'warning',
+          data,
+        });
 
-      // Capture errors directly to Sentry
-      if (level === 'error') {
-        Sentry.captureMessage(message, { level: 'error', extra: data });
-      }
-    }).catch(() => {});
+        // Capture errors directly to Sentry
+        if (level === 'error') {
+          Sentry.captureMessage(message, { level: 'error', extra: data });
+        }
+      })
+      .catch(() => {});
   }
 }
 

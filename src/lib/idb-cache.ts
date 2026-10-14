@@ -48,7 +48,7 @@ export async function cacheSet(store: StoreName, key: string, value: unknown) {
 export async function cacheGet<T>(store: StoreName, key: string): Promise<T | undefined> {
   try {
     const db = await getDB();
-    return await db.get(store, key) as T | undefined;
+    return (await db.get(store, key)) as T | undefined;
   } catch (e) {
     console.warn('IDB cache error:', e);
     return undefined;

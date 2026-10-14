@@ -25,14 +25,21 @@ export function PlanListScreen() {
   const setPendingConfig = useNavigationStore((s) => s.setPendingConfig);
 
   if (isLoading) {
-    return <div className="plan-list"><h2 className="plan-list-title">Trainingspläne</h2><SkeletonCard count={4} /></div>;
+    return (
+      <div className="plan-list">
+        <h2 className="plan-list-title">Trainingspläne</h2>
+        <SkeletonCard count={4} />
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="plan-list" style={{ padding: 24 }}>
         <h2 className="plan-list-title">Trainingspläne</h2>
-        <p style={{ color: 'var(--color-rest)' }} role="alert">Fehler: {(error as Error).message}</p>
+        <p style={{ color: 'var(--color-rest)' }} role="alert">
+          Fehler: {(error as Error).message}
+        </p>
       </div>
     );
   }
@@ -50,10 +57,7 @@ export function PlanListScreen() {
           <div className="plan-cards">
             {customPlans.map((plan) => (
               <div key={plan.id} className="plan-card-wrapper">
-                <button
-                  className="card card--interactive plan-card"
-                  onClick={() => navigate(`/plans/${plan.id}`)}
-                >
+                <button className="card card--interactive plan-card" onClick={() => navigate(`/plans/${plan.id}`)}>
                   <span className="plan-card-name">{plan.name}</span>
                   <span className="plan-card-desc">{plan.description}</span>
                 </button>
@@ -70,33 +74,18 @@ export function PlanListScreen() {
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              className="plan-add-btn"
-              style={{ flex: 1, marginTop: 0 }}
-              onClick={() => navigate('/plans/quick')}
-            >
+            <button className="plan-add-btn" style={{ flex: 1, marginTop: 0 }} onClick={() => navigate('/plans/quick')}>
               + Neues Training
             </button>
-            <button
-              className="plan-add-btn"
-              style={{ flex: 1, marginTop: 0 }}
-              onClick={() => navigate('/plans/new')}
-            >
+            <button className="plan-add-btn" style={{ flex: 1, marginTop: 0 }} onClick={() => navigate('/plans/new')}>
               + Neuer Plan
             </button>
           </div>
-          <button
-            className="plan-add-btn"
-            style={{ marginTop: 0 }}
-            onClick={() => setShowImport(true)}
-          >
+          <button className="plan-add-btn" style={{ marginTop: 0 }} onClick={() => setShowImport(true)}>
             <Icon name="download" size={14} /> Import
           </button>
         </div>
-        <button
-          className="plan-ai-btn"
-          onClick={() => setShowAiPlanner(true)}
-        >
+        <button className="plan-ai-btn" onClick={() => setShowAiPlanner(true)}>
           Plan mit KI erstellen
         </button>
       </section>
@@ -108,7 +97,10 @@ export function PlanListScreen() {
           confirmLabel="Löschen"
           danger
           onCancel={() => setPlanToDelete(null)}
-          onConfirm={() => { deletePlan.mutate(planToDelete); setPlanToDelete(null); }}
+          onConfirm={() => {
+            deletePlan.mutate(planToDelete);
+            setPlanToDelete(null);
+          }}
         />
       )}
 

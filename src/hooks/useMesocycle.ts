@@ -9,14 +9,12 @@ export function useMesocycle() {
   return useQuery({
     queryKey: queryKeys.mesocycle(),
     queryFn: withCache('mesocycle', 'current', async (): Promise<MesocycleConfig | null> => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const { data, error } = await supabase
-        .from('mesocycle_config')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data, error } = await supabase.from('mesocycle_config').select('*').eq('user_id', user.id).maybeSingle();
       if (error) throw error;
       return data;
     }),
@@ -27,7 +25,9 @@ export function useCreateMesocycle() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase

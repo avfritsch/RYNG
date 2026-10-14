@@ -41,9 +41,7 @@ registerRoute(navigationRoute);
 
 // Pre-cache offline.html on install
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open('offline-fallback').then((cache) => cache.add('/offline.html')),
-  );
+  event.waitUntil(caches.open('offline-fallback').then((cache) => cache.add('/offline.html')));
 });
 
 // Push notification handler

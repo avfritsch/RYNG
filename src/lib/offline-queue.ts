@@ -42,7 +42,12 @@ function getDB() {
 /** True for errors that mean "no connection", as opposed to a rejected request. */
 export function isNetworkError(err: unknown): boolean {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
-  const msg = err instanceof Error ? err.message : typeof err === 'object' && err && 'message' in err ? String((err as { message: unknown }).message) : String(err);
+  const msg =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'object' && err && 'message' in err
+        ? String((err as { message: unknown }).message)
+        : String(err);
   return /failed to fetch|networkerror|network request failed|load failed|fetch failed|timeout/i.test(msg);
 }
 
@@ -57,7 +62,8 @@ export async function pushSession(session: NewSession, entries: NewSessionEntry[
   }
 
   // Best-effort; counts once per session server-side.
-  supabase.rpc('increment_exercise_usage_for_session', { p_session_id: session.id })
+  supabase
+    .rpc('increment_exercise_usage_for_session', { p_session_id: session.id })
     .then(null, (e) => logger.warn('Usage increment failed', { error: String(e) }));
 }
 
@@ -89,12 +95,13 @@ export async function flush(): Promise<number> {
   }
 
   // Only sync the signed-in user's workouts; others wait until they log in again.
-  const { data: { session: auth } } = await supabase.auth.getSession();
+  const {
+    data: { session: auth },
+  } = await supabase.auth.getSession();
   const userId = auth?.user.id;
   if (!userId) return 0;
 
-  const all = ((await db.getAll(STORE_NAME)) as PendingSession[])
-    .filter((item) => item.session.user_id === userId);
+  const all = ((await db.getAll(STORE_NAME)) as PendingSession[]).filter((item) => item.session.user_id === userId);
   all.sort((a, b) => a.queuedAt - b.queuedAt);
 
   for (const item of all) {
@@ -103,7 +110,11 @@ export async function flush(): Promise<number> {
       await db.delete(STORE_NAME, item.id);
       synced++;
     } catch (e) {
-      await db.put(STORE_NAME, { ...item, attempts: item.attempts + 1, lastError: String(e instanceof Error ? e.message : e) });
+      await db.put(STORE_NAME, {
+        ...item,
+        attempts: item.attempts + 1,
+        lastError: String(e instanceof Error ? e.message : e),
+      });
       if (isNetworkError(e)) break; // still offline — try again later
       logger.warn('Offline queue: session sync failed', { id: item.id, attempts: item.attempts + 1, error: String(e) });
     }

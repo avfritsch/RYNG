@@ -18,10 +18,7 @@ export const Countdown = memo(function Countdown({ seconds, phase }: CountdownPr
   const blink = seconds <= 3;
 
   return (
-    <div
-      className={`countdown ${blink ? 'countdown--blink' : ''}`}
-      style={{ color }}
-    >
+    <div className={`countdown ${blink ? 'countdown--blink' : ''}`} style={{ color }}>
       {seconds}
     </div>
   );

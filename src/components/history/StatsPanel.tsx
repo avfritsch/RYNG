@@ -131,21 +131,21 @@ function computeStats(sessions: Session[]) {
 
   if (sessions.length > 0) {
     // Longest session
-    const longest = sessions.reduce((a, b) => a.duration_sec > b.duration_sec ? a : b);
+    const longest = sessions.reduce((a, b) => (a.duration_sec > b.duration_sec ? a : b));
     records.push({
       label: 'Längstes Workout',
       value: `${Math.round(longest.duration_sec / 60)} Min`,
     });
 
     // Most stations
-    const mostStations = sessions.reduce((a, b) => a.station_count > b.station_count ? a : b);
+    const mostStations = sessions.reduce((a, b) => (a.station_count > b.station_count ? a : b));
     records.push({
       label: 'Meiste Stationen',
       value: `${mostStations.station_count} Stationen`,
     });
 
     // Most rounds
-    const mostRounds = sessions.reduce((a, b) => a.rounds > b.rounds ? a : b);
+    const mostRounds = sessions.reduce((a, b) => (a.rounds > b.rounds ? a : b));
     if (mostRounds.rounds > 1) {
       records.push({
         label: 'Meiste Runden',

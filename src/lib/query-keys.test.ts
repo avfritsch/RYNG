@@ -20,10 +20,7 @@ describe('queryKeys', () => {
     });
 
     it('returns ["exercise_library", filters] when called with filters', () => {
-      expect(queryKeys.exerciseLibrary({ search: 'test' })).toEqual([
-        'exercise_library',
-        { search: 'test' },
-      ]);
+      expect(queryKeys.exerciseLibrary({ search: 'test' })).toEqual(['exercise_library', { search: 'test' }]);
     });
   });
 

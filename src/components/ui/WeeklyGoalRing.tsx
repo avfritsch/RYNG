@@ -21,12 +21,7 @@ export function WeeklyGoalRing({ weekCount }: WeeklyGoalRingProps) {
   return (
     <div className="weekly-goal-ring">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle
-          className="weekly-goal-ring__track"
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-        />
+        <circle className="weekly-goal-ring__track" cx={size / 2} cy={size / 2} r={radius} />
         <circle
           className={`weekly-goal-ring__progress${done ? ' weekly-goal-ring__progress--done' : ''}`}
           cx={size / 2}
@@ -37,19 +32,11 @@ export function WeeklyGoalRing({ weekCount }: WeeklyGoalRingProps) {
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
         {done ? (
-          <text
-            className="weekly-goal-ring__checkmark"
-            x={size / 2}
-            y={size / 2}
-          >
+          <text className="weekly-goal-ring__checkmark" x={size / 2} y={size / 2}>
             ✓
           </text>
         ) : (
-          <text
-            className="weekly-goal-ring__text"
-            x={size / 2}
-            y={size / 2}
-          >
+          <text className="weekly-goal-ring__text" x={size / 2} y={size / 2}>
             {weekCount}/{goal}
           </text>
         )}

@@ -17,9 +17,7 @@ export function BottomNav() {
         <NavLink
           key={tab.to}
           to={tab.to}
-          className={({ isActive }) =>
-            `bottom-nav-item ${isActive ? 'active' : ''}`
-          }
+          className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
           end={tab.to === '/'}
         >
           <Icon name={tab.icon} size={20} />

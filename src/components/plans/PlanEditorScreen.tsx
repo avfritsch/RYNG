@@ -3,10 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import {
-  usePlan, usePlanDays, usePlanExercises,
-  useCreatePlan, useUpdatePlan,
-  useCreatePlanDay, useUpdatePlanDay, useDeletePlanDay,
-  useCreatePlanExercise, useUpdatePlanExercise, useDeletePlanExercise,
+  usePlan,
+  usePlanDays,
+  usePlanExercises,
+  useCreatePlan,
+  useUpdatePlan,
+  useCreatePlanDay,
+  useUpdatePlanDay,
+  useDeletePlanDay,
+  useCreatePlanExercise,
+  useUpdatePlanExercise,
+  useDeletePlanExercise,
 } from '../../hooks/usePlans.ts';
 import { DebouncedInput } from '../ui/DebouncedInput.tsx';
 import { Icon } from '../ui/Icon.tsx';
@@ -117,32 +124,38 @@ export function PlanEditorScreen() {
     setSelectedDayIndex(Math.max(0, selectedDayIndex - 1));
   }
 
-  async function handleUpdateDay(field: keyof Pick<PlanDay, 'label' | 'focus' | 'rounds' | 'round_pause'>, value: string | number) {
+  async function handleUpdateDay(
+    field: keyof Pick<PlanDay, 'label' | 'focus' | 'rounds' | 'round_pause'>,
+    value: string | number,
+  ) {
     if (!selectedDay || !plan) return;
     await updateDay.mutateAsync({ id: selectedDay.id, plan_id: plan.id, [field]: value });
   }
 
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id || !exercises || !selectedDay) return;
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id || !exercises || !selectedDay) return;
 
-    const oldIndex = exercises.findIndex((e) => e.id === active.id);
-    const newIndex = exercises.findIndex((e) => e.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
+      const oldIndex = exercises.findIndex((e) => e.id === active.id);
+      const newIndex = exercises.findIndex((e) => e.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
 
-    // Update sort_order for moved items
-    const reordered = [...exercises];
-    const [moved] = reordered.splice(oldIndex, 1);
-    reordered.splice(newIndex, 0, moved);
+      // Update sort_order for moved items
+      const reordered = [...exercises];
+      const [moved] = reordered.splice(oldIndex, 1);
+      reordered.splice(newIndex, 0, moved);
 
-    // Batch update sort_orders
-    for (let i = Math.min(oldIndex, newIndex); i <= Math.max(oldIndex, newIndex); i++) {
-      const ex = reordered[i];
-      if (ex.sort_order !== i) {
-        updateExercise.mutate({ id: ex.id, day_id: selectedDay.id, sort_order: i });
+      // Batch update sort_orders
+      for (let i = Math.min(oldIndex, newIndex); i <= Math.max(oldIndex, newIndex); i++) {
+        const ex = reordered[i];
+        if (ex.sort_order !== i) {
+          updateExercise.mutate({ id: ex.id, day_id: selectedDay.id, sort_order: i });
+        }
       }
-    }
-  }, [exercises, selectedDay, updateExercise]);
+    },
+    [exercises, selectedDay, updateExercise],
+  );
 
   async function handleAddExercise(isWarmup: boolean) {
     if (!selectedDay) return;
@@ -157,7 +170,11 @@ export function PlanEditorScreen() {
     });
   }
 
-  async function handleUpdateExercise(id: string, field: keyof Pick<PlanExercise, 'name' | 'muscle_groups' | 'work_seconds' | 'pause_seconds'>, value: unknown) {
+  async function handleUpdateExercise(
+    id: string,
+    field: keyof Pick<PlanExercise, 'name' | 'muscle_groups' | 'work_seconds' | 'pause_seconds'>,
+    value: unknown,
+  ) {
     if (!selectedDay) return;
     await updateExercise.mutateAsync({ id, day_id: selectedDay.id, [field]: value });
   }
@@ -192,11 +209,7 @@ export function PlanEditorScreen() {
             rows={3}
           />
           {error && <p style={{ color: 'var(--color-rest)', fontSize: '0.875rem' }}>{error}</p>}
-          <button
-            className="plan-editor-save"
-            onClick={handleCreatePlan}
-            disabled={!name.trim() || saving}
-          >
+          <button className="plan-editor-save" onClick={handleCreatePlan} disabled={!name.trim() || saving}>
             {saving ? 'Erstelle...' : 'Plan erstellen'}
           </button>
         </div>
@@ -250,22 +263,12 @@ export function PlanEditorScreen() {
 
       {/* Day Tabs */}
       {days && (
-        <DayTabs
-          days={days}
-          selectedIndex={selectedDayIndex}
-          onSelect={setSelectedDayIndex}
-          onAdd={handleAddDay}
-        />
+        <DayTabs days={days} selectedIndex={selectedDayIndex} onSelect={setSelectedDayIndex} onAdd={handleAddDay} />
       )}
 
       {selectedDay && (
         <>
-          <DayEditor
-            day={selectedDay}
-            planId={plan.id}
-            onUpdateDay={handleUpdateDay}
-            onDeleteDay={handleDeleteDay}
-          />
+          <DayEditor day={selectedDay} planId={plan.id} onUpdateDay={handleUpdateDay} onDeleteDay={handleDeleteDay} />
 
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             {/* Warmup Exercises */}
@@ -279,10 +282,18 @@ export function PlanEditorScreen() {
                 ))}
               </SortableContext>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button className="plan-editor-add-exercise" style={{ flex: 1 }} onClick={() => handleAddExercise(true)}>
+                <button
+                  className="plan-editor-add-exercise"
+                  style={{ flex: 1 }}
+                  onClick={() => handleAddExercise(true)}
+                >
                   + Neue Übung
                 </button>
-                <button className="plan-editor-add-exercise" style={{ flex: 1 }} onClick={() => setShowPicker('warmup')}>
+                <button
+                  className="plan-editor-add-exercise"
+                  style={{ flex: 1 }}
+                  onClick={() => setShowPicker('warmup')}
+                >
                   Aus Bibliothek
                 </button>
               </div>
@@ -299,7 +310,11 @@ export function PlanEditorScreen() {
                 ))}
               </SortableContext>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button className="plan-editor-add-exercise" style={{ flex: 1 }} onClick={() => handleAddExercise(false)}>
+                <button
+                  className="plan-editor-add-exercise"
+                  style={{ flex: 1 }}
+                  onClick={() => handleAddExercise(false)}
+                >
                   + Neue Übung
                 </button>
                 <button className="plan-editor-add-exercise" style={{ flex: 1 }} onClick={() => setShowPicker('kraft')}>
@@ -336,7 +351,11 @@ export function PlanEditorScreen() {
 
 type ExerciseField = keyof Pick<PlanExercise, 'name' | 'muscle_groups' | 'work_seconds' | 'pause_seconds'>;
 
-function ExerciseFields({ ex, onUpdate, onDelete }: {
+function ExerciseFields({
+  ex,
+  onUpdate,
+  onDelete,
+}: {
   ex: PlanExercise;
   onUpdate: (id: string, field: ExerciseField, value: unknown) => void;
   onDelete: (id: string) => void;
@@ -344,24 +363,34 @@ function ExerciseFields({ ex, onUpdate, onDelete }: {
   return (
     <div className="plan-editor-exercise">
       <div className="plan-editor-ex-row">
-        <DebouncedInput
-          className="plan-editor-ex-name"
-          value={ex.name}
-          onCommit={(v) => onUpdate(ex.id, 'name', v)}
-        />
-        <button className="plan-editor-ex-delete" onClick={() => onDelete(ex.id)}><Icon name="x-close" size={14} /></button>
+        <DebouncedInput className="plan-editor-ex-name" value={ex.name} onCommit={(v) => onUpdate(ex.id, 'name', v)} />
+        <button className="plan-editor-ex-delete" onClick={() => onDelete(ex.id)}>
+          <Icon name="x-close" size={14} />
+        </button>
       </div>
       <div className="plan-editor-ex-row">
         <label>
-          Dauer <DebouncedInput type="number" value={ex.work_seconds} onCommit={(v) => onUpdate(ex.id, 'work_seconds', Number(v))} />s
+          Dauer{' '}
+          <DebouncedInput
+            type="number"
+            value={ex.work_seconds}
+            onCommit={(v) => onUpdate(ex.id, 'work_seconds', Number(v))}
+          />
+          s
         </label>
         <label>
-          Pause <DebouncedInput type="number" value={ex.pause_seconds} onCommit={(v) => onUpdate(ex.id, 'pause_seconds', Number(v))} />s
+          Pause{' '}
+          <DebouncedInput
+            type="number"
+            value={ex.pause_seconds}
+            onCommit={(v) => onUpdate(ex.id, 'pause_seconds', Number(v))}
+          />
+          s
         </label>
         <DebouncedInput
           className="plan-editor-ex-detail"
           value={ex.muscle_groups?.join(', ') ?? ''}
-          onCommit={(v) => onUpdate(ex.id, 'muscle_groups', v ? v.split(',').map(s => s.trim()) : [])}
+          onCommit={(v) => onUpdate(ex.id, 'muscle_groups', v ? v.split(',').map((s) => s.trim()) : [])}
           placeholder="Muskelgruppe"
         />
       </div>

@@ -25,8 +25,7 @@ export const queryKeys = {
   planVotes: () => ['plan_votes'] as const,
 
   // ── Sessions ───────────────────────────────────────────
-  sessions: (filter?: string) =>
-    filter ? (['sessions', filter] as const) : (['sessions'] as const),
+  sessions: (filter?: string) => (filter ? (['sessions', filter] as const) : (['sessions'] as const)),
   session: (sessionId: string) => ['session', sessionId] as const,
   sessionEntries: (sessionId: string) => ['session_entries', sessionId] as const,
 
@@ -36,8 +35,7 @@ export const queryKeys = {
   planDayNames: () => ['plan-day-names'] as const,
 
   // ── Last weights ───────────────────────────────────────
-  lastWeights: (exerciseNames: string[]) =>
-    ['last_weights', ...exerciseNames.sort()] as const,
+  lastWeights: (exerciseNames: string[]) => ['last_weights', ...exerciseNames.sort()] as const,
 
   // ── Mesocycle ──────────────────────────────────────────
   mesocycle: () => ['mesocycle'] as const,

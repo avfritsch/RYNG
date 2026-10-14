@@ -33,9 +33,7 @@ export function AiPlannerModal({ onApply, onClose }: AiPlannerModalProps) {
   const [error, setError] = useState('');
 
   function toggleEquipment(item: string) {
-    setEquipment((prev) =>
-      prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item],
-    );
+    setEquipment((prev) => (prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item]));
   }
 
   async function handleGenerate() {
@@ -59,9 +57,17 @@ export function AiPlannerModal({ onApply, onClose }: AiPlannerModalProps) {
 
   return (
     <div className="ai-planner-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={trapRef} className="ai-planner-modal" role="dialog" aria-modal="true" aria-labelledby="ai-planner-title">
+      <div
+        ref={trapRef}
+        className="ai-planner-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-planner-title"
+      >
         <div className="ai-planner-header">
-          <h3 id="ai-planner-title" className="ai-planner-title">Plan mit KI erstellen</h3>
+          <h3 id="ai-planner-title" className="ai-planner-title">
+            Plan mit KI erstellen
+          </h3>
           <button className="ai-planner-close" onClick={onClose}>
             <Icon name="x-close" size={20} />
           </button>
@@ -134,17 +140,11 @@ export function AiPlannerModal({ onApply, onClose }: AiPlannerModalProps) {
             />
           </div>
 
-          {error && (
-            <div className="ai-planner-error">{error}</div>
-          )}
+          {error && <div className="ai-planner-error">{error}</div>}
         </div>
 
         <div className="ai-planner-footer">
-          <button
-            className="ai-planner-generate-btn"
-            onClick={handleGenerate}
-            disabled={loading}
-          >
+          <button className="ai-planner-generate-btn" onClick={handleGenerate} disabled={loading}>
             {loading ? 'Generiere Plan...' : 'Plan generieren'}
           </button>
         </div>

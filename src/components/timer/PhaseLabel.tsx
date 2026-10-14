@@ -25,9 +25,7 @@ export function PhaseLabel({ stationName, phase, isWarmup }: PhaseLabelProps) {
 
   return (
     <div className="phase-label">
-      <span className={`phase-badge ${badgeClass}`}>
-        {phaseLabels[phase] ?? phase}
-      </span>
+      <span className={`phase-badge ${badgeClass}`}>{phaseLabels[phase] ?? phase}</span>
       {isPause ? (
         <h2 className="phase-station-name">
           <span className="phase-station-dim">Pause — </span>

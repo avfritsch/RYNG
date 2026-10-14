@@ -36,7 +36,9 @@ export function MesocycleWidget({ onEdit }: MesocycleWidgetProps) {
     <div className="meso-widget">
       <div className="meso-widget-header">
         <h3 className="meso-widget-title">Mesozyklus</h3>
-        <button className="meso-widget-edit" onClick={onEdit}>Bearbeiten</button>
+        <button className="meso-widget-edit" onClick={onEdit}>
+          Bearbeiten
+        </button>
       </div>
 
       <div className="meso-blocks">

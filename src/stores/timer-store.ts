@@ -65,11 +65,17 @@ function savePersisted(config: TimerConfig, engine: TimerEngine) {
   try {
     const snapshot = engine.snapshot();
     if (snapshot) localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, snapshot } satisfies Persisted));
-  } catch { /* storage full or unavailable */ }
+  } catch {
+    /* storage full or unavailable */
+  }
 }
 
 function clearPersisted() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 function loadPersisted(): Persisted | null {

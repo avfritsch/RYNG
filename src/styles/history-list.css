@@ -34,7 +34,10 @@
   background: transparent;
   border: 1px solid var(--border-default);
   color: var(--text-secondary);
-  transition: border-color var(--duration-normal), color var(--duration-normal), background var(--duration-normal);
+  transition:
+    border-color var(--duration-normal),
+    color var(--duration-normal),
+    background var(--duration-normal);
 }
 
 .history-filter--active {

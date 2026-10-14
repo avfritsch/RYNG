@@ -62,9 +62,7 @@ function patchSet(
   patch: Partial<GymSet>,
 ): GymExercise[] {
   return exercises.map((ex, i) =>
-    i !== exerciseIndex
-      ? ex
-      : { ...ex, sets: ex.sets.map((s, j) => (j === setIndex ? { ...s, ...patch } : s)) },
+    i !== exerciseIndex ? ex : { ...ex, sets: ex.sets.map((s, j) => (j === setIndex ? { ...s, ...patch } : s)) },
   );
 }
 
@@ -77,16 +75,17 @@ export const useGymStore = create<GymStore>()(
 
       setActiveExercise: (index) => set({ activeExerciseIndex: index }),
 
-      addSet: (exerciseIndex) => set((s) => ({
-        exercises: s.exercises.map((ex, i) => {
-          if (i !== exerciseIndex) return ex;
-          const last = ex.sets[ex.sets.length - 1];
-          return {
-            ...ex,
-            sets: [...ex.sets, { weight_kg: last?.weight_kg ?? null, reps: last?.reps ?? null, done: false }],
-          };
-        }),
-      })),
+      addSet: (exerciseIndex) =>
+        set((s) => ({
+          exercises: s.exercises.map((ex, i) => {
+            if (i !== exerciseIndex) return ex;
+            const last = ex.sets[ex.sets.length - 1];
+            return {
+              ...ex,
+              sets: [...ex.sets, { weight_kg: last?.weight_kg ?? null, reps: last?.reps ?? null, done: false }],
+            };
+          }),
+        })),
 
       updateSet: (exerciseIndex, setIndex, patch) =>
         set((s) => ({ exercises: patchSet(s.exercises, exerciseIndex, setIndex, patch) })),

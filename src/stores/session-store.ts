@@ -11,7 +11,11 @@ interface SessionStore {
   start: () => void;
   /** Append an entry, or replace the one for the same station + round (keeps logged weight/reps). */
   addEntry: (entry: Entry) => void;
-  updateLastEntry: (stationIndex: number, roundNumber: number, patch: { weight_kg?: number | null; reps?: number | null }) => void;
+  updateLastEntry: (
+    stationIndex: number,
+    roundNumber: number,
+    patch: { weight_kg?: number | null; reps?: number | null },
+  ) => void;
   reset: () => void;
 }
 

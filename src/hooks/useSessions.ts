@@ -2,7 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase.ts';
 import { toast } from '../stores/toast-store.ts';
 import { queryKeys } from '../lib/query-keys.ts';
-import { pushSession, queueSession, isNetworkError, type NewSession, type NewSessionEntry } from '../lib/offline-queue.ts';
+import {
+  pushSession,
+  queueSession,
+  isNetworkError,
+  type NewSession,
+  type NewSessionEntry,
+} from '../lib/offline-queue.ts';
 import type { Session, SessionEntry } from '../types/session.ts';
 
 export type SessionFilter = 'week' | 'month' | 'all';
@@ -49,11 +55,7 @@ export function useSession(sessionId: string | undefined) {
     queryKey: queryKeys.session(sessionId!),
     enabled: !!sessionId,
     queryFn: async (): Promise<Session> => {
-      const { data, error } = await supabase
-        .from('sessions')
-        .select('*')
-        .eq('id', sessionId!)
-        .single();
+      const { data, error } = await supabase.from('sessions').select('*').eq('id', sessionId!).single();
       if (error) throw error;
       return data;
     },
@@ -90,7 +92,9 @@ export function useSaveSession() {
       entries: Omit<SessionEntry, 'id' | 'session_id'>[];
     }): Promise<{ id: string; queued: boolean }> => {
       // Local session lookup — works offline, unlike auth.getUser().
-      const { data: { session: auth } } = await supabase.auth.getSession();
+      const {
+        data: { session: auth },
+      } = await supabase.auth.getSession();
       const userId = auth?.user.id;
       if (!userId) throw new Error('Nicht angemeldet');
 

@@ -8,9 +8,7 @@ export function calculateStreak(sessions: Session[]): number {
   if (sessions.length === 0) return 0;
 
   // Get unique training days (YYYY-MM-DD)
-  const days = new Set(
-    sessions.map((s) => new Date(s.started_at).toISOString().slice(0, 10)),
-  );
+  const days = new Set(sessions.map((s) => new Date(s.started_at).toISOString().slice(0, 10)));
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

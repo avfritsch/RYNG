@@ -24,11 +24,20 @@ export function ConfirmModal({
   const trapRef = useFocusTrap<HTMLDivElement>(onCancel);
   return (
     <div className="confirm-overlay" onClick={onCancel}>
-      <div ref={trapRef} className="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={trapRef}
+        className="confirm-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="confirm-icon-wrap">
           <Icon name={danger ? 'alert-triangle' : 'info'} size={24} />
         </div>
-        <h3 id="confirm-title" className="confirm-title">{title}</h3>
+        <h3 id="confirm-title" className="confirm-title">
+          {title}
+        </h3>
         <p className="confirm-message">{message}</p>
         <div className="confirm-actions">
           <button className="confirm-btn confirm-btn--cancel" onClick={onCancel}>

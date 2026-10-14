@@ -6,7 +6,12 @@ import { useFavorites, useToggleFavorite } from '../../hooks/useFavorites.ts';
 import { usePublicPlans, useCopyPlan } from '../../hooks/usePlanLibrary.ts';
 import { usePlans } from '../../hooks/usePlans.ts';
 import { useTimerStore } from '../../stores/timer-store.ts';
-import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
+import {
+  CATEGORY_LABELS,
+  EQUIPMENT_OPTIONS,
+  MUSCLE_GROUP_OPTIONS,
+  type ExerciseCategory,
+} from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
 import type { TimerConfig } from '../../types/timer.ts';
 import { ExerciseEditModal } from './ExerciseEditModal.tsx';
@@ -58,52 +63,54 @@ export function LibraryScreen() {
     let result = publicPlans;
     if (filters.search) {
       const q = filters.search.toLowerCase();
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(q) || (p.description?.toLowerCase().includes(q)),
-      );
+      result = result.filter((p) => p.name.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q));
     }
     if (planMuscleGroups.length > 0) {
-      result = result.filter((p) =>
-        planMuscleGroups.some((mg) => p.muscle_groups.includes(mg)),
-      );
+      result = result.filter((p) => planMuscleGroups.some((mg) => p.muscle_groups.includes(mg)));
     }
     if (planEquipment.length > 0) {
-      result = result.filter((p) =>
-        planEquipment.some((eq) => p.equipment.includes(eq)),
-      );
+      result = result.filter((p) => planEquipment.some((eq) => p.equipment.includes(eq)));
     }
     return result;
   }, [publicPlans, filters.search, planMuscleGroups, planEquipment]);
 
   const { data: exercises, isLoading } = useExerciseLibrary(filters.queryFilters);
 
-  const handleQuickStart = useCallback((ex: LibraryExercise) => {
-    const config: TimerConfig = {
-      stations: [{
-        name: ex.name,
-        speechName: ex.speech_name ?? undefined,
-        workSeconds: 45,
-        pauseSeconds: 30,
-        isWarmup: ex.category === 'warmup',
-        howto: ex.howto ?? '',
-        illustrationKey: ex.illustration_key ?? undefined,
-        trackWeight: ex.track_weight ?? false,
-        libraryExerciseId: ex.id,
-      }],
-      rounds: 3,
-      roundPause: 90,
-    };
-    // The timer is a fullscreen overlay; no navigation needed.
-    startWorkout(config);
-  }, [startWorkout]);
+  const handleQuickStart = useCallback(
+    (ex: LibraryExercise) => {
+      const config: TimerConfig = {
+        stations: [
+          {
+            name: ex.name,
+            speechName: ex.speech_name ?? undefined,
+            workSeconds: 45,
+            pauseSeconds: 30,
+            isWarmup: ex.category === 'warmup',
+            howto: ex.howto ?? '',
+            illustrationKey: ex.illustration_key ?? undefined,
+            trackWeight: ex.track_weight ?? false,
+            libraryExerciseId: ex.id,
+          },
+        ],
+        rounds: 3,
+        roundPause: 90,
+      };
+      // The timer is a fullscreen overlay; no navigation needed.
+      startWorkout(config);
+    },
+    [startWorkout],
+  );
 
   const handleSelect = useCallback((ex: LibraryExercise) => {
-    setSelected((prev) => prev?.id === ex.id ? null : ex);
+    setSelected((prev) => (prev?.id === ex.id ? null : ex));
   }, []);
 
-  const handleToggleFav = useCallback((ex: LibraryExercise, isFav: boolean) => {
-    toggleFavorite.mutate({ exerciseId: ex.id, isFavorite: isFav });
-  }, [toggleFavorite]);
+  const handleToggleFav = useCallback(
+    (ex: LibraryExercise, isFav: boolean) => {
+      toggleFavorite.mutate({ exerciseId: ex.id, isFavorite: isFav });
+    },
+    [toggleFavorite],
+  );
 
   const handleEdit = useCallback((ex: LibraryExercise) => {
     setEditExercise(ex);
@@ -131,7 +138,8 @@ export function LibraryScreen() {
     if (result) {
       result = [...result].sort((a, b) => {
         if (filters.sortBy === 'name') return a.name.localeCompare(b.name, 'de');
-        if (filters.sortBy === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name, 'de');
+        if (filters.sortBy === 'category')
+          return a.category.localeCompare(b.category) || a.name.localeCompare(b.name, 'de');
         return (b.usage_count ?? 0) - (a.usage_count ?? 0); // popular (default)
       });
     }
@@ -159,13 +167,25 @@ export function LibraryScreen() {
   const activeFilterLabels = useMemo(() => {
     const labels: { key: string; label: string; onRemove: () => void }[] = [];
     for (const cat of filters.categories) {
-      labels.push({ key: `cat-${cat}`, label: CATEGORY_LABELS[cat], onRemove: () => filters.toggleFilter(filters.categories, cat, filters.setCategories) });
+      labels.push({
+        key: `cat-${cat}`,
+        label: CATEGORY_LABELS[cat],
+        onRemove: () => filters.toggleFilter(filters.categories, cat, filters.setCategories),
+      });
     }
     for (const mg of filters.muscleGroups) {
-      labels.push({ key: `mg-${mg}`, label: mg, onRemove: () => filters.toggleFilter(filters.muscleGroups, mg, filters.setMuscleGroups) });
+      labels.push({
+        key: `mg-${mg}`,
+        label: mg,
+        onRemove: () => filters.toggleFilter(filters.muscleGroups, mg, filters.setMuscleGroups),
+      });
     }
     for (const eq of filters.equipmentSel) {
-      labels.push({ key: `eq-${eq}`, label: eq, onRemove: () => filters.toggleFilter(filters.equipmentSel, eq, filters.setEquipmentSel) });
+      labels.push({
+        key: `eq-${eq}`,
+        label: eq,
+        onRemove: () => filters.toggleFilter(filters.equipmentSel, eq, filters.setEquipmentSel),
+      });
     }
     return labels;
   }, [filters]);
@@ -192,7 +212,6 @@ export function LibraryScreen() {
     return `${count} Übungen`;
   }, [filteredExercises, hasActiveFilters, filters.search, activeFilterLabels]);
 
-
   const myPlans = userPlans?.filter((p) => !p.is_system) ?? [];
 
   // Render grouped list
@@ -205,31 +224,37 @@ export function LibraryScreen() {
         <div key={cat} className="library-group">
           <button
             className="library-group-header"
-            onClick={() => setCollapsedGroups((prev) => {
-              const next = new Set(prev);
-              if (next.has(cat)) next.delete(cat); else next.add(cat);
-              return next;
-            })}
+            onClick={() =>
+              setCollapsedGroups((prev) => {
+                const next = new Set(prev);
+                if (next.has(cat)) next.delete(cat);
+                else next.add(cat);
+                return next;
+              })
+            }
           >
-            <span>{CATEGORY_LABELS[cat].toUpperCase()} ({items.length})</span>
+            <span>
+              {CATEGORY_LABELS[cat].toUpperCase()} ({items.length})
+            </span>
             <Icon name={isCollapsed ? 'chevron-right' : 'chevron-down'} size={14} />
           </button>
-          {!isCollapsed && items.map((ex) => {
-            return (
-              <LibraryCard
-                key={ex.id}
-                exercise={ex}
-                isFav={favorites?.has(ex.id) ?? false}
-                isSelected={selected?.id === ex.id}
-                onSelect={handleSelect}
-                onToggleFav={handleToggleFav}
-                onAddToPlan={handleAddToPlan}
-                onQuickStart={handleQuickStart}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            );
-          })}
+          {!isCollapsed &&
+            items.map((ex) => {
+              return (
+                <LibraryCard
+                  key={ex.id}
+                  exercise={ex}
+                  isFav={favorites?.has(ex.id) ?? false}
+                  isSelected={selected?.id === ex.id}
+                  onSelect={handleSelect}
+                  onToggleFav={handleToggleFav}
+                  onAddToPlan={handleAddToPlan}
+                  onQuickStart={handleQuickStart}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              );
+            })}
         </div>,
       );
     }
@@ -240,18 +265,18 @@ export function LibraryScreen() {
   function renderFlatList() {
     if (!filteredExercises) return null;
     return filteredExercises.map((ex) => (
-        <LibraryCard
-          key={ex.id}
-          exercise={ex}
-          isFav={favorites?.has(ex.id) ?? false}
-          isSelected={selected?.id === ex.id}
-          onSelect={handleSelect}
-          onToggleFav={handleToggleFav}
-          onAddToPlan={handleAddToPlan}
-          onQuickStart={handleQuickStart}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+      <LibraryCard
+        key={ex.id}
+        exercise={ex}
+        isFav={favorites?.has(ex.id) ?? false}
+        isSelected={selected?.id === ex.id}
+        onSelect={handleSelect}
+        onToggleFav={handleToggleFav}
+        onAddToPlan={handleAddToPlan}
+        onQuickStart={handleQuickStart}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     ));
   }
 
@@ -405,9 +430,7 @@ export function LibraryScreen() {
           ) : filteredExercises && filteredExercises.length === 0 ? (
             <div className="library-empty">
               <div className="library-empty-title">Keine Übungen gefunden</div>
-              <p className="library-empty-desc">
-                Versuche andere Filter oder erstelle eine neue Übung.
-              </p>
+              <p className="library-empty-desc">Versuche andere Filter oder erstelle eine neue Übung.</p>
               <button className="library-create-btn" onClick={() => setShowCreate(true)}>
                 <Icon name="plus" size={16} /> Neue Übung erstellen
               </button>
@@ -418,7 +441,6 @@ export function LibraryScreen() {
             </div>
           )}
 
-
           {deleteExercise && (
             <ConfirmModal
               title="Übung löschen"
@@ -426,29 +448,32 @@ export function LibraryScreen() {
               confirmLabel="Löschen"
               danger
               onCancel={() => setDeleteExercise(null)}
-              onConfirm={() => { deleteLibExercise.mutate(deleteExercise.id); setDeleteExercise(null); }}
+              onConfirm={() => {
+                deleteLibExercise.mutate(deleteExercise.id);
+                setDeleteExercise(null);
+              }}
             />
           )}
 
-          {editExercise && (
-            <ExerciseEditModal exercise={editExercise} onClose={() => setEditExercise(null)} />
-          )}
+          {editExercise && <ExerciseEditModal exercise={editExercise} onClose={() => setEditExercise(null)} />}
 
-          {showCreate && (
-            <ExerciseEditModal onClose={() => setShowCreate(false)} />
-          )}
+          {showCreate && <ExerciseEditModal onClose={() => setShowCreate(false)} />}
         </>
       )}
 
-      {tab === 'plans' && (
-        plansLoading ? (
+      {tab === 'plans' &&
+        (plansLoading ? (
           <SkeletonCard count={4} />
         ) : filteredPlans.length === 0 ? (
           <p className="library-empty">Keine Trainings gefunden.</p>
         ) : (
           <div className="library-list">
             {filteredPlans.map((plan) => (
-              <div key={plan.id} className="library-plan-row" onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library', tab: 'plans' } })}>
+              <div
+                key={plan.id}
+                className="library-plan-row"
+                onClick={() => navigate(`/plans/${plan.id}`, { state: { from: '/library', tab: 'plans' } })}
+              >
                 <div className="library-plan-row-info">
                   <span className="library-plan-row-name">
                     {plan.name}
@@ -458,14 +483,24 @@ export function LibraryScreen() {
                   </span>
                   {plan.description && <span className="library-plan-row-desc">{plan.description}</span>}
                 </div>
-                <button className="library-plan-row-copy" onClick={(e) => { e.stopPropagation(); copyPlan.mutate(plan.id, { onSuccess: (newPlan) => { navigate(`/plans/${newPlan.id}`); } }); }} aria-label="Kopieren">
+                <button
+                  className="library-plan-row-copy"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyPlan.mutate(plan.id, {
+                      onSuccess: (newPlan) => {
+                        navigate(`/plans/${newPlan.id}`);
+                      },
+                    });
+                  }}
+                  aria-label="Kopieren"
+                >
                   <Icon name="copy" size={16} />
                 </button>
               </div>
             ))}
           </div>
-        )
-      )}
+        ))}
 
       {addToPlanExercise && myPlans.length > 0 && (
         <AddToPlanPicker

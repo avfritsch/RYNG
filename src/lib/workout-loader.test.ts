@@ -59,8 +59,10 @@ describe('workout-loader', () => {
   });
 
   it('refuses to turn a gym session into a circuit', () => {
-    expect(sessionEntriesToConfig({ rounds: 1 }, [
-      { station_index: 0, station_name: 'Bench', is_warmup: false, work_seconds: 0 },
-    ])).toBeNull();
+    expect(
+      sessionEntriesToConfig({ rounds: 1 }, [
+        { station_index: 0, station_name: 'Bench', is_warmup: false, work_seconds: 0 },
+      ]),
+    ).toBeNull();
   });
 });

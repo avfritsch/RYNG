@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useExerciseLibrary, useCopyToplan } from '../../hooks/useExerciseLibrary.ts';
-import { CATEGORY_LABELS, MUSCLE_GROUP_OPTIONS, EQUIPMENT_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
+import {
+  CATEGORY_LABELS,
+  MUSCLE_GROUP_OPTIONS,
+  EQUIPMENT_OPTIONS,
+  type ExerciseCategory,
+} from '../../types/exercise-library.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import '../../styles/library-picker.css';
@@ -46,7 +51,14 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
 
   return (
     <div className="picker-overlay" onClick={onClose}>
-      <div ref={trapRef} className="picker-modal" role="dialog" aria-modal="true" aria-label="Übung aus Bibliothek hinzufügen" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={trapRef}
+        className="picker-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Übung aus Bibliothek hinzufügen"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="picker-header">
           <h3>Übung aus Bibliothek</h3>
           <button className="picker-close" onClick={onClose} aria-label="Schließen">
@@ -67,10 +79,7 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
         </div>
 
         <div className="picker-cats">
-          <button
-            className={`picker-cat ${!category ? 'picker-cat--active' : ''}`}
-            onClick={() => setCategory('')}
-          >
+          <button className={`picker-cat ${!category ? 'picker-cat--active' : ''}`} onClick={() => setCategory('')}>
             Alle
           </button>
           {(Object.keys(CATEGORY_LABELS) as ExerciseCategory[]).map((cat) => (
@@ -131,12 +140,7 @@ export function LibraryPicker({ dayId, currentCount, isWarmup, onClose }: Librar
             <p className="picker-empty">Keine Übungen gefunden</p>
           ) : (
             exercises?.map((ex) => (
-              <button
-                key={ex.id}
-                className="picker-item"
-                onClick={() => handleAdd(ex)}
-                disabled={copyToPlan.isPending}
-              >
+              <button key={ex.id} className="picker-item" onClick={() => handleAdd(ex)} disabled={copyToPlan.isPending}>
                 <div className="picker-item-info">
                   <span className="picker-item-name">{ex.name}</span>
                   <span className="picker-item-meta">

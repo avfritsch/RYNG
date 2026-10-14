@@ -22,7 +22,9 @@
   stroke: var(--color-work);
   stroke-width: 5;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
+  transition:
+    stroke-dashoffset 0.4s ease,
+    stroke 0.3s ease;
 }
 
 .weekly-goal-ring__progress--done {
@@ -83,7 +85,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color var(--duration-normal), color var(--duration-normal);
+  transition:
+    border-color var(--duration-normal),
+    color var(--duration-normal);
 }
 
 .weekly-goal-stepper__btn:active:not(:disabled) {

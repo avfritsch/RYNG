@@ -58,9 +58,11 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
   // 4. Map stations — always use library data when available
   const stations: StationConfig[] = data.stations.map((s: Record<string, unknown>) => {
     const name = String(s.name || 'Übung');
-    const match = lookup.get(name.toLowerCase())
-      ?? [...lookup.values()].find((ex) =>
-        ex.name.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(ex.name.toLowerCase()),
+    const match =
+      lookup.get(name.toLowerCase()) ??
+      [...lookup.values()].find(
+        (ex) =>
+          ex.name.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(ex.name.toLowerCase()),
       );
 
     return {
@@ -88,7 +90,9 @@ export async function generatePlan(request: PlanRequest): Promise<GeneratedPlan>
 
 /** Save a generated plan to the database */
 export async function saveGeneratedPlan(plan: GeneratedPlan): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error('Nicht eingeloggt');
 
   const { data: planRow, error: planErr } = await supabase

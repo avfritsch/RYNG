@@ -27,11 +27,7 @@ export function usePlan(planId: string | undefined) {
     queryKey: queryKeys.plan(planId!),
     enabled: !!planId && planId !== 'new',
     queryFn: async (): Promise<Plan> => {
-      const { data, error } = await supabase
-        .from('plans')
-        .select('*')
-        .eq('id', planId!)
-        .single();
+      const { data, error } = await supabase.from('plans').select('*').eq('id', planId!).single();
       if (error) throw error;
       return data;
     },
@@ -43,11 +39,7 @@ export function usePlanDays(planId: string | undefined) {
     queryKey: queryKeys.planDays(planId!),
     enabled: !!planId,
     queryFn: withCache('plan_days', planId!, async (): Promise<PlanDay[]> => {
-      const { data, error } = await supabase
-        .from('plan_days')
-        .select('*')
-        .eq('plan_id', planId!)
-        .order('sort_order');
+      const { data, error } = await supabase.from('plan_days').select('*').eq('plan_id', planId!).order('sort_order');
       if (error) throw error;
       return data;
     }),
@@ -76,7 +68,9 @@ export function useCreatePlan() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (plan: { name: string; description?: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('plans')
@@ -132,12 +126,16 @@ export function useDeletePlan() {
 export function useCreatePlanDay() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (day: { plan_id: string; label: string; focus?: string; sort_order: number; rounds?: number; round_pause?: number; warmup_pause?: number }) => {
-      const { data, error } = await supabase
-        .from('plan_days')
-        .insert(day)
-        .select()
-        .single();
+    mutationFn: async (day: {
+      plan_id: string;
+      label: string;
+      focus?: string;
+      sort_order: number;
+      rounds?: number;
+      round_pause?: number;
+      warmup_pause?: number;
+    }) => {
+      const { data, error } = await supabase.from('plan_days').insert(day).select().single();
       if (error) throw error;
       return data as PlanDay;
     },
@@ -149,12 +147,7 @@ export function useUpdatePlanDay() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, plan_id, ...updates }: Partial<PlanDay> & { id: string; plan_id: string }) => {
-      const { data, error } = await supabase
-        .from('plan_days')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('plan_days').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as PlanDay;
     },
@@ -179,12 +172,17 @@ export function useDeletePlanDay() {
 export function useCreatePlanExercise() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (exercise: { day_id: string; name: string; muscle_groups?: string[]; howto?: string; is_warmup?: boolean; work_seconds: number; pause_seconds: number; sort_order: number }) => {
-      const { data, error } = await supabase
-        .from('plan_exercises')
-        .insert(exercise)
-        .select()
-        .single();
+    mutationFn: async (exercise: {
+      day_id: string;
+      name: string;
+      muscle_groups?: string[];
+      howto?: string;
+      is_warmup?: boolean;
+      work_seconds: number;
+      pause_seconds: number;
+      sort_order: number;
+    }) => {
+      const { data, error } = await supabase.from('plan_exercises').insert(exercise).select().single();
       if (error) throw error;
       return data as PlanExercise;
     },
@@ -196,12 +194,7 @@ export function useUpdatePlanExercise() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, day_id, ...updates }: Partial<PlanExercise> & { id: string; day_id: string }) => {
-      const { data, error } = await supabase
-        .from('plan_exercises')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('plan_exercises').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as PlanExercise;
     },

@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import type { StationConfig, TimerConfig } from '../../types/timer.ts';
 import type { Preset } from '../../types/database.ts';
@@ -64,10 +72,12 @@ export function ConfigScreen() {
     if (!pendingConfig) return;
     if (mesocycle) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setStations(pendingConfig.stations.map((s) => {
-        const { work, pause } = applyProgression(s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle);
-        return { ...s, workSeconds: work, pauseSeconds: pause };
-      }));
+      setStations(
+        pendingConfig.stations.map((s) => {
+          const { work, pause } = applyProgression(s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle);
+          return { ...s, workSeconds: work, pauseSeconds: pause };
+        }),
+      );
     } else {
       setStations(pendingConfig.stations);
     }
@@ -81,12 +91,12 @@ export function ConfigScreen() {
     setRoundPause(config.roundPause);
 
     if (mesocycle) {
-      setStations(config.stations.map((s) => {
-        const { work, pause } = applyProgression(
-          s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle,
-        );
-        return { ...s, workSeconds: work, pauseSeconds: pause };
-      }));
+      setStations(
+        config.stations.map((s) => {
+          const { work, pause } = applyProgression(s.workSeconds, s.pauseSeconds, mesocycle.current_week, mesocycle);
+          return { ...s, workSeconds: work, pauseSeconds: pause };
+        }),
+      );
     } else {
       setStations(config.stations);
     }
@@ -100,12 +110,15 @@ export function ConfigScreen() {
   function handleSavePreset() {
     if (!presetName.trim()) return;
     const config: TimerConfig = { stations, rounds, roundPause };
-    savePreset.mutate({ name: presetName.trim(), config }, {
-      onSuccess: () => {
-        setShowSavePreset(false);
-        setPresetName('');
+    savePreset.mutate(
+      { name: presetName.trim(), config },
+      {
+        onSuccess: () => {
+          setShowSavePreset(false);
+          setPresetName('');
+        },
       },
-    });
+    );
   }
 
   function updateStation(index: number, station: StationConfig) {
@@ -118,8 +131,16 @@ export function ConfigScreen() {
     setStations((prev) => prev.filter((_, i) => i !== index));
     setStationIds((prev) => prev.filter((_, i) => i !== index));
     toast.undo(`"${removedStation.name}" entfernt`, () => {
-      setStations((prev) => { const next = [...prev]; next.splice(index, 0, removedStation); return next; });
-      setStationIds((prev) => { const next = [...prev]; next.splice(index, 0, removedId); return next; });
+      setStations((prev) => {
+        const next = [...prev];
+        next.splice(index, 0, removedStation);
+        return next;
+      });
+      setStationIds((prev) => {
+        const next = [...prev];
+        next.splice(index, 0, removedId);
+        return next;
+      });
     });
   }
 
@@ -128,14 +149,23 @@ export function ConfigScreen() {
     setStationIds((prev) => [...prev, generateId()]);
   }
 
-  function addFromLibrary(exercise: { name: string; howto?: string | null; isWarmup: boolean; workSeconds: number; pauseSeconds: number }) {
-    setStations((prev) => [...prev, {
-      name: exercise.name,
-      workSeconds: exercise.workSeconds,
-      pauseSeconds: exercise.pauseSeconds,
-      isWarmup: exercise.isWarmup,
-      howto: exercise.howto ?? '',
-    }]);
+  function addFromLibrary(exercise: {
+    name: string;
+    howto?: string | null;
+    isWarmup: boolean;
+    workSeconds: number;
+    pauseSeconds: number;
+  }) {
+    setStations((prev) => [
+      ...prev,
+      {
+        name: exercise.name,
+        workSeconds: exercise.workSeconds,
+        pauseSeconds: exercise.pauseSeconds,
+        isWarmup: exercise.isWarmup,
+        howto: exercise.howto ?? '',
+      },
+    ]);
     setStationIds((prev) => [...prev, generateId()]);
   }
 
@@ -182,7 +212,12 @@ export function ConfigScreen() {
     startWorkout({ stations, rounds, roundPause });
 
     // Save as plan in the background
-    const name = stations.filter(s => !s.isWarmup).map(s => s.name).slice(0, 3).join(', ') || 'Training';
+    const name =
+      stations
+        .filter((s) => !s.isWarmup)
+        .map((s) => s.name)
+        .slice(0, 3)
+        .join(', ') || 'Training';
     saveGeneratedPlan({
       name,
       description: `${stations.length} Übungen · ${rounds} Runden`,
@@ -194,19 +229,26 @@ export function ConfigScreen() {
 
   function handleSaveOnly() {
     if (stations.length === 0) return;
-    const name = stations.filter(s => !s.isWarmup).map(s => s.name).slice(0, 3).join(', ') || 'Training';
+    const name =
+      stations
+        .filter((s) => !s.isWarmup)
+        .map((s) => s.name)
+        .slice(0, 3)
+        .join(', ') || 'Training';
     saveGeneratedPlan({
       name,
       description: `${stations.length} Übungen · ${rounds} Runden`,
       stations,
       rounds,
       roundPause,
-    }).then(() => {
-      toast.success('Training gespeichert');
-      navigate('/plans');
-    }).catch(() => {
-      toast.error('Fehler beim Speichern');
-    });
+    })
+      .then(() => {
+        toast.success('Training gespeichert');
+        navigate('/plans');
+      })
+      .catch(() => {
+        toast.error('Fehler beim Speichern');
+      });
   }
 
   if (timerPhase !== 'idle' && timerPhase !== 'done') return null;
@@ -299,16 +341,16 @@ export function ConfigScreen() {
             </button>
             <button
               className="config-preset-cancel-btn"
-              onClick={() => { setShowSavePreset(false); setPresetName(''); }}
+              onClick={() => {
+                setShowSavePreset(false);
+                setPresetName('');
+              }}
             >
               Abbrechen
             </button>
           </div>
         ) : (
-          <button
-            className="config-save-preset-btn"
-            onClick={() => setShowSavePreset(true)}
-          >
+          <button className="config-save-preset-btn" onClick={() => setShowSavePreset(true)}>
             Als Preset speichern
           </button>
         )}
@@ -319,28 +361,15 @@ export function ConfigScreen() {
         <div className="config-duration">
           Geschätzte Dauer: <strong>{getEstimatedDuration()}</strong>
         </div>
-        <button
-          className="config-start-btn"
-          onClick={handleSaveAndStart}
-          disabled={stations.length === 0}
-        >
+        <button className="config-start-btn" onClick={handleSaveAndStart} disabled={stations.length === 0}>
           SPEICHERN & STARTEN
         </button>
-        <button
-          className="config-save-only-btn"
-          onClick={handleSaveOnly}
-          disabled={stations.length === 0}
-        >
+        <button className="config-save-only-btn" onClick={handleSaveOnly} disabled={stations.length === 0}>
           Nur speichern
         </button>
       </div>
 
-      {showLibraryPicker && (
-        <QuickLibraryPicker
-          onAdd={addFromLibrary}
-          onClose={() => setShowLibraryPicker(false)}
-        />
-      )}
+      {showLibraryPicker && <QuickLibraryPicker onAdd={addFromLibrary} onClose={() => setShowLibraryPicker(false)} />}
     </div>
   );
 }

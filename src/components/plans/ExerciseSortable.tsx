@@ -9,14 +9,7 @@ interface ExerciseSortableProps {
 }
 
 export function ExerciseSortable({ id, children }: ExerciseSortableProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -47,9 +40,7 @@ export function ExerciseSortable({ id, children }: ExerciseSortableProps) {
       >
         <Icon name="grip-vertical" size={16} />
       </div>
-      <div style={{ marginLeft: 16 }}>
-        {children}
-      </div>
+      <div style={{ marginLeft: 16 }}>{children}</div>
     </div>
   );
 }

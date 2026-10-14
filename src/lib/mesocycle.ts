@@ -33,9 +33,7 @@ export function applyProgression(
  * Advance the mesocycle to the next week. Wraps around at cycle_length.
  */
 export function advanceWeek(config: MesocycleConfig): Partial<MesocycleConfig> {
-  const nextWeek = config.current_week >= config.cycle_length
-    ? 1
-    : config.current_week + 1;
+  const nextWeek = config.current_week >= config.cycle_length ? 1 : config.current_week + 1;
 
   const updates: Partial<MesocycleConfig> = {
     current_week: nextWeek,

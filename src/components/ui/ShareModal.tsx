@@ -32,7 +32,14 @@ export function ShareModal({ name, config, onClose }: ShareModalProps) {
 
   return (
     <div className="share-overlay" onClick={onClose}>
-      <div ref={trapRef} className="share-modal" role="dialog" aria-modal="true" aria-label="Workout teilen" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={trapRef}
+        className="share-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Workout teilen"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="share-header">
           <h3>Workout teilen</h3>
           <button className="share-close" onClick={onClose} aria-label="Schließen">
@@ -45,9 +52,7 @@ export function ShareModal({ name, config, onClose }: ShareModalProps) {
           {config.stations.length} Stationen · {config.rounds} Runden
         </p>
 
-        {qrUrl && (
-          <img className="share-qr" src={qrUrl} alt="QR-Code zum Teilen" />
-        )}
+        {qrUrl && <img className="share-qr" src={qrUrl} alt="QR-Code zum Teilen" />}
 
         <p className="share-hint">QR-Code scannen oder Code kopieren:</p>
 
@@ -94,7 +99,14 @@ export function ImportModal({ onImport, onClose }: ImportModalProps) {
 
   return (
     <div className="share-overlay" onClick={onClose}>
-      <div ref={trapRef} className="share-modal" role="dialog" aria-modal="true" aria-label="Workout importieren" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={trapRef}
+        className="share-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Workout importieren"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="share-header">
           <h3>Workout importieren</h3>
           <button className="share-close" onClick={onClose} aria-label="Schließen">
@@ -113,13 +125,13 @@ export function ImportModal({ onImport, onClose }: ImportModalProps) {
           aria-label="Import-Code"
         />
 
-        {error && <p className="share-error" role="alert">{error}</p>}
+        {error && (
+          <p className="share-error" role="alert">
+            {error}
+          </p>
+        )}
 
-        <button
-          className="share-import-btn"
-          onClick={handleImport}
-          disabled={!code.trim()}
-        >
+        <button className="share-import-btn" onClick={handleImport} disabled={!code.trim()}>
           Importieren
         </button>
       </div>

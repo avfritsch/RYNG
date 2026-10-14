@@ -12,9 +12,14 @@
   animation: hint-in 0.3s ease;
 }
 
-.feature-hint-icon { flex-shrink: 0; }
+.feature-hint-icon {
+  flex-shrink: 0;
+}
 
-.feature-hint-text { flex: 1; line-height: 1.4; }
+.feature-hint-text {
+  flex: 1;
+  line-height: 1.4;
+}
 
 .feature-hint-close {
   flex-shrink: 0;
@@ -25,6 +30,12 @@
 }
 
 @keyframes hint-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -54,13 +54,7 @@ interface Segment {
   endDeg: number;
 }
 
-export const RingViz = memo(function RingViz({
-  stations,
-  activeStation,
-  phase,
-  progress,
-  countdown,
-}: RingVizProps) {
+export const RingViz = memo(function RingViz({ stations, activeStation, phase, progress, countdown }: RingVizProps) {
   const isRoundPause = phase === 'roundPause';
 
   const segments = useMemo(() => {
@@ -68,7 +62,7 @@ export const RingViz = memo(function RingViz({
     for (let i = 0; i < stations.length; i++) {
       const s = stations[i];
       segs.push({
-        type: isRoundPause ? 'warmup' : (s.isWarmup ? 'warmup' : 'work'),
+        type: isRoundPause ? 'warmup' : s.isWarmup ? 'warmup' : 'work',
         duration: s.workSeconds,
         stationIndex: i,
       });
@@ -108,11 +102,12 @@ export const RingViz = memo(function RingViz({
   }, [segments, activeStation, phase]);
 
   // Countdown color: no more blue
-  const countdownColor = phase === 'roundPause'
-    ? '#FFE600'
-    : activeIdx >= 0
-      ? SEGMENT_COLORS[segments[activeIdx]?.type] ?? '#7FFF00'
-      : '#7FFF00';
+  const countdownColor =
+    phase === 'roundPause'
+      ? '#FFE600'
+      : activeIdx >= 0
+        ? (SEGMENT_COLORS[segments[activeIdx]?.type] ?? '#7FFF00')
+        : '#7FFF00';
 
   const blink = countdown <= 3 && countdown > 0;
 
@@ -129,14 +124,7 @@ export const RingViz = memo(function RingViz({
     <div className="ring-viz-container">
       <svg viewBox="0 0 200 200" className="ring-viz-svg" role="img" aria-label="Timer-Fortschritt">
         {/* Background track */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={R}
-          fill="none"
-          stroke="#1A1A1A"
-          strokeWidth={STROKE}
-        />
+        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#1A1A1A" strokeWidth={STROKE} />
 
         {/* Segments */}
         {segments.map((seg, idx) => {
@@ -184,13 +172,7 @@ export const RingViz = memo(function RingViz({
 
         {/* Progress dot (white indicator at end of filled arc) */}
         {progressDot && (
-          <circle
-            cx={progressDot.x}
-            cy={progressDot.y}
-            r={4.5}
-            fill="#FFFFFF"
-            className="ring-viz-dot"
-          />
+          <circle cx={progressDot.x} cy={progressDot.y} r={4.5} fill="#FFFFFF" className="ring-viz-dot" />
         )}
       </svg>
 

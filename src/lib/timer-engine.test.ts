@@ -4,30 +4,39 @@ import type { TimerConfig, TimerState } from '../types/timer.ts';
 
 // Stub Web Audio API
 beforeEach(() => {
-  vi.stubGlobal('AudioContext', class {
-    state = 'running';
-    resume() {}
-    createOscillator() {
-      return {
-        connect: vi.fn(),
-        frequency: { value: 0 },
-        start: vi.fn(),
-        stop: vi.fn(),
-      };
-    }
-    createGain() {
-      return {
-        connect: vi.fn(),
-        gain: { value: 0, exponentialRampToValueAtTime: vi.fn() },
-      };
-    }
-    createBuffer() { return {}; }
-    createBufferSource() {
-      return { buffer: null, connect: vi.fn(), start: vi.fn() };
-    }
-    get destination() { return {}; }
-    get currentTime() { return 0; }
-  });
+  vi.stubGlobal(
+    'AudioContext',
+    class {
+      state = 'running';
+      resume() {}
+      createOscillator() {
+        return {
+          connect: vi.fn(),
+          frequency: { value: 0 },
+          start: vi.fn(),
+          stop: vi.fn(),
+        };
+      }
+      createGain() {
+        return {
+          connect: vi.fn(),
+          gain: { value: 0, exponentialRampToValueAtTime: vi.fn() },
+        };
+      }
+      createBuffer() {
+        return {};
+      }
+      createBufferSource() {
+        return { buffer: null, connect: vi.fn(), start: vi.fn() };
+      }
+      get destination() {
+        return {};
+      }
+      get currentTime() {
+        return 0;
+      }
+    },
+  );
 
   // Stub Wake Lock
   vi.stubGlobal('navigator', {
@@ -128,9 +137,7 @@ describe('timer-engine phase progression', () => {
 
   it('transitions from work to pause after countdown', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'Squats', workSeconds: 3, pauseSeconds: 2, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'Squats', workSeconds: 3, pauseSeconds: 2, isWarmup: false, howto: '' }],
       rounds: 1,
       roundPause: 0,
     });
@@ -149,9 +156,7 @@ describe('timer-engine phase progression', () => {
 
   it('inserts round pause between rounds', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'Squats', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'Squats', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' }],
       rounds: 2,
       roundPause: 3,
     });
@@ -178,9 +183,7 @@ describe('timer-engine phase progression', () => {
 
   it('reaches done after all rounds complete', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'Squats', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'Squats', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' }],
       rounds: 2,
       roundPause: 1,
     });
@@ -236,9 +239,7 @@ describe('timer-engine completion summary', () => {
 
   it('produces summary on normal completion', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'Squats', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'Squats', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' }],
       rounds: 1,
       roundPause: 0,
     });
@@ -255,9 +256,7 @@ describe('timer-engine completion summary', () => {
 
   it('produces summary on manual stop', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'Squats', workSeconds: 10, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'Squats', workSeconds: 10, pauseSeconds: 0, isWarmup: false, howto: '' }],
       rounds: 2,
       roundPause: 0,
     });
@@ -371,9 +370,7 @@ describe('timer-engine skip', () => {
 
   it('skip back restarts current phase if > 2s in', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'A', workSeconds: 10, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'A', workSeconds: 10, pauseSeconds: 0, isWarmup: false, howto: '' }],
       rounds: 1,
       roundPause: 0,
     });
@@ -402,9 +399,7 @@ describe('timer-engine countdown beeps', () => {
 
   it('ticks down correctly each second', () => {
     const config = makeConfig({
-      stations: [
-        { name: 'A', workSeconds: 5, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
+      stations: [{ name: 'A', workSeconds: 5, pauseSeconds: 0, isWarmup: false, howto: '' }],
       rounds: 1,
       roundPause: 0,
     });
@@ -443,14 +438,16 @@ describe('timer-engine wall clock', () => {
   });
 
   it('records an entry for every completed work phase, including the last one', () => {
-    const engine = createTimerEngine(makeConfig({
-      stations: [
-        { name: 'A', workSeconds: 2, pauseSeconds: 1, isWarmup: false, howto: '' },
-        { name: 'B', workSeconds: 2, pauseSeconds: 1, isWarmup: false, howto: '' },
-      ],
-      rounds: 2,
-      roundPause: 1,
-    }));
+    const engine = createTimerEngine(
+      makeConfig({
+        stations: [
+          { name: 'A', workSeconds: 2, pauseSeconds: 1, isWarmup: false, howto: '' },
+          { name: 'B', workSeconds: 2, pauseSeconds: 1, isWarmup: false, howto: '' },
+        ],
+        rounds: 2,
+        roundPause: 1,
+      }),
+    );
     const entries: { stationIndex: number; round: number; actualSeconds: number }[] = [];
     engine.onEntry((e) => entries.push(e));
     engine.start();
@@ -464,14 +461,16 @@ describe('timer-engine wall clock', () => {
   });
 
   it('catches up correctly when ticks were suspended (backgrounded tab)', () => {
-    const engine = createTimerEngine(makeConfig({
-      stations: [
-        { name: 'A', workSeconds: 10, pauseSeconds: 5, isWarmup: false, howto: '' },
-        { name: 'B', workSeconds: 10, pauseSeconds: 5, isWarmup: false, howto: '' },
-      ],
-      rounds: 1,
-      roundPause: 0,
-    }));
+    const engine = createTimerEngine(
+      makeConfig({
+        stations: [
+          { name: 'A', workSeconds: 10, pauseSeconds: 5, isWarmup: false, howto: '' },
+          { name: 'B', workSeconds: 10, pauseSeconds: 5, isWarmup: false, howto: '' },
+        ],
+        rounds: 1,
+        roundPause: 0,
+      }),
+    );
     engine.start();
     // Simulate the browser not firing intervals for 17s: move the clock only.
     vi.setSystemTime(Date.now() + 17_000);
@@ -484,11 +483,13 @@ describe('timer-engine wall clock', () => {
   });
 
   it('excludes paused time from the session duration', () => {
-    const engine = createTimerEngine(makeConfig({
-      stations: [{ name: 'A', workSeconds: 60, pauseSeconds: 0, isWarmup: false, howto: '' }],
-      rounds: 1,
-      roundPause: 0,
-    }));
+    const engine = createTimerEngine(
+      makeConfig({
+        stations: [{ name: 'A', workSeconds: 60, pauseSeconds: 0, isWarmup: false, howto: '' }],
+        rounds: 1,
+        roundPause: 0,
+      }),
+    );
     engine.start();
     vi.advanceTimersByTime(10_000);
     engine.pause();
@@ -501,14 +502,16 @@ describe('timer-engine wall clock', () => {
   });
 
   it('records a partial entry on skip forward but not on skip back', () => {
-    const engine = createTimerEngine(makeConfig({
-      stations: [
-        { name: 'A', workSeconds: 30, pauseSeconds: 0, isWarmup: false, howto: '' },
-        { name: 'B', workSeconds: 30, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
-      rounds: 1,
-      roundPause: 0,
-    }));
+    const engine = createTimerEngine(
+      makeConfig({
+        stations: [
+          { name: 'A', workSeconds: 30, pauseSeconds: 0, isWarmup: false, howto: '' },
+          { name: 'B', workSeconds: 30, pauseSeconds: 0, isWarmup: false, howto: '' },
+        ],
+        rounds: 1,
+        roundPause: 0,
+      }),
+    );
     const entries: { stationIndex: number; actualSeconds: number }[] = [];
     engine.onEntry((e) => entries.push(e));
     engine.start();
@@ -520,14 +523,16 @@ describe('timer-engine wall clock', () => {
   });
 
   it('exposes the next station, including across rounds', () => {
-    const engine = createTimerEngine(makeConfig({
-      stations: [
-        { name: 'A', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
-        { name: 'B', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
-      ],
-      rounds: 2,
-      roundPause: 3,
-    }));
+    const engine = createTimerEngine(
+      makeConfig({
+        stations: [
+          { name: 'A', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
+          { name: 'B', workSeconds: 2, pauseSeconds: 0, isWarmup: false, howto: '' },
+        ],
+        rounds: 2,
+        roundPause: 3,
+      }),
+    );
     engine.start();
     expect(engine.getState()).toMatchObject({ station: 1, nextStation: 2, nextIsNewRound: false });
     vi.advanceTimersByTime(2_000);

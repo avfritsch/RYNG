@@ -33,7 +33,10 @@ export function SpotifyBar({ phase }: SpotifyBarProps) {
 
     poll();
     const interval = setInterval(poll, 5000);
-    return () => { active = false; clearInterval(interval); };
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Auto-volume: louder on work, quieter on pause
@@ -59,10 +62,10 @@ export function SpotifyBar({ phase }: SpotifyBarProps) {
   async function togglePlay() {
     if (state?.is_playing) {
       await spotifyPause();
-      setState((s) => s ? { ...s, is_playing: false } : s);
+      setState((s) => (s ? { ...s, is_playing: false } : s));
     } else {
       await spotifyPlay();
-      setState((s) => s ? { ...s, is_playing: true } : s);
+      setState((s) => (s ? { ...s, is_playing: true } : s));
     }
   }
 
@@ -77,7 +80,11 @@ export function SpotifyBar({ phase }: SpotifyBarProps) {
         <button className="spotify-btn" onClick={spotifyPrevious} aria-label="Vorheriger Titel">
           <Icon name="skip-back" size={14} />
         </button>
-        <button className="spotify-btn spotify-btn--play" onClick={togglePlay} aria-label={state.is_playing ? 'Pause' : 'Abspielen'}>
+        <button
+          className="spotify-btn spotify-btn--play"
+          onClick={togglePlay}
+          aria-label={state.is_playing ? 'Pause' : 'Abspielen'}
+        >
           <Icon name={state.is_playing ? 'pause' : 'play'} size={16} />
         </button>
         <button className="spotify-btn" onClick={spotifyNext} aria-label="Nächster Titel">

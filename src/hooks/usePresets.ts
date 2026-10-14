@@ -10,10 +10,7 @@ export function usePresets() {
   return useQuery({
     queryKey: queryKeys.presets(),
     queryFn: withCache('presets', 'all', async (): Promise<Preset[]> => {
-      const { data, error } = await supabase
-        .from('presets')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('presets').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     }),
@@ -24,7 +21,9 @@ export function useSavePreset() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ name, config }: { name: string; config: TimerConfig }) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const presetData = {
@@ -44,11 +43,7 @@ export function useSavePreset() {
         })),
       };
 
-      const { data, error } = await supabase
-        .from('presets')
-        .insert(presetData)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('presets').insert(presetData).select().single();
       if (error) throw error;
       return data as Preset;
     },

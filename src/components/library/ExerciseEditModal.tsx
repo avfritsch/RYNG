@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useUpdateLibraryExercise, useCreateLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
-import { CATEGORY_LABELS, EQUIPMENT_OPTIONS, MUSCLE_GROUP_OPTIONS, type ExerciseCategory } from '../../types/exercise-library.ts';
+import {
+  CATEGORY_LABELS,
+  EQUIPMENT_OPTIONS,
+  MUSCLE_GROUP_OPTIONS,
+  type ExerciseCategory,
+} from '../../types/exercise-library.ts';
 import type { LibraryExercise } from '../../types/exercise-library.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
@@ -38,27 +43,33 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
     };
 
     if (isCreate || isSystem) {
-      createExercise.mutate({ ...data, is_public: isPublic }, {
-        onSuccess: () => {
-          toast.success(isSystem ? 'Persönliche Kopie erstellt' : 'Übung erstellt');
-          onClose();
+      createExercise.mutate(
+        { ...data, is_public: isPublic },
+        {
+          onSuccess: () => {
+            toast.success(isSystem ? 'Persönliche Kopie erstellt' : 'Übung erstellt');
+            onClose();
+          },
+          onError: (err) => setError(err instanceof Error ? err.message : 'Fehler'),
         },
-        onError: (err) => setError(err instanceof Error ? err.message : 'Fehler'),
-      });
+      );
     } else {
-      updateExercise.mutate({ id: exercise.id, ...data, is_public: isPublic }, {
-        onSuccess: onClose,
-        onError: (err) => setError(err instanceof Error ? err.message : 'Fehler'),
-      });
+      updateExercise.mutate(
+        { id: exercise.id, ...data, is_public: isPublic },
+        {
+          onSuccess: onClose,
+          onError: (err) => setError(err instanceof Error ? err.message : 'Fehler'),
+        },
+      );
     }
   }
 
   function toggleEquipment(eq: string) {
-    setEquipment((prev) => prev.includes(eq) ? prev.filter((e) => e !== eq) : [...prev, eq]);
+    setEquipment((prev) => (prev.includes(eq) ? prev.filter((e) => e !== eq) : [...prev, eq]));
   }
 
   function toggleMuscleGroup(mg: string) {
-    setMuscleGroups((prev) => prev.includes(mg) ? prev.filter((m) => m !== mg) : [...prev, mg]);
+    setMuscleGroups((prev) => (prev.includes(mg) ? prev.filter((m) => m !== mg) : [...prev, mg]));
   }
 
   const title = isCreate ? 'Neue Übung' : isSystem ? 'Übung kopieren' : 'Übung bearbeiten';
@@ -67,7 +78,14 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
 
   return (
     <div className="edit-overlay" onClick={onClose}>
-      <div ref={trapRef} className="edit-modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={trapRef}
+        className="edit-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="edit-header">
           <h3>{title}</h3>
           <button className="edit-close" onClick={onClose} aria-label="Schließen">
@@ -76,9 +94,7 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
         </div>
 
         {isSystem && (
-          <p className="edit-system-hint">
-            System-Übung — Änderungen werden als persönliche Kopie gespeichert.
-          </p>
+          <p className="edit-system-hint">System-Übung — Änderungen werden als persönliche Kopie gespeichert.</p>
         )}
 
         <div className="edit-form">
@@ -91,7 +107,9 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
             <span>Kategorie</span>
             <select value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)}>
               {(Object.entries(CATEGORY_LABELS) as [ExerciseCategory, string][]).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
           </label>
@@ -130,25 +148,32 @@ export function ExerciseEditModal({ exercise, onClose }: ExerciseEditModalProps)
 
           <label className="edit-field">
             <span>Anleitung</span>
-            <textarea value={howto} onChange={(e) => setHowto(e.target.value)} rows={4} placeholder="Ausführungshinweise..." />
+            <textarea
+              value={howto}
+              onChange={(e) => setHowto(e.target.value)}
+              rows={4}
+              placeholder="Ausführungshinweise..."
+            />
           </label>
 
           {!isSystem && (
             <label className="edit-public-toggle">
-              <input
-                type="checkbox"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-              />
+              <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
               <span>Öffentlich sichtbar für andere User</span>
             </label>
           )}
         </div>
 
-        {error && <p className="edit-error" role="alert">{error}</p>}
+        {error && (
+          <p className="edit-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <div className="edit-actions">
-          <button className="edit-cancel" onClick={onClose}>Abbrechen</button>
+          <button className="edit-cancel" onClick={onClose}>
+            Abbrechen
+          </button>
           <button className="edit-save" onClick={handleSave} disabled={!name.trim() || isPending}>
             {isPending ? 'Speichern...' : saveLabel}
           </button>

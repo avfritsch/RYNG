@@ -47,7 +47,7 @@ export function HistoryListScreen() {
   const navigate = useNavigate();
 
   function handleDayClick(dateKey: string) {
-    setSelectedDay((prev) => prev === dateKey ? null : dateKey);
+    setSelectedDay((prev) => (prev === dateKey ? null : dateKey));
   }
 
   const displaySessions = useMemo(() => {
@@ -67,10 +67,7 @@ export function HistoryListScreen() {
 
       <div className="history-filters">
         {selectedDay && (
-          <button
-            className="history-filter history-filter--active"
-            onClick={() => setSelectedDay(null)}
-          >
+          <button className="history-filter history-filter--active" onClick={() => setSelectedDay(null)}>
             {new Date(selectedDay).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })} ✕
           </button>
         )}
@@ -78,16 +75,17 @@ export function HistoryListScreen() {
           <button
             key={f.value}
             className={`history-filter ${!selectedDay && filter === f.value ? 'history-filter--active' : ''}`}
-            onClick={() => { setFilter(f.value); setSelectedDay(null); }}
+            onClick={() => {
+              setFilter(f.value);
+              setSelectedDay(null);
+            }}
           >
             {f.label}
           </button>
         ))}
       </div>
 
-      {isLoading && (
-        <SkeletonCard count={3} />
-      )}
+      {isLoading && <SkeletonCard count={3} />}
 
       {error && (
         <p style={{ color: 'var(--color-rest)', fontSize: 'var(--text-base)' }} role="alert">
@@ -97,7 +95,9 @@ export function HistoryListScreen() {
 
       {!isLoading && displaySessions.length === 0 && (
         <p className="history-empty">
-          {selectedDay ? 'Keine Trainings an diesem Tag.' : 'Noch keine Sessions aufgezeichnet. Starte dein erstes Workout!'}
+          {selectedDay
+            ? 'Keine Trainings an diesem Tag.'
+            : 'Noch keine Sessions aufgezeichnet. Starte dein erstes Workout!'}
         </p>
       )}
 

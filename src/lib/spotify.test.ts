@@ -157,9 +157,11 @@ describe('spotify: handleSpotifyCallback (PKCE)', () => {
     setSpotifyClientId('cid');
     sessionStorage.setItem('ryng_spotify_pkce', JSON.stringify({ verifier: 'v', state: 's1' }));
     setUrl('http://localhost:3000/?code=abc&state=s1');
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600, refresh_token: 'ref' }), { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600, refresh_token: 'ref' }), { status: 200 }),
+      );
     expect(await handleSpotifyCallback()).toBe(true);
     expect(getSpotifyToken()).toBe('tok');
     const body = fetchSpy.mock.calls[0][1]?.body as URLSearchParams;

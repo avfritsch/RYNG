@@ -13,14 +13,7 @@ interface StationRowProps {
 }
 
 export function StationRow({ id, index, station, onChange, onRemove }: StationRowProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -30,18 +23,9 @@ export function StationRow({ id, index, station, onChange, onRemove }: StationRo
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`card station-row ${station.isWarmup ? 'station-row--warmup' : ''}`}
-    >
+    <div ref={setNodeRef} style={style} className={`card station-row ${station.isWarmup ? 'station-row--warmup' : ''}`}>
       <div className="station-row-header">
-        <button
-          className="station-row-drag"
-          {...attributes}
-          {...listeners}
-          aria-label="Station verschieben"
-        >
+        <button className="station-row-drag" {...attributes} {...listeners} aria-label="Station verschieben">
           <Icon name="grip-vertical" size={16} />
         </button>
         <span className="station-row-index">{index + 1}</span>

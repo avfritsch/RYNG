@@ -22,7 +22,14 @@ interface GymSetRowProps {
   handleDoneSet: (exIdx: number, setIdx: number) => void;
 }
 
-const GymSetRow = memo(function GymSetRow({ activeIndex, setIdx, set: s, trackWeight, updateSet, handleDoneSet }: GymSetRowProps) {
+const GymSetRow = memo(function GymSetRow({
+  activeIndex,
+  setIdx,
+  set: s,
+  trackWeight,
+  updateSet,
+  handleDoneSet,
+}: GymSetRowProps) {
   return (
     <div className={`gym-set-row ${s.done ? 'gym-set-row--done' : ''}`}>
       <span className="gym-sets-col gym-sets-col--num">{setIdx + 1}</span>
@@ -35,7 +42,9 @@ const GymSetRow = memo(function GymSetRow({ activeIndex, setIdx, set: s, trackWe
           step="0.5"
           value={s.weight_kg ?? ''}
           placeholder="–"
-          onChange={(e) => updateSet(activeIndex, setIdx, { weight_kg: e.target.value ? Number(e.target.value) : null })}
+          onChange={(e) =>
+            updateSet(activeIndex, setIdx, { weight_kg: e.target.value ? Number(e.target.value) : null })
+          }
           disabled={s.done}
         />
       )}
@@ -84,9 +93,7 @@ export function GymSessionScreen() {
 
   // Last weights lookup — memoize so the array reference is stable for useLastWeights
   const exerciseNames = useMemo(
-    () => exercises
-      .filter((e) => e.trackWeight)
-      .map((e) => ({ name: e.name, libraryExerciseId: e.libraryExerciseId })),
+    () => exercises.filter((e) => e.trackWeight).map((e) => ({ name: e.name, libraryExerciseId: e.libraryExerciseId })),
     [exercises],
   );
   const { data: lastWeights } = useLastWeights(exerciseNames);
@@ -114,14 +121,17 @@ export function GymSessionScreen() {
   const restLeft = restEndsAt !== null ? Math.max(1, Math.ceil((restEndsAt - now) / 1000)) : null;
 
   // Stable callback (reads exercises from the store) so memoized rows don't re-render on every keystroke.
-  const handleDoneSet = useCallback((exIdx: number, setIdx: number) => {
-    markSetDone(exIdx, setIdx);
-    const ex = useGymStore.getState().exercises[exIdx];
-    if (ex && ex.restSeconds > 0) {
-      setNow(Date.now());
-      startRest(ex.restSeconds);
-    }
-  }, [markSetDone, startRest]);
+  const handleDoneSet = useCallback(
+    (exIdx: number, setIdx: number) => {
+      markSetDone(exIdx, setIdx);
+      const ex = useGymStore.getState().exercises[exIdx];
+      if (ex && ex.restSeconds > 0) {
+        setNow(Date.now());
+        startRest(ex.restSeconds);
+      }
+    },
+    [markSetDone, startRest],
+  );
 
   function handleFinish() {
     if (!startedAt || saveSession.isPending) return;
@@ -129,18 +139,20 @@ export function GymSessionScreen() {
 
     // One entry per completed set; round_number = set number
     const entries = exercises.flatMap((ex, exIdx) =>
-      ex.sets.filter((s) => s.done).map((s, setIdx) => ({
-        station_index: exIdx,
-        station_name: ex.name,
-        is_warmup: ex.isWarmup,
-        work_seconds: 0,
-        actual_seconds: 0,
-        weight_kg: s.weight_kg,
-        reps: s.reps,
-        notes: null,
-        round_number: setIdx + 1,
-        library_exercise_id: ex.libraryExerciseId ?? null,
-      })),
+      ex.sets
+        .filter((s) => s.done)
+        .map((s, setIdx) => ({
+          station_index: exIdx,
+          station_name: ex.name,
+          is_warmup: ex.isWarmup,
+          work_seconds: 0,
+          actual_seconds: 0,
+          weight_kg: s.weight_kg,
+          reps: s.reps,
+          notes: null,
+          round_number: setIdx + 1,
+          library_exercise_id: ex.libraryExerciseId ?? null,
+        })),
     );
 
     if (entries.length === 0) {
@@ -151,27 +163,30 @@ export function GymSessionScreen() {
 
     const exercisesDone = new Set(entries.map((e) => e.station_index)).size;
 
-    saveSession.mutate({
-      session: {
-        started_at: new Date(startedAt).toISOString(),
-        finished_at: new Date().toISOString(),
-        duration_sec: totalSeconds,
-        rounds: 1,
-        station_count: exercisesDone,
-        plan_day_id: null,
-        mesocycle_week: null,
+    saveSession.mutate(
+      {
+        session: {
+          started_at: new Date(startedAt).toISOString(),
+          finished_at: new Date().toISOString(),
+          duration_sec: totalSeconds,
+          rounds: 1,
+          station_count: exercisesDone,
+          plan_day_id: null,
+          mesocycle_week: null,
+        },
+        entries,
       },
-      entries,
-    }, {
-      onSuccess: () => {
-        beepDone();
-        speakDone();
-        finish({ exercises: exercisesDone, sets: entries.length, totalSeconds });
+      {
+        onSuccess: () => {
+          beepDone();
+          speakDone();
+          finish({ exercises: exercisesDone, sets: entries.length, totalSeconds });
+        },
+        onError: () => {
+          toast.error('Session konnte nicht gespeichert werden. Bitte erneut versuchen.');
+        },
       },
-      onError: () => {
-        toast.error('Session konnte nicht gespeichert werden. Bitte erneut versuchen.');
-      },
-    });
+    );
   }
 
   function handleClose() {
@@ -200,11 +215,15 @@ export function GymSessionScreen() {
               <span className="gym-done-stat-label">Sätze</span>
             </div>
             <div className="gym-done-stat">
-              <span className="gym-done-stat-value">{min}:{sec.toString().padStart(2, '0')}</span>
+              <span className="gym-done-stat-value">
+                {min}:{sec.toString().padStart(2, '0')}
+              </span>
               <span className="gym-done-stat-label">Dauer</span>
             </div>
           </div>
-          <button className="gym-done-btn" onClick={handleClose}>Fertig</button>
+          <button className="gym-done-btn" onClick={handleClose}>
+            Fertig
+          </button>
         </div>
       </div>
     );
@@ -236,7 +255,9 @@ export function GymSessionScreen() {
               onClick={() => setActiveExercise(i)}
             >
               {ex.name.length > 12 ? ex.name.slice(0, 12) + '…' : ex.name}
-              <span className="gym-tab-badge">{doneSets}/{ex.sets.length}</span>
+              <span className="gym-tab-badge">
+                {doneSets}/{ex.sets.length}
+              </span>
             </button>
           );
         })}
@@ -247,7 +268,9 @@ export function GymSessionScreen() {
         <div className="gym-rest">
           <span className="gym-rest-label">Pause</span>
           <span className="gym-rest-time">{restLeft}</span>
-          <button className="gym-rest-skip" onClick={clearRest}>Überspringen</button>
+          <button className="gym-rest-skip" onClick={clearRest}>
+            Überspringen
+          </button>
         </div>
       )}
 
@@ -296,7 +319,10 @@ export function GymSessionScreen() {
           confirmLabel="Abbrechen"
           danger
           onCancel={() => setShowConfirm(false)}
-          onConfirm={() => { resetGym(); setShowConfirm(false); }}
+          onConfirm={() => {
+            resetGym();
+            setShowConfirm(false);
+          }}
         />
       )}
     </div>

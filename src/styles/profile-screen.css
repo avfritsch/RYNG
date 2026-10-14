@@ -73,7 +73,7 @@
   font-size: var(--text-base);
 }
 
-.profile-toggle input[type="checkbox"] {
+.profile-toggle input[type='checkbox'] {
   width: 20px;
   height: 20px;
   accent-color: var(--color-work);

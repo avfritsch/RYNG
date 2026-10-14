@@ -2,23 +2,25 @@ import { onCLS, onFCP, onLCP, onTTFB, onINP, type Metric } from 'web-vitals';
 
 function reportMetric(metric: Metric) {
   // Send to Sentry as a custom measurement
-  import('@sentry/react').then((Sentry) => {
-    Sentry.captureMessage(`Web Vital: ${metric.name}`, {
-      level: 'info',
-      tags: {
-        'web-vital': metric.name,
-        'web-vital-rating': metric.rating, // 'good' | 'needs-improvement' | 'poor'
-      },
-      extra: {
-        value: metric.value,
-        delta: metric.delta,
-        id: metric.id,
-        navigationType: metric.navigationType,
-      },
+  import('@sentry/react')
+    .then((Sentry) => {
+      Sentry.captureMessage(`Web Vital: ${metric.name}`, {
+        level: 'info',
+        tags: {
+          'web-vital': metric.name,
+          'web-vital-rating': metric.rating, // 'good' | 'needs-improvement' | 'poor'
+        },
+        extra: {
+          value: metric.value,
+          delta: metric.delta,
+          id: metric.id,
+          navigationType: metric.navigationType,
+        },
+      });
+    })
+    .catch(() => {
+      // Sentry not available
     });
-  }).catch(() => {
-    // Sentry not available
-  });
 
   // Also log in dev
   if (import.meta.env.DEV) {

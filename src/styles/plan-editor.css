@@ -176,7 +176,7 @@
   color: var(--text-muted);
 }
 
-.plan-editor-ex-row input[type="number"] {
+.plan-editor-ex-row input[type='number'] {
   width: 52px;
   padding: 2px 4px;
   text-align: center;

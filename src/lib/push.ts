@@ -24,17 +24,22 @@ export async function subscribeToPush(): Promise<boolean> {
       });
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return false;
 
     const key = subscription.toJSON();
 
-    await supabase.from('push_subscriptions').upsert({
-      user_id: user.id,
-      endpoint: key.endpoint!,
-      p256dh: key.keys!.p256dh,
-      auth: key.keys!.auth,
-    }, { onConflict: 'user_id,endpoint' });
+    await supabase.from('push_subscriptions').upsert(
+      {
+        user_id: user.id,
+        endpoint: key.endpoint!,
+        p256dh: key.keys!.p256dh,
+        auth: key.keys!.auth,
+      },
+      { onConflict: 'user_id,endpoint' },
+    );
 
     return true;
   } catch (e) {

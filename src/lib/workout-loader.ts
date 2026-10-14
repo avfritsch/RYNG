@@ -84,10 +84,7 @@ type EntryLike = Pick<SessionEntry, 'station_index' | 'station_name' | 'is_warmu
  * so it is only the fallback when the original plan day is gone.
  * Returns null for gym sessions (no timed stations).
  */
-export function sessionEntriesToConfig(
-  session: Pick<Session, 'rounds'>,
-  entries: EntryLike[],
-): TimerConfig | null {
+export function sessionEntriesToConfig(session: Pick<Session, 'rounds'>, entries: EntryLike[]): TimerConfig | null {
   const byIndex = new Map<number, EntryLike>();
   for (const e of entries) {
     if (e.work_seconds > 0 && !byIndex.has(e.station_index)) byIndex.set(e.station_index, e);
@@ -111,7 +108,12 @@ export function sessionEntriesToConfig(
 export async function loadSessionRepeatConfig(sessionId: string): Promise<TimerConfig> {
   const [sRes, eRes] = await Promise.all([
     supabase.from('sessions').select('*').eq('id', sessionId).single(),
-    supabase.from('session_entries').select('*').eq('session_id', sessionId).order('round_number').order('station_index'),
+    supabase
+      .from('session_entries')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('round_number')
+      .order('station_index'),
   ]);
   if (sRes.error) throw sRes.error;
   if (eRes.error) throw eRes.error;

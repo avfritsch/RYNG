@@ -6,11 +6,7 @@ type StoreName = 'plans' | 'plan_days' | 'plan_exercises' | 'presets' | 'mesocyc
  * Wraps a Supabase query function to cache results in IndexedDB.
  * On network failure, returns cached data as fallback.
  */
-export function withCache<T>(
-  store: StoreName,
-  key: string,
-  queryFn: () => Promise<T>,
-): () => Promise<T> {
+export function withCache<T>(store: StoreName, key: string, queryFn: () => Promise<T>): () => Promise<T> {
   return async () => {
     try {
       const data = await queryFn();

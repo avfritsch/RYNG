@@ -4,8 +4,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const store = new Map<string, unknown>();
 vi.mock('idb', () => ({
   openDB: async () => ({
-    put: async (_s: string, v: { id: string }) => { store.set(v.id, structuredClone(v)); },
-    delete: async (_s: string, id: string) => { store.delete(id); },
+    put: async (_s: string, v: { id: string }) => {
+      store.set(v.id, structuredClone(v));
+    },
+    delete: async (_s: string, id: string) => {
+      store.delete(id);
+    },
     getAll: async () => [...store.values()].map((v) => structuredClone(v)),
     count: async () => store.size,
   }),
@@ -45,19 +49,21 @@ function makeSession(id: string) {
       plan_day_id: null,
       mesocycle_week: null,
     },
-    entries: [{
-      id: `${id}-e1`,
-      session_id: id,
-      station_index: 0,
-      station_name: 'Squats',
-      is_warmup: false,
-      work_seconds: 45,
-      actual_seconds: 45,
-      weight_kg: 20,
-      reps: 10,
-      notes: null,
-      round_number: 1,
-    }],
+    entries: [
+      {
+        id: `${id}-e1`,
+        session_id: id,
+        station_index: 0,
+        station_name: 'Squats',
+        is_warmup: false,
+        work_seconds: 45,
+        actual_seconds: 45,
+        weight_kg: 20,
+        reps: 10,
+        notes: null,
+        round_number: 1,
+      },
+    ],
   };
 }
 

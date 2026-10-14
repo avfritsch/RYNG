@@ -15,12 +15,15 @@ export function WeightInput({ stationIndex, roundNumber, lastWeight }: WeightInp
   const [reps, setReps] = useState<number | null>(null);
   const [accepted, setAccepted] = useState(false);
 
-  const commit = useCallback((w: number | null, r: number | null) => {
-    updateEntry(stationIndex, roundNumber, {
-      weight_kg: w,
-      reps: r,
-    });
-  }, [updateEntry, stationIndex, roundNumber]);
+  const commit = useCallback(
+    (w: number | null, r: number | null) => {
+      updateEntry(stationIndex, roundNumber, {
+        weight_kg: w,
+        reps: r,
+      });
+    },
+    [updateEntry, stationIndex, roundNumber],
+  );
 
   function adjustWeight(delta: number) {
     const next = Math.max(0, (weight ?? 0) + delta);
@@ -52,17 +55,25 @@ export function WeightInput({ stationIndex, roundNumber, lastWeight }: WeightInp
 
       <div className="weight-input-row">
         <div className="weight-stepper">
-          <button className="weight-stepper-btn" onClick={() => adjustWeight(-0.5)} aria-label="Weniger Gewicht">−</button>
+          <button className="weight-stepper-btn" onClick={() => adjustWeight(-0.5)} aria-label="Weniger Gewicht">
+            −
+          </button>
           <span className="weight-stepper-value">{weight ?? '–'}</span>
           <span className="weight-stepper-unit">kg</span>
-          <button className="weight-stepper-btn" onClick={() => adjustWeight(0.5)} aria-label="Mehr Gewicht">+</button>
+          <button className="weight-stepper-btn" onClick={() => adjustWeight(0.5)} aria-label="Mehr Gewicht">
+            +
+          </button>
         </div>
 
         <div className="weight-stepper">
-          <button className="weight-stepper-btn" onClick={() => adjustReps(-1)} aria-label="Weniger Wdh.">−</button>
+          <button className="weight-stepper-btn" onClick={() => adjustReps(-1)} aria-label="Weniger Wdh.">
+            −
+          </button>
           <span className="weight-stepper-value">{reps ?? '–'}</span>
           <span className="weight-stepper-unit">Wdh</span>
-          <button className="weight-stepper-btn" onClick={() => adjustReps(1)} aria-label="Mehr Wdh.">+</button>
+          <button className="weight-stepper-btn" onClick={() => adjustReps(1)} aria-label="Mehr Wdh.">
+            +
+          </button>
         </div>
       </div>
     </div>

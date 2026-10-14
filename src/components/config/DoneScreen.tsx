@@ -112,8 +112,8 @@ export function DoneScreen() {
 
     saveSession.mutate(sessionPayload);
     setShowConfetti(true);
-  // Runs when a new summary appears; claimSave guards repeats.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Runs when a new summary appears; claimSave guards repeats.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSummary?.id, state.phase]);
 
   if (state.phase !== 'done' && !lastSummary) return null;
@@ -180,17 +180,14 @@ export function DoneScreen() {
           </div>
         </div>
 
-        {weeklyGoal !== null && (
-          weeklySessionCount >= weeklyGoal ? (
-            <p className="done-weekly-goal done-weekly-goal--reached">
-              Wochenziel erreicht! 🎉
-            </p>
+        {weeklyGoal !== null &&
+          (weeklySessionCount >= weeklyGoal ? (
+            <p className="done-weekly-goal done-weekly-goal--reached">Wochenziel erreicht! 🎉</p>
           ) : (
             <p className="done-weekly-goal">
               Wochenziel: {weeklySessionCount}/{weeklyGoal} Trainings
             </p>
-          )
-        )}
+          ))}
 
         {saveSession.isSuccess && newBadges.length > 0 && (
           <div className="done-new-badges">
@@ -218,9 +215,7 @@ export function DoneScreen() {
         )}
 
         {saveSession.isSuccess && streak > 0 && (
-          <p className="done-streak">
-            {streak === 1 ? 'Streak gestartet! 🔥' : `Streak: 🔥 ${streak} Tage`}
-          </p>
+          <p className="done-streak">{streak === 1 ? 'Streak gestartet! 🔥' : `Streak: 🔥 ${streak} Tage`}</p>
         )}
 
         {saveSession.isError && (

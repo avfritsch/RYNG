@@ -93,11 +93,12 @@ export function TimerScreen() {
   if (!config || !state.isRunning) return null;
 
   const currentStation = config.stations[state.station - 1];
-  const stationName = state.phase === 'roundPause'
-    ? 'Rundenpause'
-    : state.phase === 'pause'
-      ? `Pause — ${currentStation?.name ?? ''}`
-      : currentStation?.name ?? '';
+  const stationName =
+    state.phase === 'roundPause'
+      ? 'Rundenpause'
+      : state.phase === 'pause'
+        ? `Pause — ${currentStation?.name ?? ''}`
+        : (currentStation?.name ?? '');
 
   const isWarmup = currentStation?.isWarmup ?? false;
 
@@ -119,12 +120,10 @@ export function TimerScreen() {
   }
 
   // "Nächste Übung" text below ring — hide during pause (shown in howto instead)
-  const nextExerciseText = (state.phase === 'pause') ? '' : nextLabel;
+  const nextExerciseText = state.phase === 'pause' ? '' : nextLabel;
   const bg = phaseBg[state.phase] ?? 'var(--bg-base)';
 
-  const progress = state.phaseDuration > 0
-    ? (state.phaseDuration - state.currentSec) / state.phaseDuration
-    : 0;
+  const progress = state.phaseDuration > 0 ? (state.phaseDuration - state.currentSec) / state.phaseDuration : 0;
 
   // Use ring for sets ≤ 12 stations, linear for more
   const useRing = setStations.length <= RING_VIZ_MAX_STATIONS && setStations.length > 0;
@@ -134,7 +133,9 @@ export function TimerScreen() {
       <div className="timer-header">
         <span className="timer-header-item">{setLabel}</span>
         <HeartRateDisplay bpm={hrBpm} />
-        <span className="timer-header-item">Station {activeStationInSet}/{setStations.length}</span>
+        <span className="timer-header-item">
+          Station {activeStationInSet}/{setStations.length}
+        </span>
       </div>
 
       <div className="timer-body">
@@ -143,7 +144,9 @@ export function TimerScreen() {
         {state.phase === 'roundPause' ? (
           /* Rundenpause: show a single-segment ring */
           <RingViz
-            stations={[{ name: 'Rundenpause', workSeconds: state.phaseDuration, pauseSeconds: 0, isWarmup: false, howto: '' }]}
+            stations={[
+              { name: 'Rundenpause', workSeconds: state.phaseDuration, pauseSeconds: 0, isWarmup: false, howto: '' },
+            ]}
             activeStation={1}
             phase="roundPause"
             progress={progress}
@@ -164,21 +167,21 @@ export function TimerScreen() {
           </>
         )}
 
-        {(state.phase === 'pause' || state.phase === 'roundPause') && currentStation?.trackWeight && !currentStation.isWarmup && (
-          <WeightInput
-            stationIndex={state.station - 1}
-            roundNumber={state.round}
-            lastWeight={lastWeights?.get(currentStation)}
-          />
-        )}
+        {(state.phase === 'pause' || state.phase === 'roundPause') &&
+          currentStation?.trackWeight &&
+          !currentStation.isWarmup && (
+            <WeightInput
+              stationIndex={state.station - 1}
+              roundNumber={state.round}
+              lastWeight={lastWeights?.get(currentStation)}
+            />
+          )}
 
         <div className="timer-howto-area">
           <HowtoPanel text={howtoText} illustrationKey={howtoIllustration} />
         </div>
 
-        {nextExerciseText && (
-          <p className="timer-next-exercise">{nextExerciseText}</p>
-        )}
+        {nextExerciseText && <p className="timer-next-exercise">{nextExerciseText}</p>}
       </div>
 
       <SpotifyBar phase={state.phase} />
