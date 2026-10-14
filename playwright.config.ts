@@ -20,7 +20,10 @@ export default defineConfig({
     viewport: { width: 390, height: 844 }, // iPhone 14 Pro
   },
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
+    // channel 'chromium' = full Chromium in new headless mode. The default
+    // headless shell renders text slightly differently, which breaks the
+    // visual snapshots between local runs and CI.
+    { name: 'chromium', use: { browserName: 'chromium', channel: 'chromium' } },
   ],
   webServer: {
     command: 'npm run dev',

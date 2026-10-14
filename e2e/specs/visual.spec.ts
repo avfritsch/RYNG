@@ -52,11 +52,18 @@ test('history screen', async ({ page }) => {
 });
 
 test('profile screen', async ({ page }) => {
-  // The heart-rate section only renders when Web Bluetooth exists, which
-  // differs between headed Chromium and the CI headless shell. Pin it.
+  // Some sections only render when the browser supports Web Bluetooth or
+  // speech synthesis, which differs between headed Chromium and the CI
+  // headless shell. Pin both so the screenshot is the same everywhere.
   await page.addInitScript(() => {
     if (!('bluetooth' in navigator)) {
       Object.defineProperty(Navigator.prototype, 'bluetooth', { value: {}, configurable: true });
+    }
+    if (!('speechSynthesis' in window)) {
+      Object.defineProperty(window, 'speechSynthesis', {
+        value: { getVoices: () => [], speak() {}, cancel() {}, onvoiceschanged: null },
+        configurable: true,
+      });
     }
   });
   await page.goto('/profile');
