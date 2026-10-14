@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useExerciseLibrary, useDeleteLibraryExercise } from '../../hooks/useExerciseLibrary.ts';
 import { useLibraryFilters } from '../../hooks/useLibraryFilters.ts';
@@ -12,7 +12,9 @@ import type { TimerConfig } from '../../types/timer.ts';
 import { ExerciseEditModal } from './ExerciseEditModal.tsx';
 import { ConfirmModal } from '../ui/ConfirmModal.tsx';
 import { Icon } from '../ui/Icon.tsx';
-import { ExerciseIllustration } from '../ui/ExerciseIllustration.tsx';
+import { LibraryCard } from './LibraryCard.tsx';
+import { AddToPlanPicker } from './AddToPlanPicker.tsx';
+import { FilterAccordion } from './FilterAccordion.tsx';
 import { SkeletonCard } from '../ui/SkeletonCard.tsx';
 import '../../styles/library.css';
 
@@ -189,8 +191,6 @@ export function LibraryScreen() {
     return `${count} Übungen`;
   }, [filteredExercises, hasActiveFilters, filters.search, activeFilterLabels]);
 
-  const filterCountMg = filters.muscleGroups.length;
-  const filterCountEq = filters.equipmentSel.length;
 
   const myPlans = userPlans?.filter((p) => !p.is_system) ?? [];
 
@@ -305,41 +305,24 @@ export function LibraryScreen() {
 
         {tab === 'plans' && (
           <div className="library-filters">
-            <button className="library-filter-header" onClick={() => setPlanMgOpen(!planMgOpen)}>
-              <span>Muskelgruppe{planMuscleGroups.length > 0 ? ` (${planMuscleGroups.length})` : ''}</span>
-              {planMuscleGroups.length > 0 && <span className="library-filter-count">{planMuscleGroups.length} aktiv</span>}
-              <Icon name={planMgOpen ? 'chevron-up' : 'chevron-down'} size={16} />
-            </button>
-            {planMgOpen && (
-              <div className="library-chip-wrap">
-                {planMuscleGroups.length > 0 && (
-                  <button className="library-chip library-chip--reset" onClick={() => setPlanMuscleGroups([])}>Zurücksetzen</button>
-                )}
-                {MUSCLE_GROUP_OPTIONS.map((mg) => (
-                  <button key={mg} className={`library-chip ${planMuscleGroups.includes(mg) ? 'library-chip--active' : ''}`} onClick={() => togglePlanFilter(planMuscleGroups, mg, setPlanMuscleGroups)}>
-                    {mg}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <button className="library-filter-header" onClick={() => setPlanEqOpen(!planEqOpen)}>
-              <span>Equipment{planEquipment.length > 0 ? ` (${planEquipment.length})` : ''}</span>
-              {planEquipment.length > 0 && <span className="library-filter-count">{planEquipment.length} aktiv</span>}
-              <Icon name={planEqOpen ? 'chevron-up' : 'chevron-down'} size={16} />
-            </button>
-            {planEqOpen && (
-              <div className="library-chip-wrap">
-                {planEquipment.length > 0 && (
-                  <button className="library-chip library-chip--reset" onClick={() => setPlanEquipment([])}>Zurücksetzen</button>
-                )}
-                {EQUIPMENT_OPTIONS.map((eq) => (
-                  <button key={eq} className={`library-chip ${planEquipment.includes(eq) ? 'library-chip--active' : ''}`} onClick={() => togglePlanFilter(planEquipment, eq, setPlanEquipment)}>
-                    {eq}
-                  </button>
-                ))}
-              </div>
-            )}
+            <FilterAccordion
+              label="Muskelgruppe"
+              options={MUSCLE_GROUP_OPTIONS}
+              selected={planMuscleGroups}
+              open={planMgOpen}
+              onToggleOpen={() => setPlanMgOpen(!planMgOpen)}
+              onToggle={(mg) => togglePlanFilter(planMuscleGroups, mg, setPlanMuscleGroups)}
+              onReset={() => setPlanMuscleGroups([])}
+            />
+            <FilterAccordion
+              label="Equipment"
+              options={EQUIPMENT_OPTIONS}
+              selected={planEquipment}
+              open={planEqOpen}
+              onToggleOpen={() => setPlanEqOpen(!planEqOpen)}
+              onToggle={(eq) => togglePlanFilter(planEquipment, eq, setPlanEquipment)}
+              onReset={() => setPlanEquipment([])}
+            />
           </div>
         )}
 
@@ -371,41 +354,24 @@ export function LibraryScreen() {
             </div>
 
             <div className="library-filters">
-              <button className="library-filter-header" onClick={() => filters.setMgOpen(!filters.mgOpen)}>
-                <span>Muskelgruppe{filterCountMg > 0 ? ` (${filterCountMg})` : ''}</span>
-                {filterCountMg > 0 && <span className="library-filter-count">{filterCountMg} aktiv</span>}
-                <Icon name={filters.mgOpen ? 'chevron-up' : 'chevron-down'} size={16} />
-              </button>
-              {filters.mgOpen && (
-                <div className="library-chip-wrap">
-                  {filters.muscleGroups.length > 0 && (
-                    <button className="library-chip library-chip--reset" onClick={() => filters.setMuscleGroups([])}>Zurücksetzen</button>
-                  )}
-                  {MUSCLE_GROUP_OPTIONS.map((mg) => (
-                    <button key={mg} className={`library-chip ${filters.muscleGroups.includes(mg) ? 'library-chip--active' : ''}`} onClick={() => filters.toggleFilter(filters.muscleGroups, mg, filters.setMuscleGroups)}>
-                      {mg}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <button className="library-filter-header" onClick={() => filters.setEqOpen(!filters.eqOpen)}>
-                <span>Equipment{filterCountEq > 0 ? ` (${filterCountEq})` : ''}</span>
-                {filterCountEq > 0 && <span className="library-filter-count">{filterCountEq} aktiv</span>}
-                <Icon name={filters.eqOpen ? 'chevron-up' : 'chevron-down'} size={16} />
-              </button>
-              {filters.eqOpen && (
-                <div className="library-chip-wrap">
-                  {filters.equipmentSel.length > 0 && (
-                    <button className="library-chip library-chip--reset" onClick={() => filters.setEquipmentSel([])}>Zurücksetzen</button>
-                  )}
-                  {EQUIPMENT_OPTIONS.map((eq) => (
-                    <button key={eq} className={`library-chip ${filters.equipmentSel.includes(eq) ? 'library-chip--active' : ''}`} onClick={() => filters.toggleFilter(filters.equipmentSel, eq, filters.setEquipmentSel)}>
-                      {eq}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <FilterAccordion
+                label="Muskelgruppe"
+                options={MUSCLE_GROUP_OPTIONS}
+                selected={filters.muscleGroups}
+                open={filters.mgOpen}
+                onToggleOpen={() => filters.setMgOpen(!filters.mgOpen)}
+                onToggle={(mg) => filters.toggleFilter(filters.muscleGroups, mg, filters.setMuscleGroups)}
+                onReset={() => filters.setMuscleGroups([])}
+              />
+              <FilterAccordion
+                label="Equipment"
+                options={EQUIPMENT_OPTIONS}
+                selected={filters.equipmentSel}
+                open={filters.eqOpen}
+                onToggleOpen={() => filters.setEqOpen(!filters.eqOpen)}
+                onToggle={(eq) => filters.toggleFilter(filters.equipmentSel, eq, filters.setEquipmentSel)}
+                onReset={() => filters.setEquipmentSel([])}
+              />
             </div>
           </>
         )}
@@ -501,115 +467,15 @@ export function LibraryScreen() {
       )}
 
       {addToPlanExercise && myPlans.length > 0 && (
-        <div className="picker-overlay" onClick={() => setAddToPlanExercise(null)}>
-          <div className="picker-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="picker-header">
-              <h3>Zu Plan hinzufügen</h3>
-              <button onClick={() => setAddToPlanExercise(null)} aria-label="Schließen">
-                <Icon name="x-close" size={18} />
-              </button>
-            </div>
-            <div className="picker-list">
-              {myPlans.map((plan) => (
-                <button
-                  key={plan.id}
-                  className="picker-item"
-                  onClick={() => {
-                    navigate(`/plans/${plan.id}`, { state: { addExercise: addToPlanExercise } });
-                    setAddToPlanExercise(null);
-                  }}
-                >
-                  <span className="picker-item-name">{plan.name}</span>
-                  <Icon name="arrow-right" size={16} />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <AddToPlanPicker
+          plans={myPlans}
+          onPick={(planId) => {
+            navigate(`/plans/${planId}`, { state: { addExercise: addToPlanExercise } });
+            setAddToPlanExercise(null);
+          }}
+          onClose={() => setAddToPlanExercise(null)}
+        />
       )}
     </div>
   );
 }
-
-// --- Memoized Compact Row ---
-
-const LibraryCard = memo(function LibraryCard({
-  exercise: ex,
-  isFav,
-  isSelected,
-  onSelect,
-  onToggleFav,
-  onAddToPlan,
-  onQuickStart,
-  onEdit,
-  onDelete,
-}: {
-  exercise: LibraryExercise;
-  isFav: boolean;
-  isSelected: boolean;
-  onSelect: (ex: LibraryExercise) => void;
-  onToggleFav: (ex: LibraryExercise, isFav: boolean) => void;
-  onAddToPlan: (ex: LibraryExercise) => void;
-  onQuickStart: (ex: LibraryExercise) => void;
-  onEdit: (ex: LibraryExercise) => void;
-  onDelete: (ex: LibraryExercise) => void;
-}) {
-  const metaParts: string[] = [];
-  if (ex.muscle_groups?.length > 0) metaParts.push(ex.muscle_groups.join(', '));
-  if (ex.equipment.length > 0) metaParts.push(ex.equipment.join(', '));
-
-  return (
-    <div
-      className={`library-row ${isSelected ? 'library-row--selected' : ''}`}
-      onClick={() => onSelect(ex)}
-    >
-      <div className="library-row-line1">
-        <span className="library-row-name">{ex.name}</span>
-        <span className={`library-row-cat library-row-cat--${ex.category}`}>
-          {CATEGORY_LABELS[ex.category]}
-        </span>
-      </div>
-      <div className="library-row-line2">
-        <span className="library-row-meta">
-          {metaParts.join(' · ')}
-        </span>
-        <div className="library-row-icons" onClick={(e) => e.stopPropagation()}>
-          <button
-            className={`library-row-icon ${isFav ? 'library-row-icon--fav' : ''}`}
-            onClick={() => onToggleFav(ex, isFav)}
-            aria-label={isFav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
-          >
-            <Icon name="heart" size={16} />
-          </button>
-          <button
-            className="library-row-icon"
-            onClick={() => onAddToPlan(ex)}
-            aria-label="Zum Plan hinzufügen"
-          >
-            <Icon name="plus" size={16} />
-          </button>
-        </div>
-      </div>
-
-      {isSelected && (
-        <div className="library-row-expanded" onClick={(e) => e.stopPropagation()}>
-          <ExerciseIllustration illustrationKey={ex.illustration_key} size="preview" />
-          {ex.howto && <p className="library-row-howto">{ex.howto}</p>}
-          <div className="library-row-actions">
-            <button className="library-action-btn library-action-btn--primary library-action-btn--sm" onClick={() => onQuickStart(ex)}>
-              <Icon name="play" size={14} /> Quick-Start
-            </button>
-            <button className="library-action-btn library-action-btn--sm" onClick={() => onEdit(ex)}>
-              <Icon name="edit" size={14} /> Bearbeiten
-            </button>
-            {ex.created_by && (
-              <button className="library-action-btn library-action-btn--danger library-action-btn--sm" onClick={() => onDelete(ex)}>
-                <Icon name="trash" size={14} /> Löschen
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-});
